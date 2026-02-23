@@ -13,17 +13,17 @@ public class Department
 
     private Department(
         Guid? id,
-        DepartmentName departmentName,
-        DepartmentIndentifier departmentIndentifier,
+        DepartmentName name,
+        DepartmentIndentifier indentifier,
         DepartmentPath path,
         short depth, Guid? parentId,
         IEnumerable<DepartmentsLocation> locations,
         IEnumerable<DepartmentPosition> positions)
     {
         Id = id ?? Guid.NewGuid();
-        DepartmentName = departmentName;
-        DepartmentIndentifier = departmentIndentifier;
-        DepartmentPath = path;
+        Name = name;
+        Indentifier = indentifier;
+        Path = path;
         Depth = depth;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
@@ -38,11 +38,11 @@ public class Department
 
     public Guid Id { get; }
 
-    public DepartmentName DepartmentName { get; private set; }
+    public DepartmentName Name { get; private set; }
 
-    public DepartmentIndentifier DepartmentIndentifier { get; private set; }
+    public DepartmentIndentifier Indentifier { get; private set; }
 
-    public DepartmentPath DepartmentPath { get; private set; }
+    public DepartmentPath Path { get; private set; }
 
     public short Depth { get; private set; }
 
@@ -64,16 +64,16 @@ public class Department
     public static Result<Department, string> CreateRoot(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentsLocation> locations,
-        DepartmentName departmentName,
-        DepartmentIndentifier departmentIndentifier)
+        DepartmentName name,
+        DepartmentIndentifier indentifier)
     {
-        var pathResult = DepartmentPath.Create(departmentIndentifier.Value);
+        var pathResult = DepartmentPath.Create(indentifier.Value);
 
         if (pathResult.IsFailure) return pathResult.Error;
 
         return Create(
             positions, locations,
-            departmentName, departmentIndentifier,
+            name, indentifier,
             pathResult.Value,
             parentId: null,
             depth: 0);
@@ -88,12 +88,6 @@ public class Department
         Guid? parentId,
         short depth)
     {
-        if (departmentName is null) return "DepartmentName обязательно для заполнения";
-        if (departmentIndentifier is null) return "Positions обязательно для заполнения";
-        if (positions is null) return "Поле Positions обязательно для заполнения";
-        if (locations is null) return "Поле Locations обязательно для заполнения";
-
-
         var department = new Department(
             Guid.NewGuid(),
             departmentName,
@@ -112,20 +106,20 @@ public class Department
     public static Result<Department, string> CreateChild(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentsLocation> locations,
-        DepartmentName departmentName,
-        DepartmentIndentifier departmentIndentifier,
+        DepartmentName name,
+        DepartmentIndentifier indentifier,
         Department parent)
     {
         if (parent is null) return "Родительский департамент обязателен";
 
-        var pathResult = DepartmentPath.AddChildToPath(parent.DepartmentPath.Value, departmentIndentifier.Value);
+        var pathResult = DepartmentPath.AddChildToPath(parent.Path.Value, indentifier.Value);
         if (pathResult.IsFailure) return pathResult.Error;
 
         var childDepth = (short)(parent.Depth + 1);
 
         var childResult = Create(positions, locations,
-            departmentName,
-            departmentIndentifier,
+            name,
+            indentifier,
             pathResult.Value,
             parent.Id,
             childDepth);
@@ -142,7 +136,7 @@ public class Department
         if (child is null)
             return UnitResult.Failure("Дочерний департамент не может быть null");
 
-        if (_childDepartments.Any(item => item.DepartmentIndentifier == child.DepartmentIndentifier))
+        if (_childDepartments.Any(item => item.Indentifier == child.Indentifier))
             return UnitResult.Failure("Дочерний департамент уже привязан.");
 
         _childDepartments.Add(child);

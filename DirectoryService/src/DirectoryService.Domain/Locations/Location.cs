@@ -10,11 +10,11 @@ public class Location
 
     public Guid Id { get; private set; }
 
-    public LocationName LocationName { get; private set; }
+    public LocationName Name { get; private set; }
 
-    public Address Adress { get; private set; } //json ?  ValueObject
+    public Address Address { get; private set; } //json ?  ValueObject
 
-    public LocationTimeZone LocationTimeZone { get; private set; }
+    public LocationTimeZone TimeZone { get; private set; }
 
     public bool IsActive { get; private set; }
 
@@ -26,15 +26,15 @@ public class Location
 
     private Location(
         Guid? id,
-        LocationName locationName,
-        Address adress,
-        LocationTimeZone locationTimeZone,
+        LocationName name,
+        Address address,
+        LocationTimeZone timeZone,
         IEnumerable<DepartmentsLocation> departments)
     {
         Id = id ?? Guid.NewGuid();
-        LocationName = locationName;
-        Adress = adress;
-        LocationTimeZone = locationTimeZone;
+        Name = name;
+        Address = address;
+        TimeZone = timeZone;
         CreatedAt = DateTime.UtcNow;
         IsActive = true;
         _departments = departments.ToList();
@@ -48,74 +48,8 @@ public class Location
     public Result<Location, string> Create(
         IEnumerable<DepartmentsLocation> departments,
         LocationName name, Address adress,
-        LocationTimeZone locationTimeZone)
+        LocationTimeZone timeZone)
     {
-        return new Location(Guid.NewGuid(), name, adress, locationTimeZone, departments);
-    }
-}
-
-public record Address
-{
-    public string Country { get; }
-
-    public string City { get; }
-
-    public string Street { get; }
-
-    public string PostalCode { get; }
-
-    public string BuildingNumber { get; }
-
-    public string? Apartment { get; }
-
-    private Address(
-        string country,
-        string city,
-        string street,
-        string postalCode,
-        string buildingNumber,
-        string? apartment)
-    {
-        Country = country;
-        City = city;
-        Street = street;
-        PostalCode = postalCode;
-        BuildingNumber = buildingNumber;
-        Apartment = apartment;
-    }
-
-    public static Result<Address, string> Create(
-        string country,
-        string city,
-        string street,
-        string postalCode,
-        string? buildingNumber,
-        string? apartment)
-    {
-        if (string.IsNullOrWhiteSpace(country))
-            return "Страна не может быть пустой";
-
-        if (string.IsNullOrWhiteSpace(city))
-            return "Город не может быть пустой";
-
-        if (string.IsNullOrWhiteSpace(street))
-            return "Улица не может быть пустой";
-
-        if (string.IsNullOrWhiteSpace(postalCode))
-            return "Почтовый код не может быть пустым";
-
-
-        return new Address(
-            country.Trim(),
-            city.Trim(),
-            street.Trim(),
-            postalCode.Trim(),
-            buildingNumber.Trim(),
-            apartment?.Trim());
-    }
-
-    public string GetTimeZone()
-    {
-        return Country + "/" + City;
+        return new Location(Guid.NewGuid(), name, adress, timeZone, departments);
     }
 }

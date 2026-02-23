@@ -2,7 +2,7 @@
 
 public class DepartmentPosition
 {
-    public Guid Id { get; set; }
+    public required Guid Id { get; init; }
 
     public Guid DepartmentId { get; set; }
 
