@@ -27,4 +27,9 @@ public record LocationTimeZone
 
         return new LocationTimeZone(timeZone);
     }
+
+    public static LocationTimeZone FromDb(string timeZone)
+    {
+        return new LocationTimeZone(timeZone);
+    }
 }

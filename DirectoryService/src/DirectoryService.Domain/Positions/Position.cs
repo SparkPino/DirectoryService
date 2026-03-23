@@ -4,15 +4,14 @@ namespace DirectoryService.Domain;
 
 public class Position
 {
-    private readonly List<DepartmentPosition> _departments;
+    private readonly List<DepartmentPosition> _departmentsPositions = [];
 
-    private Position(Guid? id, PositionName name, string? description, IEnumerable<DepartmentPosition> departments)
+    private Position(Guid? id, PositionName name, string? description)
     {
         Id = id ?? Guid.NewGuid();
         Name = name;
         Description = description;
-        CreatedAt = DateTime.UtcNow;
-        _departments = departments.ToList();
+        CreatedAt = DateTimeOffset.UtcNow;
         IsActive = true;
     }
 
@@ -28,11 +27,11 @@ public class Position
 
     public bool IsActive { get; private set; }
 
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
 
-    public DateTime UpdatedAt { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
 
-    public IReadOnlyList<DepartmentPosition> Departments => _departments;
+    public IReadOnlyList<DepartmentPosition> DepartmentsPositions => _departmentsPositions;
 
 
     public static Result<Position, string> Create(Guid? id, PositionName name,
@@ -45,30 +44,27 @@ public class Position
 
         if (description.Length > 1000) return "Максимально 1000 символов";
 
-        var position = new Position(id, name, description, departments);
+        var position = new Position(id, name, description);
 
-        if (departments != null)
+
+        foreach (var department in departments ?? [])
         {
-            foreach (var department in departments)
-            {
-                var positionResult = position.AddDepartment(department);
-                if (positionResult.IsFailure)
-                    return positionResult.Error;
-            }
+            var positionResult = position.AddDepartment(department);
+            if (positionResult.IsFailure)
+                return positionResult.Error;
         }
-
 
         return position;
     }
 
-    public UnitResult<string> AddDepartment(DepartmentPosition department)
+    public UnitResult<string> AddDepartment(DepartmentPosition? department)
     {
         if (department == null) return UnitResult.Failure("Не может быть null");
-        if (_departments.Any(d => d.DepartmentId == department.DepartmentId))
+        if (_departmentsPositions.Any(d => d.DepartmentId == department.DepartmentId))
             return UnitResult.Failure("Департамент уже добавлен");
 
-        _departments.Add(department);
-        UpdatedAt = DateTime.UtcNow;
+        _departmentsPositions.Add(department);
+        UpdatedAt = DateTimeOffset.UtcNow;
         return UnitResult.Success<string>();
     }
 }

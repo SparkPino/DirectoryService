@@ -9,9 +9,9 @@ public sealed record DepartmentPath
     private static readonly Regex _regex = new Regex(@"^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$",
         RegexOptions.CultureInvariant);
 
-    public string Value { get; }
+    public string Path { get; }
 
-    private DepartmentPath(string value) => Value = value;
+    private DepartmentPath(string path) => Path = path;
 
     public static Result<DepartmentPath, string> Create(string value)
     {
@@ -64,5 +64,10 @@ public sealed record DepartmentPath
 
         var result = string.Join(".", newValue);
         return Create(result);
+    }
+
+    public static DepartmentPath FromDb(string value)
+    {
+        return new DepartmentPath(value);
     }
 }

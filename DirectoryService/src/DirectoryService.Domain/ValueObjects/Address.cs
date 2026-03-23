@@ -39,7 +39,7 @@ public record Address
         string city,
         string street,
         string postalCode,
-        string? buildingNumber,
+        string buildingNumber,
         string? apartment)
     {
         if (string.IsNullOrWhiteSpace(country))
