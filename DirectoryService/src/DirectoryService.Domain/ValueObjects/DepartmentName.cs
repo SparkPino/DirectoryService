@@ -6,22 +6,30 @@ namespace DirectoryService.Domain.ValueObjects;
 
 public sealed record DepartmentName
 {
-    public string Value { get; }
+    public string Name { get; }
 
-    private DepartmentName(string value) => Value = value;
+    private DepartmentName(string name) => Name = name;
 
-    public static Result<DepartmentName, string> Create(string value)
+    public override string ToString() => $"{Name}";
+
+    public static Result<DepartmentName, string> Create(string name)
     {
-        value = value.Trim();
+        name = name.Trim();
 
-        if (!StringValidator<DepartmentName>.For(value)
-            .IsNullOrWhiteSpace()
-            .LengthMinMax(3,150)
-            .IsValid(out string errorMessage))
+        if (!StringValidator<DepartmentName>.For(name)
+                .IsNullOrWhiteSpace()
+                .LengthMinMax(3, 150)
+                .IsValid(out string errorMessage))
         {
             return errorMessage!;
         }
 
+
+        return new DepartmentName(name);
+    }
+
+    public static DepartmentName FromDb(string value)
+    {
         return new DepartmentName(value);
     }
 }

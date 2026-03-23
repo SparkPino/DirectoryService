@@ -8,9 +8,9 @@ public sealed record DepartmentIndentifier
 {
     private static readonly Regex Regex = new(@"^[A-Za-z]+$", RegexOptions.CultureInvariant);
 
-    public string Value { get; }
+    public string Identifier { get; }
 
-    private DepartmentIndentifier(string value) => Value = value;
+    private DepartmentIndentifier(string identifier) => Identifier = identifier;
 
     public static Result<DepartmentIndentifier, string> Create(string value)
     {
@@ -26,6 +26,11 @@ public sealed record DepartmentIndentifier
         }
 
 
+        return new DepartmentIndentifier(value);
+    }
+
+    public static DepartmentIndentifier FromDb(string value)
+    {
         return new DepartmentIndentifier(value);
     }
 }

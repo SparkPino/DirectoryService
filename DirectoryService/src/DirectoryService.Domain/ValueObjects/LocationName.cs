@@ -24,4 +24,9 @@ public record LocationName
 
         return new LocationName(name);
     }
+
+    public static LocationName FromDb(string value)
+    {
+        return new LocationName(value);
+    }
 }

@@ -5,31 +5,31 @@ namespace DirectoryService.Domain.Departments;
 
 public class Department
 {
-    private readonly List<DepartmentsLocation> _locations;
+    private readonly List<DepartmentLocation> _locationses;
 
-    private readonly List<DepartmentPosition> _positions;
+    private readonly List<DepartmentPosition> _departmentPositions;
 
-    private readonly List<Department> _childDepartments = new();
+    private readonly List<Department> _childDepartments = [];
 
     private Department(
         Guid? id,
         DepartmentName name,
-        DepartmentIndentifier indentifier,
+        DepartmentIndentifier identifier,
         DepartmentPath path,
         short depth, Guid? parentId,
-        IEnumerable<DepartmentsLocation> locations,
+        IEnumerable<DepartmentLocation> locations,
         IEnumerable<DepartmentPosition> positions)
     {
         Id = id ?? Guid.NewGuid();
         Name = name;
-        Indentifier = indentifier;
+        Identifier = identifier;
         Path = path;
         Depth = depth;
         IsActive = true;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTimeOffset.UtcNow;
         ParentId = parentId;
-        _locations = locations.ToList();
-        _positions = positions.ToList();
+        _locationses = locations.ToList();
+        _departmentPositions = positions.ToList();
     }
 
     private Department()
@@ -40,7 +40,7 @@ public class Department
 
     public DepartmentName Name { get; private set; }
 
-    public DepartmentIndentifier Indentifier { get; private set; }
+    public DepartmentIndentifier Identifier { get; private set; }
 
     public DepartmentPath Path { get; private set; }
 
@@ -50,24 +50,24 @@ public class Department
 
     public bool IsActive { get; private set; }
 
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
 
-    public DateTime? UpdatedAt { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
 
     public IReadOnlyList<Department> ChildDepartments => _childDepartments;
 
-    public IReadOnlyList<DepartmentsLocation> Location => _locations;
+    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _locationses;
 
-    public IReadOnlyList<DepartmentPosition> Positions => _positions;
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
 
 
     public static Result<Department, string> CreateRoot(
         IEnumerable<DepartmentPosition> positions,
-        IEnumerable<DepartmentsLocation> locations,
+        IEnumerable<DepartmentLocation> locations,
         DepartmentName name,
         DepartmentIndentifier indentifier)
     {
-        var pathResult = DepartmentPath.Create(indentifier.Value);
+        var pathResult = DepartmentPath.Create(indentifier.Identifier);
 
         if (pathResult.IsFailure) return pathResult.Error;
 
@@ -81,7 +81,7 @@ public class Department
 
     private static Result<Department, string> Create(
         IEnumerable<DepartmentPosition> positions,
-        IEnumerable<DepartmentsLocation> locations,
+        IEnumerable<DepartmentLocation> locations,
         DepartmentName departmentName,
         DepartmentIndentifier departmentIndentifier,
         DepartmentPath path,
@@ -105,14 +105,14 @@ public class Department
 
     public static Result<Department, string> CreateChild(
         IEnumerable<DepartmentPosition> positions,
-        IEnumerable<DepartmentsLocation> locations,
+        IEnumerable<DepartmentLocation> locations,
         DepartmentName name,
         DepartmentIndentifier indentifier,
         Department parent)
     {
         if (parent is null) return "Родительский департамент обязателен";
 
-        var pathResult = DepartmentPath.AddChildToPath(parent.Path.Value, indentifier.Value);
+        var pathResult = DepartmentPath.AddChildToPath(parent.Path.Path, indentifier.Identifier);
         if (pathResult.IsFailure) return pathResult.Error;
 
         var childDepth = (short)(parent.Depth + 1);
@@ -136,37 +136,37 @@ public class Department
         if (child is null)
             return UnitResult.Failure("Дочерний департамент не может быть null");
 
-        if (_childDepartments.Any(item => item.Indentifier == child.Indentifier))
+        if (_childDepartments.Any(item => item.Identifier == child.Identifier))
             return UnitResult.Failure("Дочерний департамент уже привязан.");
 
         _childDepartments.Add(child);
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
         return UnitResult.Success<string>();
     }
 
-    public UnitResult<string> AddLocation(DepartmentsLocation location)
+    public UnitResult<string> AddLocation(DepartmentLocation location)
     {
         if (location is null)
             return UnitResult.Failure("Locations обязательно для заполнения");
 
-        if (_locations.Any(l => l.Id == location.Id))
+        if (_locationses.Any(l => l.DepartmentsLocationId == location.DepartmentsLocationId))
             return UnitResult.Failure("Location уже существует");
 
-        _locations.Add(location);
-        UpdatedAt = DateTime.UtcNow;
+        _locationses.Add(location);
+        UpdatedAt = DateTimeOffset.UtcNow;
 
         return UnitResult.Success<string>();
     }
 
 
-    public UnitResult<string> AddLocations(IEnumerable<DepartmentsLocation> locations)
+    public UnitResult<string> AddLocations(IEnumerable<DepartmentLocation> locations)
     {
         if (locations is null)
             return UnitResult.Failure("Locations обязательно для заполнения");
 
         var list = locations
             .Where(a => a is not null)
-            .GroupBy(a => a.Id)
+            .GroupBy(a => a.DepartmentsLocationId)
             .Select(a => a.First())
             .ToList();
 
@@ -181,7 +181,7 @@ public class Department
         return UnitResult.Success<string>();
     }
 
-    public UnitResult<string> ReplaceLocations(IEnumerable<DepartmentsLocation> location)
+    public UnitResult<string> ReplaceLocations(IEnumerable<DepartmentLocation> location)
     {
         if (location is null) return UnitResult.Failure("Location обязательно для заполнения");
 
@@ -189,7 +189,7 @@ public class Department
 
         if (locationsToList.Count == 0) return UnitResult.Failure("Требуется как минимум одна локация.");
 
-        _locations.Clear();
+        _locationses.Clear();
 
         var ReplaceResult = AddLocations(locationsToList);
 

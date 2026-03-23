@@ -24,4 +24,9 @@ public record PositionName
 
         return new PositionName(name);
     }
+
+    public static PositionName FromDb(string positionName)
+    {
+        return new PositionName(positionName);
+    }
 }

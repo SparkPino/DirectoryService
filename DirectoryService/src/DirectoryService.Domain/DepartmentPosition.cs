@@ -2,9 +2,21 @@
 
 public class DepartmentPosition
 {
-    public required Guid Id { get; init; }
+    // EF Core
+    private DepartmentPosition()
+    {
+    }
 
-    public Guid DepartmentId { get; set; }
+    public DepartmentPosition(Guid id, Guid departmentId, Guid positionId)
+    {
+        DepartmentPositionId = id;
+        DepartmentId = departmentId;
+        PositionId = positionId;
+    }
 
-    public Guid PositionId { get; set; }
+    public Guid DepartmentPositionId { get; }
+
+    public Guid DepartmentId { get; private set; }
+
+    public Guid PositionId { get; private set; }
 }
