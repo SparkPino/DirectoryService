@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Locations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,6 +35,8 @@ public static class DependencyInjection
 
             options.UseLoggerFactory(loggerFactory);
         });
+
+        services.AddScoped<ILocationRepository, LocationRepository>();
 
 
         return services;

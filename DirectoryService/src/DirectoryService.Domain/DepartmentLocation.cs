@@ -1,4 +1,7 @@
-﻿namespace DirectoryService.Domain;
+﻿using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Locations;
+
+namespace DirectoryService.Domain;
 
 public class DepartmentLocation
 {
@@ -19,4 +22,8 @@ public class DepartmentLocation
     public Guid DepartmentId { get; private set; }
 
     public Guid LocationId { get; private set; }
+
+    public Department? Department { get; private set; }
+
+    public Location? Location { get; private set; }
 }

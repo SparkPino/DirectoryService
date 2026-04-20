@@ -30,12 +30,14 @@ public class DepartmentPositionConfiguration : IEntityTypeConfiguration<Departme
             .IsRequired()
             .HasColumnName("position_id");
 
-        builder.HasOne<Position>().WithMany(p => p.DepartmentsPositions)
+        builder.HasOne<Position>(dp => dp.Position)
+            .WithMany(p => p.DepartmentsPositions)
             .IsRequired()
             .HasForeignKey(d => d.PositionId);
 
 
-        builder.HasOne<Department>().WithMany(d => d.DepartmentPositions)
+        builder.HasOne<Department>(dp => dp.Department)
+            .WithMany(d => d.DepartmentPositions)
             .IsRequired()
             .HasForeignKey(d => d.DepartmentId);
     }

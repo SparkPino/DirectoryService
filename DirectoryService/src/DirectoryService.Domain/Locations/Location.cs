@@ -1,12 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Shared;
 
-namespace DirectoryService.Domain;
+namespace DirectoryService.Domain.Locations;
 
 public class Location
 {
-    private readonly List<DepartmentLocation> _departmentsLocations;
+    private readonly List<DepartmentLocation> _departmentsLocations = [];
 
     public Guid Id { get; private set; }
 
@@ -24,12 +23,14 @@ public class Location
 
     public IReadOnlyList<DepartmentLocation> DepartmentsLocations => _departmentsLocations;
 
+    public IReadOnlyList<Department> Departments =>
+        _departmentsLocations.Select(dl => dl.Department).ToList()!;
+
     private Location(
         Guid? id,
         LocationName name,
         Address address,
-        LocationTimeZone timeZone
-    )
+        LocationTimeZone timeZone)
     {
         Id = id ?? Guid.NewGuid();
         Name = name;
@@ -45,16 +46,10 @@ public class Location
 
 
     public static Result<Location, string> Create(
-        IEnumerable<DepartmentLocation> departments,
-        LocationName name, Address adress,
+        LocationName name, Address address,
         LocationTimeZone timeZone)
     {
-        var location = new Location(Guid.NewGuid(), name, adress, timeZone);
-
-        foreach (var department in departments ?? [])
-        {
-            location.AddDepartment(department);
-        }
+        var location = new Location(null, name, address, timeZone);
 
         return location;
     }

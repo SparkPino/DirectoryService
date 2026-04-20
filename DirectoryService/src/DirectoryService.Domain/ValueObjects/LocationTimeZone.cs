@@ -20,12 +20,33 @@ public record LocationTimeZone
 
         timeZone = timeZone.Trim();
 
-        if (!timeZone.Contains('/'))
-        {
-            return "Timezone должен быть в IANA формате (Area/Location).";
-        }
+        if (!TryNormalize(timeZone, out var ianaTimeZone))
+            return $"Timezone '{timeZone}' не существует. Используй IANA формат, например 'Europe/Warsaw'";
 
-        return new LocationTimeZone(timeZone);
+        return new LocationTimeZone(ianaTimeZone!);
+    }
+
+    private static bool TryNormalize(string timeZone, out string? ianaId)
+    {
+        ianaId = null;
+
+        // Спроба 1: вже є валідний IANA або Windows ID
+        try
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+
+            // Конвертуємо Windows → IANA якщо потрібно
+            if (TimeZoneInfo.TryConvertWindowsIdToIanaId(tz.Id, out var converted))
+                ianaId = converted;
+            else
+                ianaId = tz.Id; // вже IANA
+
+            return true;
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return false;
+        }
     }
 
     public static LocationTimeZone FromDb(string timeZone)
