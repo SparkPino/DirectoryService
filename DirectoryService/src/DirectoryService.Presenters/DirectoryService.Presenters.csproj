@@ -17,4 +17,8 @@
       <ProjectReference Include="..\DirectoryService.Infrastructure\DirectoryService.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Locations\" />
+    </ItemGroup>
+
 </Project>

@@ -34,7 +34,7 @@ public sealed class StringValidator<T>
         if (_value.Length < min || _value.Length > max)
         {
             _stringError.AddErrorMessage(
-                $"{typeof(T).Name} не может быть меньше {min} символов и больше {max} символов");
+                $"{typeof(T).Name} не может быть меньше {min} и больше {max} символов");
             _isValid = false;
         }
 
