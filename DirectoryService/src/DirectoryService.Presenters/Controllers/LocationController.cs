@@ -11,19 +11,13 @@ namespace DirectoryService.Presenters.Controllers;
 [Route("/api/locations")]
 public class LocationController : ControllerBase
 {
-    private readonly ICommandHandler<AddLocationCommand> _commandHandler;
-
-    public LocationController(ICommandHandler<AddLocationCommand> commandHandler)
-    {
-        _commandHandler = commandHandler;
-    }
-
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] LocationDto locationDto,
+        [FromServices] ICommandHandler<AddLocationCommand> handler,
         CancellationToken cancellationToken)
     {
-        var result = await _commandHandler.Handle(new AddLocationCommand(locationDto), cancellationToken);
+        var result = await handler.Handle(new AddLocationCommand(locationDto), cancellationToken);
 
         if (result.IsFailure) return BadRequest(result.Error);
 
