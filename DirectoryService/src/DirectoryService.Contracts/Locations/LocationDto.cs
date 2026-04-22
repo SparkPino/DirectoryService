@@ -2,9 +2,9 @@
 
 public record LocationDto
 {
-    public string Name { get; set; }
+    public string Name { get; init; }
 
-    public AdressDto Adress { get; set; }
+    public AdressDto Adress { get; init; }
 
-    public string TimeZone { get; set; }
+    public string TimeZone { get; init; }
 }

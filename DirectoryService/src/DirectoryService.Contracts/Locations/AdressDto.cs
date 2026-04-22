@@ -2,15 +2,15 @@
 
 public record AdressDto
 {
-    public string Country { get; set; }
+    public string Country { get; init; }
 
-    public string City { get; set; }
+    public string City { get; init; }
 
-    public string Street { get; set; }
+    public string Street { get; init; }
 
-    public string PostalCode { get; set; }
+    public string PostalCode { get; init; }
 
-    public string BuildingNumber { get; set; }
+    public string BuildingNumber { get; init; }
 
-    public string? Apartment { get; set; }
+    public string? Apartment { get; init; }
 }

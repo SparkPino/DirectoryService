@@ -23,10 +23,9 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
     }
 
 
-    public async Task<UnitResult<string>> Handle(AddLocationCommand? command, CancellationToken cancellationToken)
+    public async Task<UnitResult<string>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
     {
         // 1.Validation входных даных и бизнес логики
-        if (command == null) return "LocationDto can`t be null";
 
         var nameResult = LocationName.Create(command.LocationDto.Name);
         if (nameResult.IsFailure) return nameResult.Error;
@@ -51,10 +50,14 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
 
 
         // создание сущности в базе даных
-        await _locationRepository.AddAsync(locationResult.Value, cancellationToken);
+        var result = await _locationRepository.AddAsync(locationResult.Value, cancellationToken);
+        if (result.IsFailure)
+        {
+            return result.Error.Message;
+        }
 
         // логирование об успешном или не успешном добавлении
-        _logger.LogInformation("Location created with id: {locationId}", locationResult.Value.Id);
+        _logger.LogInformation("Location создана с id: {locationId}", locationResult.Value.Id);
         // логи лучше записывать именно так, когда параметры указаны через запятую.
 
         return UnitResult.Success<string>();

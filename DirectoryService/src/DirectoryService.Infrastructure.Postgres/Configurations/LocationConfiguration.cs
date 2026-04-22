@@ -26,6 +26,9 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasConversion(ln => ln.Name, lnb => LocationName.FromDb(lnb))
             .IsRequired();
 
+        builder.HasIndex(l => l.Name)
+            .IsUnique();
+
         builder.OwnsOne(l => l.Address, lb =>
         {
             lb.ToJson("addresses");

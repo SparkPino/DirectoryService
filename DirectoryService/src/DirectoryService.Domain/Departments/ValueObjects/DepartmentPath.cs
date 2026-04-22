@@ -2,7 +2,7 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
 
-namespace DirectoryService.Domain.ValueObjects;
+namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public sealed record DepartmentPath
 {
