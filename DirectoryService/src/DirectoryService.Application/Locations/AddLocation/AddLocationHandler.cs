@@ -2,6 +2,9 @@
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Domain;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Domain.Shared;
+using DirectoryService.Domain.Shared.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 
@@ -23,10 +26,9 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
     }
 
 
-    public async Task<UnitResult<string>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, string>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
     {
         // 1.Validation входных даных и бизнес логики
-
         var nameResult = LocationName.Create(command.LocationDto.Name);
         if (nameResult.IsFailure) return nameResult.Error;
 
@@ -43,23 +45,20 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
         var timeZoneResult = LocationTimeZone.Create(command.LocationDto.TimeZone);
         if (timeZoneResult.IsFailure) return timeZoneResult.Error;
 
-
         // создание сущности
         var locationResult = Location.Create(nameResult.Value, addressResult.Value, timeZoneResult.Value);
         if (locationResult.IsFailure) return locationResult.Error;
 
-
         // создание сущности в базе даных
-        var result = await _locationRepository.AddAsync(locationResult.Value, cancellationToken);
-        if (result.IsFailure)
+        var addLocationResult = await _locationRepository.AddAsync(locationResult.Value, cancellationToken);
+        if (addLocationResult.IsFailure)
         {
-            return result.Error.Message;
+            return addLocationResult.Error.ToDetails();
         }
 
         // логирование об успешном или не успешном добавлении
         _logger.LogInformation("Location создана с id: {locationId}", locationResult.Value.Id);
-        // логи лучше записывать именно так, когда параметры указаны через запятую.
 
-        return UnitResult.Success<string>();
+        return locationResult.Value.Id;
     }
 }

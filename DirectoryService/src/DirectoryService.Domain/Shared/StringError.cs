@@ -12,9 +12,14 @@ public record StringError
     {
     }
 
-    public void AddErrorMessage(string message)
+    public StringError AddErrorMessage(params string[] messages)
     {
-        builder.AppendLine(message);
+        foreach (var message in messages)
+        {
+            builder.AppendLine(message);
+        }
+
+        return this;
     }
 
     public string GetAllErrorMessage()

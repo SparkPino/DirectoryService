@@ -21,6 +21,6 @@ public class LocationController : ControllerBase
 
         if (result.IsFailure) return BadRequest(result.Error);
 
-        return Ok();
+        return Created($"/api/locations/{result.Value}", result.Value);
     }
 }

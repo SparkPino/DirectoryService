@@ -23,16 +23,23 @@ public record Error
         InvalidField = invalidField;
     }
 
-    public static Error Validation(string code, string message, string? invalidField = null) =>
-        new(code, message, ErrorType.VALIDATION, invalidField);
+    public static Error Validation(string? code, string message, string? invalidField = null) =>
+        new(code ?? "value.is.invalid", message, ErrorType.VALIDATION, invalidField);
 
-    public static Error NotFound(string code, string message) => new(code, message, ErrorType.NOT_FOUND);
+    public static Error NotFound(string? code, string message) =>
+        new(code ?? "record.not.found", message, ErrorType.NOT_FOUND);
 
-    public static Error Failure(string code, string message) => new(code, message, ErrorType.FAILURE);
+    public static Error Failure(string? code, string message) => new(code ?? "failure", message, ErrorType.FAILURE);
 
-    public static Error Conflict(string code, string message) => new(code, message, ErrorType.CONFLICT);
+    public static Error Conflict(string? code, string message) =>
+        new(code ?? "value.is.conflict", message, ErrorType.CONFLICT);
 
-    public static Error Authentication(string code, string message) => new(code, message, ErrorType.AUTHENTICATION);
+    public static Error Authentication(string? code, string message) =>
+        new(code ?? "failure", message, ErrorType.AUTHENTICATION);
 
-    public static Error Authorization(string code, string message) => new(code, message, ErrorType.AUTHORIZATION);
+    public static Error Authorization(string? code, string message) =>
+        new(code ?? "failure", message, ErrorType.AUTHORIZATION);
+
+    public string ToDetails() =>
+        $"code: {Code}\nmessage: {Message}\ntype: {Type}";
 }

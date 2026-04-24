@@ -1,6 +1,7 @@
 using System.Globalization;
 using DirectoryService.Infrastructure.Postgres;
 using DirectoryService.Presentation;
+using DirectoryService.Presentation.Middlewares;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -16,7 +17,7 @@ try
     builder.Services.AddProgramDependencies(builder.Configuration);
 
     var app = builder.Build();
-
+    app.UseExceptionMiddleware();
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
