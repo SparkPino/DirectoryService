@@ -1,3 +1,4 @@
+using DirectoryService.Application;
 using DirectoryService.Infrastructure.Postgres;
 using Serilog;
 using Serilog.Configuration;
@@ -14,7 +15,8 @@ public static class DependencyInjection
         IConfiguration configuration) => services
         .AddSerilogLogging(configuration)
         .AddWebDependencies()
-        .AddDirectoryServiceDbContext(configuration);
+        .AddDirectoryServiceDbContext(configuration)
+        .AddApplication();
 
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)
     {
@@ -27,7 +29,7 @@ public static class DependencyInjection
     private static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSerilog((ServiceProvider, LoggerConfiguration) => LoggerConfiguration
-            .ReadFrom.Configuration(configuration) // читает настройки Serilog из IConfiguration (например, из appsettings.json)
+            .ReadFrom.Configuration(configuration) // читает настройки Serilog из IConfiguration (тоесть например, из appsettings.json)
             .ReadFrom.Services(ServiceProvider) // позволяем Serilog использовать DI
             .Enrich.FromLogContext() //for CorelationID ? 
             .Enrich.WithExceptionDetails() //

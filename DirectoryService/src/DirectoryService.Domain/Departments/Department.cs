@@ -1,11 +1,11 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Domain.ValueObjects;
+using DirectoryService.Domain.Departments.ValueObjects;
 
 namespace DirectoryService.Domain.Departments;
 
 public class Department
 {
-    private readonly List<DepartmentLocation> _locationses;
+    private readonly List<DepartmentLocation> _locations;
 
     private readonly List<DepartmentPosition> _departmentPositions;
 
@@ -28,7 +28,7 @@ public class Department
         IsActive = true;
         CreatedAt = DateTimeOffset.UtcNow;
         ParentId = parentId;
-        _locationses = locations.ToList();
+        _locations = locations.ToList();
         _departmentPositions = positions.ToList();
     }
 
@@ -56,7 +56,7 @@ public class Department
 
     public IReadOnlyList<Department> ChildDepartments => _childDepartments;
 
-    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _locationses;
+    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _locations;
 
     public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
 
@@ -149,10 +149,10 @@ public class Department
         if (location is null)
             return UnitResult.Failure("Locations обязательно для заполнения");
 
-        if (_locationses.Any(l => l.DepartmentsLocationId == location.DepartmentsLocationId))
+        if (_locations.Any(l => l.LocationId == location.LocationId))
             return UnitResult.Failure("Location уже существует");
 
-        _locationses.Add(location);
+        _locations.Add(location);
         UpdatedAt = DateTimeOffset.UtcNow;
 
         return UnitResult.Success<string>();
@@ -181,19 +181,26 @@ public class Department
         return UnitResult.Success<string>();
     }
 
-    public UnitResult<string> ReplaceLocations(IEnumerable<DepartmentLocation> location)
+    public UnitResult<string> ReplaceLocations(IEnumerable<DepartmentLocation>? location)
     {
-        if (location is null) return UnitResult.Failure("Location обязательно для заполнения");
+        if (location is null)
+            return UnitResult.Failure("Location не может быть null");
 
         var locationsToList = location.ToList();
 
-        if (locationsToList.Count == 0) return UnitResult.Failure("Требуется как минимум одна локация.");
+        if (locationsToList.Count == 0)
+            return UnitResult.Failure("Требуется как минимум одна локация.");
 
-        _locationses.Clear();
+        var backup = _locations.ToList();
+        _locations.Clear();
 
-        var ReplaceResult = AddLocations(locationsToList);
+        var replaceResult = AddLocations(locationsToList);
 
-        if (ReplaceResult.IsFailure) return ReplaceResult;
+        if (replaceResult.IsFailure)
+        {
+            _locations.AddRange(backup);
+            return replaceResult;
+        }
 
         return UnitResult.Success<string>();
     }

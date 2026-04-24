@@ -1,5 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain;
+using DirectoryService.Domain.Positions;
+using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

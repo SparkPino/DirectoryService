@@ -1,4 +1,6 @@
 ﻿using DirectoryService.Domain;
+using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +26,9 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasColumnName("name")
             .HasConversion(ln => ln.Name, lnb => LocationName.FromDb(lnb))
             .IsRequired();
+
+        builder.HasIndex(l => l.Name)
+            .IsUnique();
 
         builder.OwnsOne(l => l.Address, lb =>
         {
