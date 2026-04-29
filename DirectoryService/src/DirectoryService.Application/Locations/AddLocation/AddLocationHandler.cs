@@ -7,6 +7,7 @@ using DirectoryService.Domain.Shared;
 using DirectoryService.Domain.Shared.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
+using Shared;
 
 namespace DirectoryService.Application.Locations.AddLocation;
 
@@ -26,7 +27,7 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
     }
 
 
-    public async Task<Result<Guid, string>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
     {
         // 1.Validation входных даных и бизнес логики
         var nameResult = LocationName.Create(command.LocationDto.Name);
@@ -40,25 +41,24 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
             command.LocationDto.Adress.BuildingNumber,
             command.LocationDto.Adress.Apartment);
 
-        if (addressResult.IsFailure) return addressResult.Error;
+        if (addressResult.IsFailure) return addressResult.Error.ToErrors();
 
         var timeZoneResult = LocationTimeZone.Create(command.LocationDto.TimeZone);
-        if (timeZoneResult.IsFailure) return timeZoneResult.Error;
+        if (timeZoneResult.IsFailure) return timeZoneResult.Error.ToErrors();
 
         // создание сущности
-        var locationResult = Location.Create(nameResult.Value, addressResult.Value, timeZoneResult.Value);
-        if (locationResult.IsFailure) return locationResult.Error;
+        var location = Location.Create(nameResult.Value, addressResult.Value, timeZoneResult.Value);
 
         // создание сущности в базе даных
-        var addLocationResult = await _locationRepository.AddAsync(locationResult.Value, cancellationToken);
+        var addLocationResult = await _locationRepository.AddAsync(location, cancellationToken);
         if (addLocationResult.IsFailure)
         {
-            return addLocationResult.Error.ToDetails();
+            return addLocationResult.Error.ToErrors();
         }
 
         // логирование об успешном или не успешном добавлении
-        _logger.LogInformation("Location создана с id: {locationId}", locationResult.Value.Id);
+        _logger.LogInformation("Location создана с id: {locationId}", location.Id);
 
-        return locationResult.Value.Id;
+        return location.Id;
     }
 }

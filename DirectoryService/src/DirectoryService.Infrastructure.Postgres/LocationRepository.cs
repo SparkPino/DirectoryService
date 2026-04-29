@@ -6,6 +6,7 @@ using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Shared;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Shared;
 
 namespace DirectoryService.Infrastructure.Postgres;
 
@@ -30,14 +31,14 @@ public class LocationRepository : ILocationRepository
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            var errorDescription = Errors.LocationErrors.Concurrency;
+            var errorDescription = LocationErrors.Concurrency;
             _logger.LogError(ex.InnerException ?? ex,
                 "Конфликт параллельного доступа при добавлении локации {LocationId}", location.Id);
             return errorDescription;
         }
         catch (DbUpdateException ex)
         {
-            var errorDescription = Errors.LocationErrors.Database;
+            var errorDescription = LocationErrors.Database;
             _logger.LogError(ex.InnerException ?? ex, "Ошибка базы данных при добавлении локации {LocationId}",
                 location.Id);
             return errorDescription;

@@ -47,7 +47,7 @@ public class Location
     }
 
 
-    public static Result<Location, string> Create(
+    public static Location Create(
         LocationName name, Address address,
         LocationTimeZone timeZone)
     {

@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
 
@@ -13,38 +14,33 @@ public sealed record DepartmentPath
 
     private DepartmentPath(string path) => Path = path;
 
-    public static Result<DepartmentPath, string> Create(string value)
+    public static Result<DepartmentPath, Errors> Create(string value)
     {
         value = value.Trim();
 
         if (!StringValidator<DepartmentPath>.For(value).IsNullOrWhiteSpace().StringFormat(_regex)
-                .IsValid(out string? errorMessage))
+                .IsValid(out List<Error> errorMessage))
         {
-            return errorMessage;
+            return new Errors(errorMessage);
         }
 
         return new DepartmentPath(value);
     }
 
-    public static Result<DepartmentPath, string> AddChildToPath(string parentPath, string child)
+    public static Result<DepartmentPath, Errors> AddChildToPath(string parentPath, string child)
     {
-        var errors = new StringError();
-
         var parentValid = StringValidator<DepartmentPath>.For(parentPath)
             .IsNullOrWhiteSpace()
             .StringFormat(_regex)
-            .IsValid(out var parentErrorMessage);
+            .IsValid(out List<Error> parentErrorMessage);
 
         var childValid = StringValidator<DepartmentPath>.For(child)
             .IsNullOrWhiteSpace()
-            .IsValid(out var childErrorMessage);
+            .IsValid(out List<Error> childErrorMessage);
 
         if (!parentValid || !childValid)
         {
-            if (parentErrorMessage != null) errors.AddErrorMessage(parentErrorMessage);
-            if (childErrorMessage != null) errors.AddErrorMessage(childErrorMessage);
-
-            return errors.GetAllErrorMessage();
+            return new Errors([..parentErrorMessage ?? [], ..childErrorMessage ?? []]);
         }
 
         var childPath = $"{parentPath}.{child}";
@@ -53,7 +49,7 @@ public sealed record DepartmentPath
         return Create(childPath);
     }
 
-    public static Result<DepartmentPath, string> RemoveChildFromPath(string path)
+    public static Result<DepartmentPath, Errors> RemoveChildFromPath(string path)
     {
         string[] newValue = new string[path.Length - 1];
         var value = path.Split('.');

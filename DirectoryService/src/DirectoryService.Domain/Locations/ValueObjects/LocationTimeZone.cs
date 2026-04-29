@@ -1,25 +1,34 @@
 ﻿using CSharpFunctionalExtensions;
+using Shared;
 
 namespace DirectoryService.Domain.Locations.ValueObjects;
 
 public record LocationTimeZone
 {
-    public string Value { get; }
+    public string TimeZone { get; }
 
-    private LocationTimeZone(string value)
+    private LocationTimeZone(string timeZone)
     {
-        Value = value;
+        TimeZone = timeZone;
     }
 
-    public static Result<LocationTimeZone, string> Create(string timeZone)
+    public static Result<LocationTimeZone, Error> Create(string timeZone)
     {
         if (string.IsNullOrWhiteSpace(timeZone))
-            return "Timezone не может быть пустой";
+        {
+            var message = "Timezone не может быть пустой";
+            return Error.Validation("location.timezone", message, nameof(TimeZone));
+        }
+
 
         timeZone = timeZone.Trim();
 
         if (!TryNormalize(timeZone, out var ianaTimeZone))
-            return $"Timezone '{timeZone}' не существует. Используй IANA формат, например 'Europe/Warsaw'";
+        {
+            var message = $"Timezone '{timeZone}' не существует. Используй IANA формат, например 'Europe/Warsaw'";
+            return Error.Validation("location.timezone", message, nameof(TimeZone));
+        }
+
 
         return new LocationTimeZone(ianaTimeZone!);
     }
@@ -28,16 +37,15 @@ public record LocationTimeZone
     {
         ianaId = null;
 
-        // Спроба 1: вже є валідний IANA або Windows ID
         try
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
 
-            // Конвертуємо Windows → IANA якщо потрібно
+
             if (TimeZoneInfo.TryConvertWindowsIdToIanaId(tz.Id, out var converted))
                 ianaId = converted;
             else
-                ianaId = tz.Id; // вже IANA
+                ianaId = tz.Id;
 
             return true;
         }

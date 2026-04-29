@@ -62,7 +62,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.TimeZone)
             .HasColumnName("timezone")
             .IsRequired()
-            .HasConversion(tz => tz.Value, s => LocationTimeZone.FromDb(s));
+            .HasConversion(tz => tz.TimeZone, s => LocationTimeZone.FromDb(s));
 
         builder.Property(l => l.IsActive)
             .HasColumnName("is_active")

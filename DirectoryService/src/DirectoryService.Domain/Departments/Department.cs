@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments.ValueObjects;
+using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
@@ -61,7 +62,7 @@ public class Department
     public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
 
 
-    public static Result<Department, string> CreateRoot(
+    public static Result<Department, Errors> CreateRoot(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentLocation> locations,
         DepartmentName name,
@@ -79,7 +80,7 @@ public class Department
             depth: 0);
     }
 
-    private static Result<Department, string> Create(
+    private static Result<Department, Errors> Create(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentLocation> locations,
         DepartmentName departmentName,
@@ -103,14 +104,15 @@ public class Department
     }
 
 
-    public static Result<Department, string> CreateChild(
+    public static Result<Department, Errors> CreateChild(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentLocation> locations,
         DepartmentName name,
         DepartmentIndentifier indentifier,
         Department parent)
     {
-        if (parent is null) return "Родительский департамент обязателен";
+        if (parent is null)
+            return Error.Validation("department.validation", "Родительский департамент обязателен").ToErrors();
 
         var pathResult = DepartmentPath.AddChildToPath(parent.Path.Path, indentifier.Identifier);
         if (pathResult.IsFailure) return pathResult.Error;

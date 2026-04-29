@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Positions.ValueObjects;
 
@@ -9,16 +10,16 @@ public record PositionName
 
     private PositionName(string name) => Name = name;
 
-    public static Result<PositionName, string> Create(string name)
+    public static Result<PositionName, Errors> Create(string name)
     {
         name = name.Trim();
 
-        if (!StringValidator<PositionName>.For(name)
+        if (!StringValidator<PositionName>.For(name, nameof(PositionName))
                 .IsNullOrWhiteSpace()
                 .LengthMinMax(3, 100)
-                .IsValid(out string errorMessage))
+                .IsValid(out List<Error> errorMessage))
         {
-            return errorMessage!;
+            return new Errors(errorMessage!);
         }
 
         return new PositionName(name);
