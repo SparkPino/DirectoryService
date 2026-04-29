@@ -1,9 +1,11 @@
 using System.Text.Json.Serialization;
 using DirectoryService.Application;
 using DirectoryService.Infrastructure.Postgres;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
 using Serilog;
 using Serilog.Exceptions;
+using Shared;
 
 namespace DirectoryService.Presentation;
 
@@ -23,6 +25,7 @@ public static class DependencyInjection
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
+
         services.AddOpenApi(options =>
         {
             options.AddSchemaTransformer((schema, context, _) =>
@@ -40,6 +43,20 @@ public static class DependencyInjection
 
                 return Task.CompletedTask;
             });
+        });
+
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var errors = context.ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .SelectMany(x => x.Value!.Errors.Select(e =>
+                        Error.Validation(x.Key.ToLower(), e.ErrorMessage, x.Key)))
+                    .ToList();
+
+                return new BadRequestObjectResult(new Errors(errors));
+            };
         });
 
         return services;
