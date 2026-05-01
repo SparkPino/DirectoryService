@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
 
@@ -12,7 +13,7 @@ public sealed record DepartmentIndentifier
 
     private DepartmentIndentifier(string identifier) => Identifier = identifier;
 
-    public static Result<DepartmentIndentifier, string> Create(string value)
+    public static Result<DepartmentIndentifier, Errors> Create(string value)
     {
         value = value.Trim();
 
@@ -20,9 +21,9 @@ public sealed record DepartmentIndentifier
                 .IsNullOrWhiteSpace()
                 .LengthMinMax(4, 150)
                 .StringFormat(Regex)
-                .IsValid(out string errorMessage))
+                .IsValid(out List<Error> errorMessage))
         {
-            return errorMessage!;
+            return new Errors(errorMessage);
         }
 
 

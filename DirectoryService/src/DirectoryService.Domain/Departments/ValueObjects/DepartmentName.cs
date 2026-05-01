@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Shared;
+using Shared;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
 
@@ -11,16 +12,16 @@ public sealed record DepartmentName
 
     public override string ToString() => $"{Name}";
 
-    public static Result<DepartmentName, string> Create(string name)
+    public static Result<DepartmentName, Errors> Create(string name)
     {
         name = name.Trim();
 
         if (!StringValidator<DepartmentName>.For(name)
                 .IsNullOrWhiteSpace()
                 .LengthMinMax(3, 150)
-                .IsValid(out string errorMessage))
+                .IsValid(out List<Error> errorMessage))
         {
-            return errorMessage!;
+            return new Errors(errorMessage!);
         }
 
 

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Shared;
 
 namespace DirectoryService.Domain.Shared.ValueObjects;
 
@@ -32,7 +33,7 @@ public record Address
         Apartment = apartment;
     }
 
-    public static Result<Address, string> Create(
+    public static Result<Address, Error> Create(
         string country,
         string city,
         string street,
@@ -41,16 +42,19 @@ public record Address
         string? apartment)
     {
         if (string.IsNullOrWhiteSpace(country))
-            return "Страна не может быть пустой";
+            return Error.Validation("address", "Страна не может быть пустой", nameof(Country));
 
         if (string.IsNullOrWhiteSpace(city))
-            return "Город не может быть пустой";
+            return Error.Validation("address", "Город не может быть пустой", nameof(City));
 
         if (string.IsNullOrWhiteSpace(street))
-            return "Улица не может быть пустой";
+            return Error.Validation("address", "Улица не может быть пустой", nameof(Street));
+
+        if (string.IsNullOrWhiteSpace(buildingNumber))
+            return Error.Validation("address", "Номер дома не может быть пустой", nameof(BuildingNumber));
 
         if (string.IsNullOrWhiteSpace(postalCode))
-            return "Почтовый код не может быть пустым";
+            return Error.Validation("address", "Почтовый код не может быть пустым", nameof(PostalCode));
 
 
         return new Address(
@@ -60,10 +64,5 @@ public record Address
             postalCode.Trim(),
             buildingNumber.Trim(),
             apartment?.Trim());
-    }
-
-    public string GetTimeZone()
-    {
-        return Country + "/" + City;
     }
 }
