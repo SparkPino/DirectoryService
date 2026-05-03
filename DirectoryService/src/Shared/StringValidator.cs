@@ -30,8 +30,10 @@ public sealed class StringValidator<TValue>
     {
         if (string.IsNullOrWhiteSpace(_value))
         {
-            _stringError.Add(Error.Validation($"{typeof(TValue).Name}.isnull.or.whitespace",
-                $"{typeof(TValue).Name} не может быть пустым или состоять из пробелов", _invalidFieldName));
+            _stringError.Add(Error.Validation(
+                $"{_invalidFieldName ?? typeof(TValue).Name}.is.null.or.whitespace",
+                $"{_invalidFieldName ?? typeof(TValue).Name} не может быть пустым или состоять из пробелов",
+                _invalidFieldName));
             _isValid = false;
         }
 
@@ -43,8 +45,10 @@ public sealed class StringValidator<TValue>
     {
         if (_value.Length < min || _value.Length > max)
         {
-            _stringError.Add(Error.Validation($"{typeof(TValue).Name}.length.min.max",
-                $"{typeof(TValue).Name} не может быть меньше {min} и больше {max} символов", _invalidFieldName));
+            _stringError.Add(Error.Validation(
+                $"{_invalidFieldName ?? typeof(TValue).Name}.length.min.max",
+                $"{_invalidFieldName ?? typeof(TValue).Name} не может быть меньше {min} и больше {max} символов",
+                _invalidFieldName));
             _isValid = false;
         }
 
@@ -57,13 +61,17 @@ public sealed class StringValidator<TValue>
         {
             if (message != null)
             {
-                _stringError.Add(Error.Validation($"{typeof(TValue).Name}.string.format",
-                    $"{typeof(TValue).Name} {message}", _invalidFieldName));
+                _stringError.Add(Error.Validation(
+                    $"{_invalidFieldName ?? typeof(TValue).Name}.string.format",
+                    $"{_invalidFieldName ?? typeof(TValue).Name} {message}",
+                    _invalidFieldName));
             }
             else
             {
-                _stringError.Add(Error.Validation($"{typeof(TValue).Name}.string.format",
-                    $"{typeof(TValue).Name} должен содержать только латинские буквы", _invalidFieldName));
+                _stringError.Add(Error.Validation(
+                    $"{_invalidFieldName ?? typeof(TValue).Name}.string.format",
+                    $"{_invalidFieldName ?? typeof(TValue).Name} должен содержать только латинские буквы",
+                    _invalidFieldName));
             }
 
             _isValid = false;
@@ -85,6 +93,7 @@ public sealed class StringValidator<TValue>
 
         return false;
     }
+
 
     public bool IsValid()
     {

@@ -2,6 +2,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Contracts;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

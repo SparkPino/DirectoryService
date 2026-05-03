@@ -20,31 +20,40 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 
         builder.Property(d => d.Id)
             .IsRequired()
-            .HasColumnName("id");
-
+            .HasColumnName("id")
+            .HasConversion(
+                a => a.Id,
+                a => new DepartmentId(a));
 
         builder
             .HasMany(d => d.ChildDepartments)
             .WithOne()
+            .IsRequired(false)
             .HasForeignKey(d => d.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(d => d.Name)
-            .IsRequired()
-            .HasMaxLength(150)
+        builder.Property(n => n.Name)
             .HasColumnName("name")
-            .HasConversion(dn => dn.Name, dn => DepartmentName.FromDb(dn));
-
-        builder.Property(d => d.Identifier)
+            .HasMaxLength(DepartmentName.NAME_MAX_LENGTH)
             .IsRequired()
-            .HasMaxLength(150)
-            .HasColumnName("identifier")
-            .HasConversion(di => di.Identifier, s => DepartmentIndentifier.FromDb(s));
+            .HasConversion(
+                name => name.Value,
+                value => DepartmentName.FromDb(value));
 
-        builder.Property(d => d.Path)
-            .IsRequired()
-            .HasColumnName("path")
-            .HasConversion(dp => dp.Path, s => DepartmentPath.FromDb(s));
+        builder.ComplexProperty(d => d.Identifier, nb =>
+        {
+            nb.Property(d => d.Identifier)
+                .IsRequired()
+                .HasMaxLength(DepartmentIdentifier.IDENTIFIER_MAX_LENGTH)
+                .HasColumnName("identifier");
+        });
+
+        builder.ComplexProperty(d => d.Path, pb =>
+        {
+            pb.Property(d => d.Path)
+                .IsRequired()
+                .HasColumnName("path");
+        });
 
         builder.Property(d => d.Depth)
             .IsRequired()
@@ -52,7 +61,8 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 
         builder.Property(d => d.ParentId)
             .HasColumnName("parent_id")
-            .IsRequired(false);
+            .IsRequired(false)
+            .HasConversion(d => d!.Id, d => new DepartmentId(d));
 
         builder.Property(d => d.IsActive)
             .HasColumnName("is_active")

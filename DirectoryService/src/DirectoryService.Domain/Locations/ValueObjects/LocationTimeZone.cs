@@ -3,7 +3,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Locations.ValueObjects;
 
-public record LocationTimeZone
+public sealed record LocationTimeZone
 {
     public string TimeZone { get; }
 
@@ -55,8 +55,4 @@ public record LocationTimeZone
         }
     }
 
-    public static LocationTimeZone FromDb(string timeZone)
-    {
-        return new LocationTimeZone(timeZone);
-    }
 }

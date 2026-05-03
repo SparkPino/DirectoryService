@@ -1,6 +1,4 @@
-﻿using CSharpFunctionalExtensions;
-using DirectoryService.Domain;
-using DirectoryService.Domain.Positions;
+﻿using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -21,13 +19,20 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
 
         builder.Property(p => p.Id)
             .HasColumnName("id")
-            .IsRequired();
+            .IsRequired()
+            .HasConversion(
+                id => id.Id,
+                guid => new PositionId(guid));
 
-        builder.Property(p => p.Name)
+
+        builder.Property(n => n.Name)
             .HasColumnName("name")
             .IsRequired()
             .HasMaxLength(100)
-            .HasConversion(pn => pn.Name, s => PositionName.FromDb(s));
+            .HasConversion(
+                name => name.Name,
+                value => PositionName.FromDb(value));
+
 
         builder.Property(p => p.Description)
             .HasColumnName("description")

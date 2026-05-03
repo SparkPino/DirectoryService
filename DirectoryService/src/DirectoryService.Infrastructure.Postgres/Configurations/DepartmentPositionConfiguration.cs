@@ -1,6 +1,10 @@
 ﻿using DirectoryService.Domain;
+using DirectoryService.Domain.DepartmentPositions;
+using DirectoryService.Domain.DepartmentPositions.ValueObjects;
 using DirectoryService.Domain.Departments;
+using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Positions;
+using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,24 +25,32 @@ public class DepartmentPositionConfiguration : IEntityTypeConfiguration<Departme
 
         builder.Property(d => d.DepartmentPositionId)
             .HasColumnName("id")
-            .IsRequired();
+            .IsRequired()
+            .HasConversion(
+                id => id.Id,
+                guid => new DepartmentPositionId(guid));
 
         builder.Property(d => d.DepartmentId)
             .IsRequired()
-            .HasColumnName("department_id");
+            .HasColumnName("department_id")
+            .HasConversion(
+                id => id.Id,
+                guid => new DepartmentId(guid));
 
         builder.Property(d => d.PositionId)
             .IsRequired()
-            .HasColumnName("position_id");
+            .HasColumnName("position_id")
+            .HasConversion(
+                id => id.Id,
+                guid => new PositionId(guid));
 
-        builder.HasOne<Position>(dp => dp.Position)
+        builder.HasOne<Position>()
             .WithMany(p => p.DepartmentsPositions)
             .IsRequired()
             .HasForeignKey(d => d.PositionId);
 
-
-        builder.HasOne<Department>(dp => dp.Department)
-            .WithMany(d => d.DepartmentPositions)
+        builder.HasOne<Department>()
+            .WithMany(d => d.Positions)
             .IsRequired()
             .HasForeignKey(d => d.DepartmentId);
     }

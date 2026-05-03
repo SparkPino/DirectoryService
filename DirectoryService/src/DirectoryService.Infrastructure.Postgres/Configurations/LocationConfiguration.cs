@@ -1,5 +1,4 @@
-﻿using DirectoryService.Domain;
-using DirectoryService.Domain.Locations;
+﻿using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -16,19 +15,25 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasName("pk_location");
 
         builder.HasIndex(l => new { l.IsActive, l.Name })
-            .HasDatabaseName("ix_location_name");
-
-        builder.Property(l => l.Id)
-            .HasColumnName("id")
-            .IsRequired();
-
-        builder.Property(l => l.Name)
-            .HasColumnName("name")
-            .HasConversion(ln => ln.Name, lnb => LocationName.FromDb(lnb))
-            .IsRequired();
+            .HasDatabaseName("ix_location_name_is_active");
 
         builder.HasIndex(l => l.Name)
             .IsUnique();
+
+        builder.Property(l => l.Id)
+            .HasColumnName("id")
+            .IsRequired()
+            .HasConversion(
+                id => id.Id,
+                guid => new LocationId(guid));
+
+        builder.Property(l => l.Name)
+            .HasColumnName("name")
+            .IsRequired()
+            .HasConversion(
+                name => name.Name,
+                value => LocationName.FromDb(value));
+
 
         builder.OwnsOne(l => l.Address, lb =>
         {
@@ -59,10 +64,12 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 .IsRequired(false);
         });
 
-        builder.Property(l => l.TimeZone)
-            .HasColumnName("timezone")
-            .IsRequired()
-            .HasConversion(tz => tz.TimeZone, s => LocationTimeZone.FromDb(s));
+        builder.ComplexProperty(l => l.TimeZone, tzb =>
+        {
+            tzb.Property(tz => tz.TimeZone)
+                .HasColumnName("timezone")
+                .IsRequired();
+        });
 
         builder.Property(l => l.IsActive)
             .HasColumnName("is_active")
