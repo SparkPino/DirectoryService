@@ -27,7 +27,7 @@ public class LocationRepository : ILocationRepository
         try
         {
             await _context.SaveChangesAsync(cancellationToken);
-            return location.Id;
+            return location.Id.Id;
         }
         catch (DbUpdateConcurrencyException ex)
         {

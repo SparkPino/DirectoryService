@@ -4,11 +4,13 @@ using Shared;
 
 namespace DirectoryService.Domain.Locations.ValueObjects;
 
-public record LocationName
+public sealed record LocationName
 {
     public string Name { get; }
 
     private LocationName(string name) => Name = name;
+
+    public static LocationName FromDb(string name) => new(name);
 
     public static Result<LocationName, Errors> Create(string name)
     {
@@ -23,10 +25,5 @@ public record LocationName
         }
 
         return new LocationName(name);
-    }
-
-    public static LocationName FromDb(string value)
-    {
-        return new LocationName(value);
     }
 }

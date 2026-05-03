@@ -7,63 +7,70 @@ namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public sealed record DepartmentPath
 {
-    private static readonly Regex _regex = new Regex(@"^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*$",
-        RegexOptions.CultureInvariant);
-
     public string Path { get; }
+
+    private const char SEPARATOR = '.';
 
     private DepartmentPath(string path) => Path = path;
 
-    public static Result<DepartmentPath, Errors> Create(string value)
+    private static Result<DepartmentPath, Errors> CreatePath(string value)
     {
         value = value.Trim();
 
-        if (!StringValidator<DepartmentPath>.For(value).IsNullOrWhiteSpace().StringFormat(_regex)
-                .IsValid(out List<Error> errorMessage))
+        if (!StringValidator<DepartmentPath>.For(value)
+                .IsNullOrWhiteSpace()
+                .StringFormat(AppRegexes.DepartmentPathRegex())
+                .IsValid(out List<Error>? errorMessage))
         {
-            return new Errors(errorMessage);
+            return errorMessage!.First().ToErrors();
         }
 
         return new DepartmentPath(value);
     }
 
-    public static Result<DepartmentPath, Errors> AddChildToPath(string parentPath, string child)
+    public static Result<DepartmentPath, Errors> CreateParent(DepartmentIdentifier value)
     {
-        var parentValid = StringValidator<DepartmentPath>.For(parentPath)
-            .IsNullOrWhiteSpace()
-            .StringFormat(_regex)
-            .IsValid(out List<Error> parentErrorMessage);
-
-        var childValid = StringValidator<DepartmentPath>.For(child)
-            .IsNullOrWhiteSpace()
-            .IsValid(out List<Error> childErrorMessage);
-
-        if (!parentValid || !childValid)
-        {
-            return new Errors([..parentErrorMessage ?? [], ..childErrorMessage ?? []]);
-        }
-
-        var childPath = $"{parentPath}.{child}";
-
-
-        return Create(childPath);
+        return CreatePath(value.Identifier);
     }
 
-    public static Result<DepartmentPath, Errors> RemoveChildFromPath(string path)
+    public Result<DepartmentPath, Errors> CreateChildPath(DepartmentIdentifier child)
     {
-        string[] newValue = new string[path.Length - 1];
-        var value = path.Split('.');
-        for (int i = 0; i < value.Length - 1; i++)
+        if (!StringValidator<DepartmentPath>.For(child.Identifier)
+                .IsNullOrWhiteSpace()
+                .IsValid(out List<Error>? childErrorMessage))
         {
-            newValue[i] = value[i];
+            return childErrorMessage!.First().ToErrors();
         }
 
-        var result = string.Join(".", newValue);
-        return Create(result);
+        string childPath = $"{Path}{SEPARATOR}{child.Identifier}";
+
+        return CreatePath(childPath);
     }
 
-    public static DepartmentPath FromDb(string value)
+    public Result<DepartmentPath, Errors> RemoveChildFromPath(DepartmentIdentifier child)
     {
-        return new DepartmentPath(value);
+        if (!StringValidator<DepartmentPath>.For(child.Identifier)
+                .IsNullOrWhiteSpace()
+                .IsValid(out List<Error>? errorMessage))
+            return errorMessage!.First().ToErrors();
+
+        if (child.Identifier.Length <= 1)
+            return Error.Validation("department.path.is.root", "Путь уже корневой").ToErrors();
+
+        string[] path = Path.Split(SEPARATOR).ToArray();
+
+        if (!path.Contains(child.Identifier))
+        {
+            return Error.NotFound(
+                    "department.path.child.not.found",
+                    $"Сегмент '{child.Identifier}'не найдено в пути")
+                .ToErrors();
+        }
+
+        var newPath = path.Where(a => a != child.Identifier);
+
+        string result = string.Join(SEPARATOR, newPath);
+
+        return CreatePath(result);
     }
 }

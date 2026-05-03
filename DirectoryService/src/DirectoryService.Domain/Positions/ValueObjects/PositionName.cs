@@ -4,7 +4,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Positions.ValueObjects;
 
-public record PositionName
+public sealed record PositionName
 {
     public string Name { get; }
 
@@ -25,8 +25,5 @@ public record PositionName
         return new PositionName(name);
     }
 
-    public static PositionName FromDb(string positionName)
-    {
-        return new PositionName(positionName);
-    }
+    public static PositionName FromDb(string name) => new PositionName(name);
 }

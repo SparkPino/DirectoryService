@@ -1,53 +1,59 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Domain.DepartmentLocations;
+using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Domain.Positions.ValueObjects;
 using Shared;
 
 namespace DirectoryService.Domain.Departments;
 
-public class Department
+public sealed class Department
 {
-    private readonly List<DepartmentLocation> _locations;
+    private readonly List<DepartmentLocation> _departmentsLocations = [];
 
-    private readonly List<DepartmentPosition> _departmentPositions;
+    private readonly List<DepartmentPosition> _positions = [];
 
     private readonly List<Department> _childDepartments = [];
 
     private Department(
-        Guid? id,
+        DepartmentId id,
         DepartmentName name,
-        DepartmentIndentifier identifier,
+        DepartmentIdentifier identifier,
         DepartmentPath path,
-        short depth, Guid? parentId,
+        short depth,
         IEnumerable<DepartmentLocation> locations,
-        IEnumerable<DepartmentPosition> positions)
+        IEnumerable<DepartmentPosition> positions,
+        DepartmentId? parentId = null)
     {
-        Id = id ?? Guid.NewGuid();
+        Id = id;
         Name = name;
         Identifier = identifier;
         Path = path;
         Depth = depth;
         IsActive = true;
         CreatedAt = DateTimeOffset.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
         ParentId = parentId;
-        _locations = locations.ToList();
-        _departmentPositions = positions.ToList();
+        _departmentsLocations = locations.ToList();
+        _positions = positions.ToList();
     }
 
     private Department()
     {
     }
 
-    public Guid Id { get; }
+    public DepartmentId Id { get; private set; } = null!;
 
-    public DepartmentName Name { get; private set; }
+    public DepartmentName Name { get; private set; } = null!;
 
-    public DepartmentIndentifier Identifier { get; private set; }
+    public DepartmentIdentifier Identifier { get; private set; } = null!;
 
-    public DepartmentPath Path { get; private set; }
+    public DepartmentPath Path { get; private set; } = null!;
+
+    public DepartmentId? ParentId { get; private set; }
 
     public short Depth { get; private set; }
-
-    public Guid? ParentId { get; private set; }
 
     public bool IsActive { get; private set; }
 
@@ -57,153 +63,166 @@ public class Department
 
     public IReadOnlyList<Department> ChildDepartments => _childDepartments;
 
-    public IReadOnlyList<DepartmentLocation> DepartmentLocations => _locations;
+    public IReadOnlyList<DepartmentLocation> DepartmentsLocations => _departmentsLocations;
 
-    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions;
+    public IReadOnlyList<DepartmentPosition> Positions => _positions;
 
 
     public static Result<Department, Errors> CreateRoot(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentLocation> locations,
         DepartmentName name,
-        DepartmentIndentifier indentifier)
+        DepartmentIdentifier identifier,
+        DepartmentId? departmentId = null)
     {
-        var pathResult = DepartmentPath.Create(indentifier.Identifier);
+        const int depth = 0;
 
+        var locationsDepartmentList = locations.ToList();
+
+        if (locationsDepartmentList.Count == 0)
+        {
+            return Error.Validation("department.locations", "Department location должно содержать хотябы одну локацию")
+                .ToErrors();
+        }
+
+        var pathResult = DepartmentPath.CreateParent(identifier);
         if (pathResult.IsFailure) return pathResult.Error;
 
         return Create(
-            positions, locations,
-            name, indentifier,
+            positions, locationsDepartmentList,
+            name, identifier,
             pathResult.Value,
-            parentId: null,
-            depth: 0);
+            depth,
+            departmentId);
     }
 
-    private static Result<Department, Errors> Create(
+    private static Department Create(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentLocation> locations,
         DepartmentName departmentName,
-        DepartmentIndentifier departmentIndentifier,
+        DepartmentIdentifier departmentIdentifier,
         DepartmentPath path,
-        Guid? parentId,
-        short depth)
+        short depth,
+        DepartmentId? parentId = null)
     {
         var department = new Department(
-            Guid.NewGuid(),
+            new DepartmentId(Guid.NewGuid()),
             departmentName,
-            departmentIndentifier,
+            departmentIdentifier,
             path,
             depth,
-            parentId,
             locations,
-            positions);
-
+            positions,
+            parentId);
 
         return department;
     }
 
+    public Result<Department, Errors> CreateChild(
+        IEnumerable<DepartmentPosition> positions,
+        IEnumerable<DepartmentLocation> locations,
+        DepartmentName name,
+        DepartmentIdentifier identifier)
+    {
+        var departmentLocationList = locations.ToList();
+        if (departmentLocationList.Count == 0)
+        {
+            return Error.Validation("department.locations", "Department location должно содержать хотябы одну локацию")
+                .ToErrors();
+        }
+
+        var childPath = Path.CreateChildPath(identifier);
+        if (childPath.IsFailure) return childPath.Error;
+
+        short childDepth = (short)(Depth + 1);
+
+        var createDepartmentChild = Create(
+            positions,
+            departmentLocationList,
+            name,
+            identifier,
+            childPath.Value,
+            childDepth,
+            Id);
+
+        var attachChildToParentResult = AttachChildToParent(createDepartmentChild);
+        if (attachChildToParentResult.IsFailure) return attachChildToParentResult.Error.ToErrors();
+
+        return createDepartmentChild;
+    }
 
     public static Result<Department, Errors> CreateChild(
         IEnumerable<DepartmentPosition> positions,
         IEnumerable<DepartmentLocation> locations,
         DepartmentName name,
-        DepartmentIndentifier indentifier,
+        DepartmentIdentifier identifier,
         Department parent)
     {
-        if (parent is null)
-            return Error.Validation("department.validation", "Родительский департамент обязателен").ToErrors();
+        var departmentLocationList = locations.ToList();
+        if (departmentLocationList.Count == 0)
+        {
+            return Error.Validation("department.locations", "Department location должно содержать хотябы одну локацию")
+                .ToErrors();
+        }
 
-        var pathResult = DepartmentPath.AddChildToPath(parent.Path.Path, indentifier.Identifier);
-        if (pathResult.IsFailure) return pathResult.Error;
+        var childPath = parent.Path.CreateChildPath(identifier);
+        if (childPath.IsFailure) return childPath.Error;
+        short childDepth = (short)(parent.Depth + 1);
 
-        var childDepth = (short)(parent.Depth + 1);
-
-        var childResult = Create(positions, locations,
+        var createDepartmentChild = Create(
+            positions,
+            departmentLocationList,
             name,
-            indentifier,
-            pathResult.Value,
-            parent.Id,
-            childDepth);
+            identifier,
+            childPath.Value,
+            childDepth,
+            parent.Id);
 
-        if (childResult.IsFailure) return childResult.Error;
+        var attachChildToParentResult = AttachChildToParent(createDepartmentChild, parent);
+        if (attachChildToParentResult.IsFailure) return attachChildToParentResult.Error.ToErrors();
 
-        parent.AttachChildToParent(childResult.Value);
-
-        return childResult;
+        return createDepartmentChild;
     }
 
-    private UnitResult<string> AttachChildToParent(Department child)
+    private static UnitResult<Error> AttachChildToParent(Department child, Department parent)
     {
-        if (child is null)
-            return UnitResult.Failure("Дочерний департамент не может быть null");
+        parent.AttachChildToParent(child);
+        return UnitResult.Success<Error>();
+    }
 
+    private UnitResult<Error> AttachChildToParent(Department child)
+    {
         if (_childDepartments.Any(item => item.Identifier == child.Identifier))
-            return UnitResult.Failure("Дочерний департамент уже привязан.");
+            return Error.Conflict("child.already.exist", "Дочерний департамент уже привязан.");
 
         _childDepartments.Add(child);
         UpdatedAt = DateTimeOffset.UtcNow;
-        return UnitResult.Success<string>();
+        return UnitResult.Success<Error>();
     }
 
-    public UnitResult<string> AddLocation(DepartmentLocation location)
+    public UnitResult<Error> AddLocation(LocationId locationId)
     {
-        if (location is null)
-            return UnitResult.Failure("Locations обязательно для заполнения");
+        if (_departmentsLocations.Any(l => l.LocationId.Id == locationId.Id))
+            return Error.Conflict("location.already.exist", "Location уже существует");
 
-        if (_locations.Any(l => l.LocationId == location.LocationId))
-            return UnitResult.Failure("Location уже существует");
+        var departmentLocation = new DepartmentLocation(Id, locationId);
 
-        _locations.Add(location);
+        _departmentsLocations.Add(departmentLocation);
         UpdatedAt = DateTimeOffset.UtcNow;
 
-        return UnitResult.Success<string>();
+        return UnitResult.Success<Error>();
     }
 
-
-    public UnitResult<string> AddLocations(IEnumerable<DepartmentLocation> locations)
+    public UnitResult<Error> AddPosition(PositionId positionId)
     {
-        if (locations is null)
-            return UnitResult.Failure("Locations обязательно для заполнения");
+        if (_positions.Any(l => l.PositionId == positionId))
+            return Error.Conflict("position.already.exist", "Position уже существует");
 
-        var list = locations
-            .Where(a => a is not null)
-            .GroupBy(a => a.DepartmentsLocationId)
-            .Select(a => a.First())
-            .ToList();
+        var departmentPosition = new DepartmentPosition(Id, positionId);
 
-        if (list.Count == 0) return UnitResult.Failure("Нет локаций для добавления");
+        _positions.Add(departmentPosition);
+        UpdatedAt = DateTimeOffset.UtcNow;
 
-        foreach (var location in list)
-        {
-            var locationResult = AddLocation(location);
-            if (locationResult.IsFailure) return locationResult;
-        }
-
-        return UnitResult.Success<string>();
-    }
-
-    public UnitResult<string> ReplaceLocations(IEnumerable<DepartmentLocation>? location)
-    {
-        if (location is null)
-            return UnitResult.Failure("Location не может быть null");
-
-        var locationsToList = location.ToList();
-
-        if (locationsToList.Count == 0)
-            return UnitResult.Failure("Требуется как минимум одна локация.");
-
-        var backup = _locations.ToList();
-        _locations.Clear();
-
-        var replaceResult = AddLocations(locationsToList);
-
-        if (replaceResult.IsFailure)
-        {
-            _locations.AddRange(backup);
-            return replaceResult;
-        }
-
-        return UnitResult.Success<string>();
+        return UnitResult.Success<Error>();
     }
 }

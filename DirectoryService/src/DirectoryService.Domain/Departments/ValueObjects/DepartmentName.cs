@@ -6,11 +6,14 @@ namespace DirectoryService.Domain.Departments.ValueObjects;
 
 public sealed record DepartmentName
 {
-    public string Name { get; }
+    public const int NAME_MIN_LENGTH = 3;
+    public const int NAME_MAX_LENGTH = 150;
 
-    private DepartmentName(string name) => Name = name;
+    public string Value { get; }
 
-    public override string ToString() => $"{Name}";
+    private DepartmentName(string value) => Value = value;
+
+    public override string ToString() => $"{Value}";
 
     public static Result<DepartmentName, Errors> Create(string name)
     {
@@ -18,8 +21,8 @@ public sealed record DepartmentName
 
         if (!StringValidator<DepartmentName>.For(name)
                 .IsNullOrWhiteSpace()
-                .LengthMinMax(3, 150)
-                .IsValid(out List<Error> errorMessage))
+                .LengthMinMax(NAME_MIN_LENGTH, NAME_MAX_LENGTH)
+                .IsValid(out List<Error>? errorMessage))
         {
             return new Errors(errorMessage!);
         }
@@ -28,8 +31,5 @@ public sealed record DepartmentName
         return new DepartmentName(name);
     }
 
-    public static DepartmentName FromDb(string value)
-    {
-        return new DepartmentName(value);
-    }
+    public static DepartmentName FromDb(string name) => new DepartmentName(name);
 }

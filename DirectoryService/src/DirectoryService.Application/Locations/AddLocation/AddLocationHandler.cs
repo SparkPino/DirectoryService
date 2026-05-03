@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -20,7 +21,7 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
     public AddLocationHandler(
         ILocationRepository locationRepository,
         ILogger<AddLocationHandler> logger,
-        IValidator<Contracts.LocationDto> locationDtoValidator)
+        IValidator<LocationDto> locationDtoValidator)
     {
         _locationRepository = locationRepository;
         _logger = logger;
@@ -59,6 +60,6 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
         // логирование об успешном или не успешном добавлении
         _logger.LogInformation("Location создана с id: {locationId}", location.Id);
 
-        return location.Id;
+        return location.Id.Id;
     }
 }
