@@ -31,8 +31,10 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
     public async Task<Result<Guid, Errors>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
     {
         // 1.Validation входных даных и бизнес логики
+        var errors = new List<Error>();
+
         var nameResult = LocationName.Create(command.LocationDto.Name);
-        if (nameResult.IsFailure) return nameResult.Error;
+        if (nameResult.IsFailure) errors.AddRange(nameResult.Error);
 
         var addressResult = Address.Create(
             command.LocationDto.Adress.Country,
@@ -42,10 +44,16 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
             command.LocationDto.Adress.BuildingNumber,
             command.LocationDto.Adress.Apartment);
 
-        if (addressResult.IsFailure) return addressResult.Error.ToErrors();
+        if (addressResult.IsFailure) errors.AddRange(addressResult.Error);
 
         var timeZoneResult = LocationTimeZone.Create(command.LocationDto.TimeZone);
-        if (timeZoneResult.IsFailure) return timeZoneResult.Error.ToErrors();
+        if (timeZoneResult.IsFailure) errors.AddRange(timeZoneResult.Error);
+
+        if (errors.Any())
+        {
+            _logger.LogWarning("Validation failed for location: {Errors}", errors);
+            return new Errors(errors);
+        }
 
         // создание сущности
         var location = Location.Create(nameResult.Value, addressResult.Value, timeZoneResult.Value);
@@ -54,6 +62,7 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
         var addLocationResult = await _locationRepository.AddAsync(location, cancellationToken);
         if (addLocationResult.IsFailure)
         {
+            _logger.LogError("Failed to add location {error}", addLocationResult.Error);
             return addLocationResult.Error.ToErrors();
         }
 
