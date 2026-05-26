@@ -18,7 +18,7 @@ public class LocationController : BaseApiController
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
         [FromBody] LocationDto locationDto,
-        [FromServices] ICommandHandler<AddLocationCommand> handler,
+        [FromServices] ICommandHandler<AddLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new AddLocationCommand(locationDto), cancellationToken);
 }
