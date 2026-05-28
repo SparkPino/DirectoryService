@@ -1,14 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Shared;
+using DirectoryService.Domain.Locations.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared;
 
-namespace DirectoryService.Infrastructure.Postgres;
+namespace DirectoryService.Infrastructure.Postgres.Repositories;
 
 public class LocationRepository : ILocationRepository
 {
@@ -48,9 +47,22 @@ public class LocationRepository : ILocationRepository
     public Task<Result<Guid, Error>> SaveAsync(Location location, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
 
-    public Task<Result<Guid, Error>> DeleteAsync(Guid questionId, CancellationToken cancellationToken) =>
+    public Task<Result<Guid, Error>> DeleteAsync(Guid locationId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
 
-    public Task<Result<Guid, Error>> GetByIdAsync(Guid questionId, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
+    public async Task<Result<Location, Error>> GetByIdAsync(Guid locationId, CancellationToken cancellationToken)
+    {
+        var correctLocationId = new LocationId(locationId);
+
+        var location = await _context.Locations
+            .Where(l => l.Id == correctLocationId)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        if (location == null)
+        {
+            _logger.LogWarning("Локация с id:{LocationId} не найдена.", locationId);
+            return LocationErrors.NotFound(locationId);
+        }
+
+        return location;
+    }
 }

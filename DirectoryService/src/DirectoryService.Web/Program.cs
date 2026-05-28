@@ -17,14 +17,16 @@ try
     builder.Services.AddProgramDependencies(builder.Configuration);
 
     var app = builder.Build();
+
     app.UseExceptionMiddleware();
+
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
         app.UseSwaggerUI(a => a.SwaggerEndpoint("/openapi/v1.json", "DirectoryService"));
     }
 
-    app.UseSerilogRequestLogging();
+    app.Configure();
     app.MapControllers();
 
     app.Run();

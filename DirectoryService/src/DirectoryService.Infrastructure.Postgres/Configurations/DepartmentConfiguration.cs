@@ -62,7 +62,9 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.Property(d => d.ParentId)
             .HasColumnName("parent_id")
             .IsRequired(false)
-            .HasConversion(d => d!.Id, d => new DepartmentId(d));
+            .HasConversion(
+                d => d == null ? (Guid?)null : d.Id,
+                d => d == null ? null : new DepartmentId(d.Value));
 
         builder.Property(d => d.IsActive)
             .HasColumnName("is_active")

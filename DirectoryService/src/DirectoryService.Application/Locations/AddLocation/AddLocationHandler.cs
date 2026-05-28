@@ -12,7 +12,7 @@ using Shared;
 
 namespace DirectoryService.Application.Locations.AddLocation;
 
-public class AddLocationHandler : ICommandHandler<AddLocationCommand>
+public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
 {
     private readonly ILocationRepository _locationRepository;
     private readonly ILogger<AddLocationHandler> _logger;
@@ -30,9 +30,12 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
 
     public async Task<Result<Guid, Errors>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
     {
-        // 1.Validation входных даных и бизнес логики
+        _logger.LogInformation("Обработка AddLocationCommand name:{Name}", command.LocationDto.Name);
+
+        var errors = new List<Error>();
+
         var nameResult = LocationName.Create(command.LocationDto.Name);
-        if (nameResult.IsFailure) return nameResult.Error;
+        if (nameResult.IsFailure) errors.AddRange(nameResult.Error);
 
         var addressResult = Address.Create(
             command.LocationDto.Adress.Country,
@@ -42,23 +45,27 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand>
             command.LocationDto.Adress.BuildingNumber,
             command.LocationDto.Adress.Apartment);
 
-        if (addressResult.IsFailure) return addressResult.Error.ToErrors();
+        if (addressResult.IsFailure) errors.AddRange(addressResult.Error);
 
         var timeZoneResult = LocationTimeZone.Create(command.LocationDto.TimeZone);
-        if (timeZoneResult.IsFailure) return timeZoneResult.Error.ToErrors();
+        if (timeZoneResult.IsFailure) errors.AddRange(timeZoneResult.Error);
 
-        // создание сущности
+        if (errors.Any())
+        {
+            _logger.LogWarning("Ошибка валидации локации: {Errors}", errors);
+            return new Errors(errors);
+        }
+
         var location = Location.Create(nameResult.Value, addressResult.Value, timeZoneResult.Value);
 
-        // создание сущности в базе даных
         var addLocationResult = await _locationRepository.AddAsync(location, cancellationToken);
         if (addLocationResult.IsFailure)
         {
+            _logger.LogError("Не удалось добавить локацию: {Error}", addLocationResult.Error);
             return addLocationResult.Error.ToErrors();
         }
 
-        // логирование об успешном или не успешном добавлении
-        _logger.LogInformation("Location создана с id: {locationId}", location.Id);
+        _logger.LogInformation("Локация создана успешно с id: {LocationId}", location.Id);
 
         return location.Id.Id;
     }

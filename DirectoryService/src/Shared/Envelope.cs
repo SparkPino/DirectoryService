@@ -27,7 +27,7 @@ public class Envelope
 
 public class Envelope<TValue>
 {
-    public TValue Result { get; }
+    public TValue? Result { get; }
 
     public Errors? ErrorList { get; }
 

@@ -1,6 +1,8 @@
-﻿using System.Text.Json;
+﻿using System.Net.Mime;
+using System.Text.Json;
 using DirectoryService.Domain.Shared;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace DirectoryService.Presentation.Middlewares;
 
@@ -31,7 +33,7 @@ public class ExceptionMiddleware
     {
         _logger.LogError(exception, "Unhandled exception");
 
-        httpContext.Response.ContentType = "application/json";
+        httpContext.Response.ContentType = MediaTypeNames.Application.Json; // "application/json"
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
         await httpContext.Response.WriteAsJsonAsync(new { error = "Внутрення ошибка сервера", });

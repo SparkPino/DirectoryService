@@ -1,15 +1,13 @@
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.AddLocation;
-using DirectoryService.Contracts;
 using DirectoryService.Contracts.Locations;
-using DirectoryService.Domain.Locations;
+using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using Shared.EndpointResult;
 
-namespace DirectoryService.Presenters.Controllers;
+namespace DirectoryService.Presenters.Locations;
 
 [ApiController]
 [Route("/api/locations")]
@@ -20,7 +18,7 @@ public class LocationController : BaseApiController
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
         [FromBody] LocationDto locationDto,
-        [FromServices] ICommandHandler<AddLocationCommand> handler,
+        [FromServices] ICommandHandler<AddLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new AddLocationCommand(locationDto), cancellationToken);
 }

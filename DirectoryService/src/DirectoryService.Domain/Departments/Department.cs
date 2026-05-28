@@ -22,8 +22,8 @@ public sealed class Department
         DepartmentIdentifier identifier,
         DepartmentPath path,
         short depth,
-        IEnumerable<DepartmentLocation> locations,
-        IEnumerable<DepartmentPosition> positions,
+        IEnumerable<DepartmentLocation>? locations,
+        IEnumerable<DepartmentPosition>? positions,
         DepartmentId? parentId = null)
     {
         Id = id;
@@ -65,7 +65,7 @@ public sealed class Department
 
     public IReadOnlyList<DepartmentLocation> DepartmentsLocations => _departmentsLocations;
 
-    public IReadOnlyList<DepartmentPosition> Positions => _positions;
+    public IReadOnlyList<DepartmentPosition> Positions => _positions.AsReadOnly();
 
 
     public static Result<Department, Errors> CreateRoot(
@@ -112,8 +112,7 @@ public sealed class Department
             path,
             depth,
             locations,
-            positions,
-            parentId);
+            positions);
 
         return department;
     }
