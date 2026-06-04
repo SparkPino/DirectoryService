@@ -55,8 +55,7 @@ public class LocationRepository : ILocationRepository
         var correctLocationId = new LocationId(locationId);
 
         var location = await _context.Locations
-            .Where(l => l.Id == correctLocationId)
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(l => l.Id == correctLocationId, cancellationToken: cancellationToken);
         if (location == null)
         {
             _logger.LogWarning("Локация с id:{LocationId} не найдена.", locationId);
@@ -64,5 +63,27 @@ public class LocationRepository : ILocationRepository
         }
 
         return location;
+    }
+
+    public async Task<Result<IReadOnlyList<Location>, Error>> GetByIdsAsync(
+        IEnumerable<Guid> locationId,
+        CancellationToken cancellationToken)
+    {
+        var idList = locationId.Select(g => new LocationId(g)).ToList();
+        var locations = await _context.Locations
+            .Where(l => idList.Contains(l.Id))
+            .ToListAsync(cancellationToken: cancellationToken);
+
+
+        if (locations.Count != idList.Count)
+        {
+            var foundsId = locations.Select(l => new LocationId(l.Id.Id));
+            var missingId = idList.Except(foundsId).ToList();
+
+            _logger.LogWarning("Локация с id:{LocationId} не найдена.", string.Join(", ", missingId));
+            return LocationErrors.NotFoundMany(missingId.Select(l => l.Id));
+        }
+
+        return locations;
     }
 }
