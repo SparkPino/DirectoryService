@@ -36,7 +36,7 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
         var identifierResult = DepartmentIdentifier.Create(command.DepartmentDto.Identifier);
         if (identifierResult.IsFailure) return identifierResult.Error;
 
-        Department parentDepartment = null;
+        Department? parentDepartment = null;
 
         if (command.DepartmentDto.ParentId.HasValue)
         {
@@ -73,10 +73,10 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
             return locationResult.Error.ToErrors();
         }
 
-        departmentResult.Value.AddLocations(locationResult.Value.Select(l => l.Id));
-        if (departmentResult.IsFailure)
+        var addLocationResult = departmentResult.Value.AddLocations(locationResult.Value.Select(l => l.Id));
+        if (addLocationResult.IsFailure)
         {
-            return departmentResult.Error;
+            return addLocationResult.Error.ToErrors();
         }
 
         var addResult = await _departmentRepository.AddAsync(departmentResult.Value, cancellationToken);

@@ -2,6 +2,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Application.Locations.Failures;
+using DirectoryService.Application.Locations.GetByIdLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;

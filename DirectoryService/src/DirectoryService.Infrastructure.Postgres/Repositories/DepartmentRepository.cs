@@ -22,6 +22,7 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken)
     {
+        
         await _context.Departments.AddAsync(department, cancellationToken);
         try
         {

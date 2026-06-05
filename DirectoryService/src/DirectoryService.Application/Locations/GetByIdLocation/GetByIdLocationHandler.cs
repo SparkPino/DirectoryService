@@ -2,6 +2,7 @@
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Application.Locations.Failures;
+using DirectoryService.Application.Locations.GetByIdLocation;
 using DirectoryService.Domain.Locations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
