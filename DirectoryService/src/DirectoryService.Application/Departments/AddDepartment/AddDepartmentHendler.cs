@@ -27,8 +27,8 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
     public async Task<Result<Guid, Errors>> Handle(AddDepartmentCommand command, CancellationToken cancellationToken)
     {
         _logger.LogInformation(
-            "Обработка AddDepartmentCommand: name:{name}, locationId: {LocationId}",
-            command.DepartmentDto.Name, command.DepartmentDto.LocationId);
+            "Обработка AddDepartmentCommand: name:{name}",
+            command.DepartmentDto.Name);
 
         var nameResult = DepartmentName.Create(command.DepartmentDto.Name);
         if (nameResult.IsFailure) return nameResult.Error;
@@ -36,37 +36,54 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
         var identifierResult = DepartmentIdentifier.Create(command.DepartmentDto.Identifier);
         if (identifierResult.IsFailure) return identifierResult.Error;
 
-        var departmentId = new DepartmentId(Guid.NewGuid());
+        Department? parentDepartment = null;
+
+        if (command.DepartmentDto.ParentId.HasValue)
+        {
+            var parentDepartmentResult =
+                await _departmentRepository.GetByIdAsync(command.DepartmentDto.ParentId.Value, cancellationToken);
+
+            if (parentDepartmentResult.IsFailure)
+            {
+                return parentDepartmentResult.Error.ToErrors();
+            }
+
+            parentDepartment = parentDepartmentResult.Value;
+        }
+
+        var departmentResult = Department.CreateDepartment(
+            [],
+            nameResult.Value,
+            identifierResult.Value,
+            parentDepartment);
+
+
+        if (departmentResult.IsFailure)
+        {
+            _logger.LogError(
+                "Возникла ошибка при создании департамента: {Error}", departmentResult.Error);
+            return departmentResult.Error;
+        }
 
         var locationResult = await _locationRepository
-            .GetByIdAsync(command.DepartmentDto.LocationId, cancellationToken);
+            .GetByIdsAsync(command.DepartmentDto.LocationIds, cancellationToken);
 
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        var departmentlocation = new DepartmentLocation(departmentId, locationResult.Value.Id);
-
-        var departmentResult = Department.CreateRoot(
-            [],
-            [departmentlocation],
-            nameResult.Value,
-            identifierResult.Value,
-            departmentId);
-
-        if (departmentResult.IsFailure)
+        var addLocationResult = departmentResult.Value.AddLocations(locationResult.Value.Select(l => l.Id));
+        if (addLocationResult.IsFailure)
         {
-            _logger.LogError("Возникла ошибка при создании департамента с Id {departmentId}: {Error}", departmentId,
-                departmentResult.Error);
-            return departmentResult.Error;
+            return addLocationResult.Error.ToErrors();
         }
 
         var addResult = await _departmentRepository.AddAsync(departmentResult.Value, cancellationToken);
 
         if (addResult.IsFailure)
         {
-            _logger.LogError("Не получилось сохранить департамент id:{departmentId}: {Error}", departmentId,
+            _logger.LogError("Не получилось сохранить департамент:{departmentId}: {Error}", departmentResult.Value.Id,
                 addResult.Error);
             return addResult.Error.ToErrors();
         }

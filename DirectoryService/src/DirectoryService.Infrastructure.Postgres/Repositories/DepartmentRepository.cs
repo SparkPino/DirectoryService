@@ -22,6 +22,7 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken)
     {
+        
         await _context.Departments.AddAsync(department, cancellationToken);
         try
         {
@@ -47,25 +48,25 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken)
     {
-        var correctId = new DepartmentId(departmentId);
-        var department = await _context.Departments.FindAsync([correctId], cancellationToken);
-        if (department == null)
-        {
-            _logger.LogWarning("Департамент с id:{departmentId} не найден при удалении", departmentId);
-            return DepartmentError.NotFound(departmentId);
-        }
-
-        _context.Departments.Remove(department);
+        int deletedCount;
         try
         {
-            await _context.SaveChangesAsync(cancellationToken);
+            deletedCount = await _context.Departments
+                .Where(d => d.Id.Id == departmentId)
+                .ExecuteDeleteAsync(cancellationToken);
         }
         catch (DbUpdateException exception)
         {
-            var errorDescription = DepartmentError.Database;
-            _logger.LogError(exception.InnerException ?? exception,
+            _logger.LogError(
+                exception.InnerException ?? exception,
                 "Ошибка базы данных при удалении департамента {DepartmentId}", departmentId);
-            return errorDescription;
+            return DepartmentError.Database;
+        }
+
+        if (deletedCount == 0)
+        {
+            _logger.LogWarning("Департамент с Id:{DepartmentId} не найден при удалении", departmentId);
+            return DepartmentError.NotFound(departmentId);
         }
 
         _logger.LogInformation("Департамент {DepartmentId} успешно удалён", departmentId);
@@ -77,8 +78,7 @@ public class DepartmentRepository : IDepartmentRepository
         var correctLocationId = new DepartmentId(departmentId);
 
         var department = await _context.Departments
-            .Where(l => l.Id == correctLocationId)
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+            .FirstOrDefaultAsync(l => l.Id == correctLocationId, cancellationToken);
         if (department == null)
         {
             _logger.LogWarning("Департамент не найден Id:{departmentId}", departmentId);

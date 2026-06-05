@@ -11,7 +11,10 @@ public interface ILocationRepository
 
     Task<Result<Guid, Error>> SaveAsync(Location location, CancellationToken cancellationToken); //update, save
 
-    Task<Result<Guid, Error>> DeleteAsync(Guid questionId, CancellationToken cancellationToken);
+    Task<Result<Guid, Error>> DeleteAsync(Guid locationId, CancellationToken cancellationToken);
 
-    Task<Result<Location, Error>> GetByIdAsync(Guid questionId, CancellationToken cancellationToken);
+    Task<Result<Location, Error>> GetByIdAsync(Guid locationId, CancellationToken cancellationToken);
+
+    Task<Result<IReadOnlyList<Location>, Error>> GetByIdsAsync(IEnumerable<Guid> locationIds,
+        CancellationToken cancellationToken);
 }
