@@ -38,12 +38,12 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
         if (nameResult.IsFailure) errors.AddRange(nameResult.Error);
 
         var addressResult = Address.Create(
-            command.LocationDto.Adress.Country,
-            command.LocationDto.Adress.City,
-            command.LocationDto.Adress.Street,
-            command.LocationDto.Adress.PostalCode,
-            command.LocationDto.Adress.BuildingNumber,
-            command.LocationDto.Adress.Apartment);
+            command.LocationDto.Address.Country,
+            command.LocationDto.Address.City,
+            command.LocationDto.Address.Street,
+            command.LocationDto.Address.PostalCode,
+            command.LocationDto.Address.BuildingNumber,
+            command.LocationDto.Address.Apartment);
 
         if (addressResult.IsFailure) errors.AddRange(addressResult.Error);
 

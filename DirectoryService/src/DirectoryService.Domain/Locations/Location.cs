@@ -68,4 +68,16 @@ public sealed class Location
 
         return UnitResult.Success<Error>();
     }
+
+    public UnitResult<Error> UpdateLocation(
+        Address? adress = null,
+        LocationTimeZone? timeZone = null,
+        LocationName? locationName = null)
+    {
+        Address = adress ?? Address;
+        TimeZone = timeZone ?? TimeZone;
+        Name = locationName ?? Name;
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return UnitResult.Success<Error>();
+    }
 }

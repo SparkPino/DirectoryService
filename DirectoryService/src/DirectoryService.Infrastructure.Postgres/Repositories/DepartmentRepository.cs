@@ -3,6 +3,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Domain.Locations.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared;
@@ -22,7 +23,6 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken)
     {
-        
         await _context.Departments.AddAsync(department, cancellationToken);
         try
         {
@@ -43,8 +43,8 @@ public class DepartmentRepository : IDepartmentRepository
         }
     }
 
-    public Task<Result<Guid, Error>> SaveAsync(Department department, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
+    public async Task<int> SaveAsync(CancellationToken cancellationToken) =>
+        await _context.SaveChangesAsync(cancellationToken);
 
     public async Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken)
     {
@@ -79,6 +79,35 @@ public class DepartmentRepository : IDepartmentRepository
 
         var department = await _context.Departments
             .FirstOrDefaultAsync(l => l.Id == correctLocationId, cancellationToken);
+        if (department == null)
+        {
+            _logger.LogWarning("Департамент не найден Id:{departmentId}", departmentId);
+            return DepartmentError.NotFound(departmentId);
+        }
+
+        return department;
+    }
+
+    public async Task<bool> IsLocationAttachedAsync(Guid departmentId, Guid locationId,
+        CancellationToken cancellationToken)
+    {
+        bool result =
+            await _context.DepartmentLocations.AnyAsync(
+                a => a.LocationId == new LocationId(locationId) && a.DepartmentId == new DepartmentId(departmentId),
+                cancellationToken);
+        return result;
+    }
+
+    public async Task<Result<Department, Error>> GetByIdWithLocationsAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken)
+    {
+        var correctId = new DepartmentId(departmentId);
+
+        var department = await _context.Departments
+            .Include(d => d.DepartmentsLocations)
+            .FirstOrDefaultAsync(d => d.Id == correctId, cancellationToken);
+
         if (department == null)
         {
             _logger.LogWarning("Департамент не найден Id:{departmentId}", departmentId);

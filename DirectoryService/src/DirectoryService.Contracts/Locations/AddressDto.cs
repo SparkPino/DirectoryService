@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Contracts.Locations;
 
-public sealed record AdressDto
+public sealed record AddressDto
 {
     public string Country { get; init; }
 

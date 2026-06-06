@@ -65,4 +65,21 @@ public record Address
             buildingNumber.Trim(),
             apartment?.Trim());
     }
+
+    public Result<Address, Error> UpdateAdress(
+        string? country = null,
+        string? city = null,
+        string? street = null,
+        string? postalCode = null,
+        string? buildingNumber = null,
+        string? apartment = null)
+    {
+        return Address.Create(
+            country ?? Country,
+            city ?? City,
+            street ?? Street,
+            postalCode ?? PostalCode,
+            buildingNumber ?? BuildingNumber,
+            apartment ?? Apartment);
+    }
 }

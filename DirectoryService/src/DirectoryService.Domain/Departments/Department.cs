@@ -183,6 +183,19 @@ public sealed class Department
         return UnitResult.Success<Error>();
     }
 
+    public UnitResult<Error> DetachLocation(LocationId locationId)
+    {
+        if (!_departmentsLocations.Any(l => l.LocationId == locationId))
+        {
+            return Error.NotFound("location.not.foud", $"location с id:{locationId} не найдена");
+        }
+
+        var departmentLocation = _departmentsLocations.FirstOrDefault(a => a.LocationId == locationId);
+        _departmentsLocations.Remove(departmentLocation!);
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return UnitResult.Success<Error>();
+    }
+
     public UnitResult<Error> AddLocation(LocationId locationId)
     {
         if (_departmentsLocations.Any(l => l.LocationId.Id == locationId.Id))
@@ -196,6 +209,7 @@ public sealed class Department
         return UnitResult.Success<Error>();
     }
 
+
     public UnitResult<Error> AddLocations(IEnumerable<LocationId> locationId)
     {
         var duplicates = locationId
@@ -203,8 +217,9 @@ public sealed class Department
                 .Any(l => l.LocationId.Id == g.Id)).ToList();
         if (duplicates.Count > 0)
         {
-            return Error.Conflict("location.already.exist",
-                $"Locations уже существуют:{string.Join(", ", duplicates.Select(d => d.Id))}");
+            return Error.Conflict(
+                "location.already.exist",
+                $"Locations с id:{string.Join(", ", duplicates.Select(d => d.Id))} уже существуют");
         }
 
         var departmentLocation = locationId.Select(l => new DepartmentLocation(Id, l));
@@ -226,5 +241,19 @@ public sealed class Department
         UpdatedAt = DateTimeOffset.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+
+    public UnitResult<Errors> UpdateDepartment(
+        DepartmentName? name = null,
+        DepartmentIdentifier? identifier = null)
+    {
+        if (name is null && identifier is null)
+            return Error.Validation("update.department", "нужно указать хотябы одно поле").ToErrors();
+
+        Name = name ?? Name;
+        Identifier = identifier ?? Identifier;
+        UpdatedAt = DateTime.UtcNow;
+
+        return UnitResult.Success<Errors>();
     }
 }
