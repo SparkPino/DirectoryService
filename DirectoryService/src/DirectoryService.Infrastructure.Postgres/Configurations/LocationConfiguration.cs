@@ -35,7 +35,7 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
                 value => LocationName.FromDb(value));
 
 
-        builder.OwnsOne(l => l.Adress, lb =>
+        builder.OwnsOne(l => l.Address, lb =>
         {
             lb.ToJson("addresses");
 

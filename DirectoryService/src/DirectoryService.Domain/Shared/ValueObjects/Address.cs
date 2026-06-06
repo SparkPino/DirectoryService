@@ -3,7 +3,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Shared.ValueObjects;
 
-public record Adress
+public record Address
 {
     public string Country { get; }
 
@@ -17,7 +17,7 @@ public record Adress
 
     public string? Apartment { get; }
 
-    private Adress(
+    private Address(
         string country,
         string city,
         string street,
@@ -33,7 +33,7 @@ public record Adress
         Apartment = apartment;
     }
 
-    public static Result<Adress, Error> Create(
+    public static Result<Address, Error> Create(
         string country,
         string city,
         string street,
@@ -57,7 +57,7 @@ public record Adress
             return Error.Validation("address", "Почтовый код не может быть пустым", nameof(PostalCode));
 
 
-        return new Adress(
+        return new Address(
             country.Trim(),
             city.Trim(),
             street.Trim(),
@@ -66,7 +66,7 @@ public record Adress
             apartment?.Trim());
     }
 
-    public Result<Adress, Error> UpdateAdress(
+    public Result<Address, Error> UpdateAdress(
         string? country = null,
         string? city = null,
         string? street = null,
@@ -74,7 +74,7 @@ public record Adress
         string? buildingNumber = null,
         string? apartment = null)
     {
-        return Adress.Create(
+        return Address.Create(
             country ?? Country,
             city ?? City,
             street ?? Street,

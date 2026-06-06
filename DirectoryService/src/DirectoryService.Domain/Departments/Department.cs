@@ -209,10 +209,6 @@ public sealed class Department
         return UnitResult.Success<Error>();
     }
 
-    public UnitResult<Error> RemoveLocation(LocationId locationIds)
-    {
-        return UnitResult.Success<Error>();
-    }
 
     public UnitResult<Error> AddLocations(IEnumerable<LocationId> locationId)
     {

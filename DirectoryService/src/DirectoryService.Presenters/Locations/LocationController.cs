@@ -38,7 +38,7 @@ public class LocationController : BaseApiController
     }
 
     [HttpPatch]
-    [Route("/locations/{id}")]
+    [Route("/api/locations/{id}")]
     public async Task<EndpointResult<Guid>> UpdateById(
         [FromBody] UpdateLocationDto locationDto,
         [FromRoute] Guid id,

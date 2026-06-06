@@ -27,10 +27,10 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
         if (locationResult.IsFailure)
             return locationResult.Error.ToErrors();
 
-        Adress? newAddress = null;
+        Address? newAddress = null;
         if (command.UpdateLocationDto.AdressDto != null)
         {
-            var adressResult = locationResult.Value.Adress.UpdateAdress(
+            var adressResult = locationResult.Value.Address.UpdateAdress(
                 command.UpdateLocationDto.AdressDto.Country,
                 command.UpdateLocationDto.AdressDto.City,
                 command.UpdateLocationDto.AdressDto.Street,

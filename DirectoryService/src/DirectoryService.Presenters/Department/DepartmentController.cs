@@ -44,7 +44,7 @@ public class DepartmentController : BaseApiController
         await handler.Handle(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
 
     [HttpPost]
-    [Route("/departments/{departmentId}/locations/{locationId}")]
+    [Route("/api/departments/{departmentId}/locations/{locationId}")]
     public async Task<EndpointResult<Guid>> AttachLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
@@ -54,7 +54,7 @@ public class DepartmentController : BaseApiController
 
 
     [HttpDelete]
-    [Route("/departments/{departmentId}/locations/{locationId}")]
+    [Route("/api/departments/{departmentId}/locations/{locationId}")]
     public async Task<EndpointResult<Guid>> DetachLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,

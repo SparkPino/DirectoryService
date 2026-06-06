@@ -16,7 +16,7 @@ public sealed class Location
 
     public LocationName Name { get; private set; } = null!;
 
-    public Adress Adress { get; private set; } = null!;
+    public Address Address { get; private set; } = null!;
 
     public LocationTimeZone TimeZone { get; private set; } = null!;
 
@@ -31,12 +31,12 @@ public sealed class Location
     private Location(
         LocationId? id,
         LocationName name,
-        Adress adress,
+        Address address,
         LocationTimeZone timeZone)
     {
         Id = id ?? new LocationId(Guid.NewGuid());
         Name = name;
-        Adress = adress;
+        Address = address;
         TimeZone = timeZone;
         CreatedAt = DateTimeOffset.UtcNow;
         IsActive = true;
@@ -48,10 +48,10 @@ public sealed class Location
 
 
     public static Location Create(
-        LocationName name, Adress adress,
+        LocationName name, Address address,
         LocationTimeZone timeZone, LocationId? positionId = null)
     {
-        var location = new Location(positionId, name, adress, timeZone);
+        var location = new Location(positionId, name, address, timeZone);
 
         return location;
     }
@@ -70,11 +70,11 @@ public sealed class Location
     }
 
     public UnitResult<Error> UpdateLocation(
-        Adress? adress = null,
+        Address? adress = null,
         LocationTimeZone? timeZone = null,
         LocationName? locationName = null)
     {
-        Adress = adress ?? Adress;
+        Address = adress ?? Address;
         TimeZone = timeZone ?? TimeZone;
         Name = locationName ?? Name;
         UpdatedAt = DateTimeOffset.UtcNow;

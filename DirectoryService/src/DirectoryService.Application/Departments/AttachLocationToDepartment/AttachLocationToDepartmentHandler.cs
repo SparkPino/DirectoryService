@@ -54,6 +54,6 @@ public class AttachLocationToDepartmentHandler : ICommandHandler<AttachLocationT
         }
 
         await _departmentRepository.SaveAsync(cancellationToken);
-        return command.DepartmentId;
+        return command.LocationId;
     }
 }
