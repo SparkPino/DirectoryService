@@ -3,6 +3,7 @@ using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Application.Locations.GetByIdLocation;
+using DirectoryService.Application.Locations.UpdateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -35,4 +36,13 @@ public class LocationController : BaseApiController
     {
         return await handler.Handle(new GetByIdLocationCommand(new LocationId(locationId)), cancellationToken);
     }
+
+    [HttpPatch]
+    [Route("/locations/{id}")]
+    public async Task<EndpointResult<Guid>> UpdateById(
+        [FromBody] UpdateLocationDto locationDto,
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<UpdateLocationCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new UpdateLocationCommand(locationDto, id), cancellationToken);
 }

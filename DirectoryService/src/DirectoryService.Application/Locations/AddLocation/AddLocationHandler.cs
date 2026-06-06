@@ -37,7 +37,7 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
         var nameResult = LocationName.Create(command.LocationDto.Name);
         if (nameResult.IsFailure) errors.AddRange(nameResult.Error);
 
-        var addressResult = Address.Create(
+        var addressResult = Adress.Create(
             command.LocationDto.Adress.Country,
             command.LocationDto.Adress.City,
             command.LocationDto.Adress.Street,

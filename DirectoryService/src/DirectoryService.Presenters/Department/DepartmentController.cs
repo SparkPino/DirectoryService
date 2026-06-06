@@ -1,6 +1,9 @@
 ﻿using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Departments;
+using DirectoryService.Application.Departments.AttachLocationToDepartment;
+using DirectoryService.Application.Departments.DetachLocationFromDepartment;
 using DirectoryService.Application.Departments.RemoveDepartment;
+using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
@@ -28,8 +31,34 @@ public class DepartmentController : BaseApiController
     public async Task<EndpointResult<Unit>> Delete(
         [FromBody] Guid departmentId,
         [FromServices] ICommandHandler<RemoveDepartmentCommand, Unit> handler,
-        CancellationToken cancellationToken)
-    {
-       return await handler.Handle(new RemoveDepartmentCommand(departmentId), cancellationToken);
-    }
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new RemoveDepartmentCommand(departmentId), cancellationToken);
+
+    [HttpPatch]
+    [Route("/api/departments/{departmentId}")]
+    public async Task<EndpointResult<Guid>> Update(
+        [FromBody] UpdateDepartmentDto departmentDto,
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<UpdateDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
+
+    [HttpPost]
+    [Route("/departments/{departmentId}/locations/{locationId}")]
+    public async Task<EndpointResult<Guid>> AttachLocation(
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid locationId,
+        [FromServices] ICommandHandler<AttachLocationToDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new AttachLocationToDepartmentCommand(departmentId, locationId), cancellationToken);
+
+
+    [HttpDelete]
+    [Route("/departments/{departmentId}/locations/{locationId}")]
+    public async Task<EndpointResult<Guid>> DetachLocation(
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid locationId,
+        [FromServices] ICommandHandler<DetachLocationFromDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
 }

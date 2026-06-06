@@ -44,8 +44,9 @@ public class LocationRepository : ILocationRepository
         }
     }
 
-    public Task<Result<Guid, Error>> SaveAsync(Location location, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
+    public async Task<int> SaveAsync(CancellationToken cancellationToken) =>
+        await _context.SaveChangesAsync(cancellationToken);
+
 
     public Task<Result<Guid, Error>> DeleteAsync(Guid locationId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
