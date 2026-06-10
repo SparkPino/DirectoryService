@@ -1,8 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Validations;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
@@ -12,29 +14,35 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILocationRepository _locationRepository;
+    private readonly IValidator<AddDepartmentCommand> _validator;
     private readonly ILogger<AddDepartmentHendler> _logger;
 
     public AddDepartmentHendler(
         ILogger<AddDepartmentHendler> logger,
         IDepartmentRepository departmentRepository,
-        ILocationRepository locationRepository)
+        ILocationRepository locationRepository,
+        IValidator<AddDepartmentCommand> validator)
     {
         _logger = logger;
         _departmentRepository = departmentRepository;
         _locationRepository = locationRepository;
+        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(AddDepartmentCommand command, CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.ToError();
+        }
+
         _logger.LogInformation(
             "Обработка AddDepartmentCommand: name:{name}",
             command.DepartmentDto.Name);
 
         var nameResult = DepartmentName.Create(command.DepartmentDto.Name);
-        if (nameResult.IsFailure) return nameResult.Error;
-
         var identifierResult = DepartmentIdentifier.Create(command.DepartmentDto.Identifier);
-        if (identifierResult.IsFailure) return identifierResult.Error;
 
         Department? parentDepartment = null;
 

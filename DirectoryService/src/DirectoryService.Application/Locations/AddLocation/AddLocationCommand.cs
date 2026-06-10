@@ -4,4 +4,4 @@ using DirectoryService.Contracts.Locations;
 
 namespace DirectoryService.Application.Locations.AddLocation;
 
-public record AddLocationCommand(LocationDto LocationDto) : ICommand;
+public record AddLocationCommand(AddLocationDto AddLocationDto) : ICommand;

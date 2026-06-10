@@ -1,8 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Departments.Failures;
-using DirectoryService.Domain.Departments;
-using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Application.Validations;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
@@ -13,21 +13,30 @@ public class DetachLocationFromDepartmentHandler : ICommandHandler<DetachLocatio
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILocationRepository _locationRepository;
     private readonly ILogger<DetachLocationFromDepartmentHandler> _logger;
+    private readonly IValidator<DetachLocationFromDepartmentCommand> _validator;
 
     public DetachLocationFromDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ILocationRepository locationRepository,
-        ILogger<DetachLocationFromDepartmentHandler> logger)
+        ILogger<DetachLocationFromDepartmentHandler> logger,
+        IValidator<DetachLocationFromDepartmentCommand> validator)
     {
         _departmentRepository = departmentRepository;
         _locationRepository = locationRepository;
         _logger = logger;
+        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
         DetachLocationFromDepartmentCommand command,
         CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.ToError();
+        }
+
         var department = await _departmentRepository.GetByIdWithLocationsAsync(command.DepartmentId, cancellationToken);
 
         if (department.IsFailure)
@@ -46,7 +55,7 @@ public class DetachLocationFromDepartmentHandler : ICommandHandler<DetachLocatio
             cancellationToken);
         if (!isLocationAttached)
         {
-            return DepartmentError.NotFound(command.DepartmentId).ToErrors();
+            return DepartmentError.LocationNotAttached(command.DepartmentId).ToErrors();
         }
 
         department.Value.DetachLocation(locations.Value.Id);

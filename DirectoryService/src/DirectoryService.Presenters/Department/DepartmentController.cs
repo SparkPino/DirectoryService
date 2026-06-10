@@ -20,7 +20,6 @@ public class DepartmentController : BaseApiController
 {
     [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
     [HttpPost]
-    //[Route("/api/departments/[action]")]
     public async Task<EndpointResult<Guid>> Create(
         [FromBody] DepartmentDto departmentDto,
         [FromServices] ICommandHandler<AddDepartmentCommand, Guid> handler,

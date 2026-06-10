@@ -1,5 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Validations;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
@@ -10,21 +12,30 @@ public class AttachLocationToDepartmentHandler : ICommandHandler<AttachLocationT
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILocationRepository _locationRepository;
     private readonly ILogger<AttachLocationToDepartmentHandler> _logger;
+    private readonly IValidator<AttachLocationToDepartmentCommand> _validator;
 
     public AttachLocationToDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ILocationRepository locationRepository,
-        ILogger<AttachLocationToDepartmentHandler> logger)
+        ILogger<AttachLocationToDepartmentHandler> logger,
+        IValidator<AttachLocationToDepartmentCommand> validator)
     {
         _departmentRepository = departmentRepository;
         _locationRepository = locationRepository;
         _logger = logger;
+        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
         AttachLocationToDepartmentCommand command,
         CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.ToError();
+        }
+
         var department = await _departmentRepository.GetByIdWithLocationsAsync(command.DepartmentId, cancellationToken);
 
         if (department.IsFailure)
@@ -38,7 +49,8 @@ public class AttachLocationToDepartmentHandler : ICommandHandler<AttachLocationT
             return locations.Error.ToErrors();
         }
 
-        var isLocationAttached = await _departmentRepository.IsLocationAttachedAsync(command.DepartmentId,
+        bool isLocationAttached = await _departmentRepository.IsLocationAttachedAsync(
+            command.DepartmentId,
             command.LocationId,
             cancellationToken);
 
