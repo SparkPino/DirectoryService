@@ -1,8 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Domain.Shared.ValueObjects;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
@@ -12,15 +14,26 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
 {
     private readonly ILocationRepository _locationRepository;
     private readonly ILogger<UpdateLocationHandler> _logger;
+    private readonly IValidator<UpdateLocationCommand> _validator;
 
-    public UpdateLocationHandler(ILocationRepository locationRepository, ILogger<UpdateLocationHandler> logger)
+    public UpdateLocationHandler(
+        ILocationRepository locationRepository,
+        ILogger<UpdateLocationHandler> logger,
+        IValidator<UpdateLocationCommand> validator)
     {
         _locationRepository = locationRepository;
         _logger = logger;
+        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(UpdateLocationCommand command, CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.ToError();
+        }
+
         _logger.LogInformation("Обработка UpdateLocationCommand id:{id}", command.Id);
 
         var locationResult = await _locationRepository.GetByIdAsync(command.Id, cancellationToken);
@@ -44,10 +57,11 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
         LocationTimeZone? newTimeZone = null;
         if (command.UpdateLocationDto.TimeZone != null)
         {
-            var timeZoneResult = LocationTimeZone.Create(command.UpdateLocationDto.TimeZone);
-            if (timeZoneResult.IsFailure) return timeZoneResult.Error.ToErrors();
-            newTimeZone = timeZoneResult.Value;
+            var tzResult = LocationTimeZone.Create(command.UpdateLocationDto.TimeZone);
+            if (tzResult.IsFailure) return tzResult.Error.ToErrors();
+            newTimeZone = tzResult.Value;
         }
+
 
         LocationName? newName = null;
         if (command.UpdateLocationDto.LocationName != null)

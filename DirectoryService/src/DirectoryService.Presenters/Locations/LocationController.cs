@@ -23,10 +23,10 @@ public class LocationController : BaseApiController
     [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
-        [FromBody] LocationDto locationDto,
+        [FromBody] AddLocationDto addLocationDto,
         [FromServices] ICommandHandler<AddLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new AddLocationCommand(locationDto), cancellationToken);
+        await handler.Handle(new AddLocationCommand(addLocationDto), cancellationToken);
 
     [HttpGet("{locationId:guid}")]
     public async Task<EndpointResult<Location>> GetById(

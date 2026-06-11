@@ -1,17 +1,23 @@
-﻿using DirectoryService.Contracts;
+﻿using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Domain.Shared.ValueObjects;
 using FluentValidation;
 
 namespace DirectoryService.Application.Locations.AddLocation;
 
-public class AddLocationValidator : AbstractValidator<LocationDto>
+public class AddLocationValidator : AbstractValidator<AddLocationCommand>
 {
     public AddLocationValidator()
     {
-        RuleFor(l => l.Name)
-            .NotEmpty()
-            .WithMessage("Name is required")
-            .MaximumLength(120)
-            .WithMessage("Name must not exceed 500 characters");
+        RuleFor(l => l.AddLocationDto.Name)
+            .MustBeValueObject(LocationName.Create);
+        RuleFor(l => l.AddLocationDto.TimeZone)
+            .MustBeValueObject(LocationTimeZone.Create);
+        RuleFor(l => l.AddLocationDto.Address)
+            .MustBeValueObject(dto => Address.Create(
+                dto.Country, dto.City, dto.Street,
+                dto.PostalCode, dto.BuildingNumber, dto.Apartment))
+            .When(a => a.AddLocationDto.Address != null);
     }
 }

@@ -16,4 +16,10 @@ public static class LocationErrors
 
     public static readonly Error Concurrency =
         Error.Failure("location.concurrency", "Локация была изменена другим пользователем");
+
+    public static readonly Error InvalidId =
+        Error.Validation("location.invalid_id", "Идентификатор локации не может быть пустым");
+
+    public static Error EmptyField(string field) =>
+        Error.Validation("field.is.empty", "Строка не может быть пустой", field);
 }

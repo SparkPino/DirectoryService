@@ -1,6 +1,8 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Validations;
 using DirectoryService.Domain.Departments.ValueObjects;
+using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
@@ -10,15 +12,26 @@ public class UpdateDepartmentHandler : ICommandHandler<UpdateDepartmentCommand, 
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILogger<UpdateDepartmentHandler> _logger;
+    private readonly IValidator<UpdateDepartmentCommand> _validator;
 
-    public UpdateDepartmentHandler(IDepartmentRepository departmentRepository, ILogger<UpdateDepartmentHandler> logger)
+    public UpdateDepartmentHandler(
+        IDepartmentRepository departmentRepository,
+        ILogger<UpdateDepartmentHandler> logger,
+        IValidator<UpdateDepartmentCommand> validator)
     {
         _departmentRepository = departmentRepository;
         _logger = logger;
+        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(UpdateDepartmentCommand command, CancellationToken cancellationToken)
     {
+        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            return validationResult.ToError();
+        }
+
         _logger.LogInformation("Обработка UpdateDepartmentCommand id:{departmentId}", command.Id);
 
         var departmentResult = await _departmentRepository.GetByIdAsync(command.Id, cancellationToken);
