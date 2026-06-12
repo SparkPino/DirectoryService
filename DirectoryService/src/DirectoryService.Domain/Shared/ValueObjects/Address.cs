@@ -3,7 +3,7 @@ using Shared;
 
 namespace DirectoryService.Domain.Shared.ValueObjects;
 
-public record Address
+public sealed record Address
 {
     public string Country { get; }
 

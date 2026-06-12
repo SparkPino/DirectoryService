@@ -5,7 +5,7 @@ using Shared;
 
 namespace DirectoryService.Application.Locations.GetByIdLocation;
 
-public class GetByIdValidator : AbstractValidator<GetByIdLocationCommand>
+public class GetByIdValidator : AbstractValidator<GetByIdLocationQuery>
 {
     public GetByIdValidator()
     {

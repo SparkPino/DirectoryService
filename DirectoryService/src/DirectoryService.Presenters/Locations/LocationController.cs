@@ -2,6 +2,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Application.Locations.Failures;
+using DirectoryService.Application.Locations.GetAllLocations;
 using DirectoryService.Application.Locations.GetByIdLocation;
 using DirectoryService.Application.Locations.UpdateLocation;
 using DirectoryService.Contracts.Locations;
@@ -31,10 +32,10 @@ public class LocationController : BaseApiController
     [HttpGet("{locationId:guid}")]
     public async Task<EndpointResult<Location>> GetById(
         [FromRoute] Guid locationId,
-        [FromServices] ICommandHandler<GetByIdLocationCommand, Location> handler,
+        [FromServices] IQueryHandler<GetByIdLocationQuery, Location> handler,
         CancellationToken cancellationToken)
     {
-        return await handler.Handle(new GetByIdLocationCommand(new LocationId(locationId)), cancellationToken);
+        return await handler.Handle(new GetByIdLocationQuery(new LocationId(locationId)), cancellationToken);
     }
 
     [HttpPatch]
@@ -45,4 +46,11 @@ public class LocationController : BaseApiController
         [FromServices] ICommandHandler<UpdateLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new UpdateLocationCommand(locationDto, id), cancellationToken);
+
+    [HttpGet]
+    [Route("/api/locations/[action]")]
+    public async Task<EndpointResult<IReadOnlyList<AddLocationDto>>> GetAll(
+        [FromQuery] GetAllLocationQuery query,
+        [FromServices] IQueryHandler<GetAllLocationQuery, IReadOnlyList<AddLocationDto>> handler,
+        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 }
