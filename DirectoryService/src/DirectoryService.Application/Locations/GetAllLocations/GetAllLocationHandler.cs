@@ -2,9 +2,6 @@
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Locations;
-using DirectoryService.Domain.Locations;
-using DirectoryService.Domain.Locations.ValueObjects;
-using DirectoryService.Domain.Shared.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
@@ -32,10 +29,7 @@ public class GetAllLocationHandler(
         }
 
         var locations = await _locationRepository.GetPaged(query.Page, query.PageSize, cancellationToken);
-        if (locations.Count == 0)
-        {
-            return Error.Failure("location.not.exist", "Нет добавленых локаций").ToErrors();
-        }
+
 
         var result = locations.Select(a =>
             new AddLocationDto
