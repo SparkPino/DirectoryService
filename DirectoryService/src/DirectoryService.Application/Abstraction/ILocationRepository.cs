@@ -7,6 +7,7 @@ namespace DirectoryService.Application.Abstraction;
 
 public interface ILocationRepository
 {
+    Task<IReadOnlyList<Location>> GetPaged(int page, int pageSize, CancellationToken cancellationToken);
     Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken);
 
     Task<int> SaveAsync(CancellationToken cancellationToken);

@@ -1,27 +1,23 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Locations.AddLocation;
-using DirectoryService.Application.Locations.Failures;
-using DirectoryService.Application.Locations.GetByIdLocation;
 using DirectoryService.Application.Validations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shared;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Locations.GetByIdLocation;
 
-public class GetByIdLocationHandler : ICommandHandler<GetByIdLocationCommand, Location>
+public class GetByIdLocationHandler : IQueryHandler<GetByIdLocationQuery, Location>
 {
     private readonly ILocationRepository _locationRepository;
     private readonly ILogger<GetByIdLocationHandler> _logger;
-    private readonly IValidator<GetByIdLocationCommand> _validator;
+    private readonly IValidator<GetByIdLocationQuery> _validator;
 
     public GetByIdLocationHandler(
         ILocationRepository locationRepository,
         ILogger<GetByIdLocationHandler> logger,
-        IValidator<GetByIdLocationCommand> validator)
+        IValidator<GetByIdLocationQuery> validator)
     {
         _locationRepository = locationRepository;
         _logger = logger;
@@ -29,17 +25,17 @@ public class GetByIdLocationHandler : ICommandHandler<GetByIdLocationCommand, Lo
     }
 
     public async Task<Result<Location, Errors>> Handle(
-        GetByIdLocationCommand command,
+        GetByIdLocationQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
+        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
         if (!validationResult.IsValid)
         {
             return validationResult.ToError();
         }
 
         var (_, isFailure, location, error) =
-            await _locationRepository.GetByIdAsync(command.LocationId.Id, cancellationToken);
+            await _locationRepository.GetByIdAsync(query.LocationId.Id, cancellationToken);
 
         if (isFailure)
         {

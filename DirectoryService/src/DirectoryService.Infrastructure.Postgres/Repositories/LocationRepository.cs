@@ -20,6 +20,21 @@ public class LocationRepository : ILocationRepository
         _logger = logger;
     }
 
+    public async Task<IReadOnlyList<Location>> GetPaged(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        var locations = await _context.Locations
+            .AsNoTracking()
+            .OrderBy(l => l.Name).ThenBy(l => l.Id) // <- must have 
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return locations;
+    }
+
     public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken)
     {
         await _context.AddAsync(location, cancellationToken);

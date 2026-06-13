@@ -47,6 +47,8 @@ public static class DependencyInjection
 
         services.Configure<ApiBehaviorOptions>(options =>
         {
+            //Просто отключить фильтр options.SuppressModelStateInvalidFilter = true;
+
             options.InvalidModelStateResponseFactory = context =>
             {
                 var errors = context.ModelState

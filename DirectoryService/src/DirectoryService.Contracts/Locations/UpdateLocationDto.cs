@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Contracts.Locations;
 
-public record UpdateLocationDto(
+public sealed record UpdateLocationDto(
     string? LocationName,
     LocationAdressDto? AdressDto,
     string? TimeZone);

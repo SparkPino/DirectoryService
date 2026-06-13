@@ -9,7 +9,10 @@ public static class LocationErrors
         Error.NotFound("location.not_found", $"Локация с id: {id} не найдена");
 
     public static Error NotFoundMany(IEnumerable<Guid> ids) =>
-        Error.NotFound("location.not_found", $"Локации с id: {string.Join(", ", ids)} не найдены");
+        Error.NotFound("locations.not_found", $"Локации с id: {string.Join(", ", ids)} не найдены");
+
+    public static Error NotFoundMany() =>
+        Error.NotFound("locations.not_found", $"Локации не найдены");
 
     public static readonly Error Database =
         Error.Failure("location.database", "Не удалось сохранить локацию");
