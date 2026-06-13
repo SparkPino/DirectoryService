@@ -1,16 +1,12 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Locations.AddLocation;
-using DirectoryService.Application.Locations.Failures;
-using DirectoryService.Application.Locations.GetByIdLocation;
 using DirectoryService.Application.Validations;
 using DirectoryService.Domain.Locations;
 using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shared;
 
-namespace DirectoryService.Application.Locations;
+namespace DirectoryService.Application.Locations.GetByIdLocation;
 
 public class GetByIdLocationHandler : IQueryHandler<GetByIdLocationQuery, Location>
 {

@@ -48,7 +48,6 @@ public class LocationController : BaseApiController
         await handler.Handle(new UpdateLocationCommand(locationDto, id), cancellationToken);
 
     [HttpGet]
-    [Route("/api/locations/[action]")]
     public async Task<EndpointResult<IReadOnlyList<AddLocationDto>>> GetAll(
         [FromQuery] GetAllLocationQuery query,
         [FromServices] IQueryHandler<GetAllLocationQuery, IReadOnlyList<AddLocationDto>> handler,

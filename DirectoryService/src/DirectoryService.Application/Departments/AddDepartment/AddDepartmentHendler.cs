@@ -1,14 +1,13 @@
 ﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Validations;
-using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
-namespace DirectoryService.Application.Departments;
+namespace DirectoryService.Application.Departments.AddDepartment;
 
 public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
 {

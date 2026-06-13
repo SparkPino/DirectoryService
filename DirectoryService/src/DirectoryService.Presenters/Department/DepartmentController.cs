@@ -1,5 +1,6 @@
 ﻿using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Departments;
+using DirectoryService.Application.Departments.AddDepartment;
 using DirectoryService.Application.Departments.AttachLocationToDepartment;
 using DirectoryService.Application.Departments.DetachLocationFromDepartment;
 using DirectoryService.Application.Departments.RemoveDepartment;
@@ -11,10 +12,10 @@ using Microsoft.AspNetCore.Mvc;
 using Shared;
 using Shared.EndpointResult;
 
-namespace DirectoryService.Presenters;
+namespace DirectoryService.Presenters.Department;
 
 [ApiController]
-[Route("/api/departments/[action]")]
+[Route("/api/departments/")]
 [Produces("application/json")]
 public class DepartmentController : BaseApiController
 {
@@ -34,7 +35,7 @@ public class DepartmentController : BaseApiController
         await handler.Handle(new RemoveDepartmentCommand(departmentId), cancellationToken);
 
     [HttpPatch]
-    [Route("/api/[action]/departments/{departmentId}")]
+    [Route("/api/departments/{departmentId}")]
     public async Task<EndpointResult<Guid>> Update(
         [FromBody] UpdateDepartmentDto departmentDto,
         [FromRoute] Guid departmentId,
@@ -43,7 +44,7 @@ public class DepartmentController : BaseApiController
         await handler.Handle(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
 
     [HttpPost]
-    [Route("/api/[action]/departments/{departmentId}/locations/{locationId}")]
+    [Route("/api/departments/{departmentId}/locations/{locationId}")]
     public async Task<EndpointResult<Guid>> AttachLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
@@ -53,7 +54,7 @@ public class DepartmentController : BaseApiController
 
 
     [HttpDelete]
-    [Route("/api/[action]/departments/{departmentId}/locations/{locationId}")]
+    [Route("/api/departments/{departmentId}/locations/{locationId}")]
     public async Task<EndpointResult<Guid>> DetachLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,

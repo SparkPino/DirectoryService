@@ -32,7 +32,12 @@ public class GetAllLocationHandler(
         }
 
         var locations = await _locationRepository.GetPaged(query.Page, query.PageSize, cancellationToken);
-        var result = locations.Value.Select(a =>
+        if (locations.Count == 0)
+        {
+            return Error.Failure("location.not.exist", "Нет добавленых локаций").ToErrors();
+        }
+
+        var result = locations.Select(a =>
             new AddLocationDto
             {
                 Name = a.Name.Name,
