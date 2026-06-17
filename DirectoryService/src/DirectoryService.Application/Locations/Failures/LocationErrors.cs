@@ -14,12 +14,6 @@ public static class LocationErrors
     public static Error NotFoundMany() =>
         Error.NotFound("locations.not_found", $"Локации не найдены");
 
-    public static readonly Error Database =
-        Error.Failure("location.database", "Не удалось сохранить локацию");
-
-    public static readonly Error Concurrency =
-        Error.Failure("location.concurrency", "Локация была изменена другим пользователем");
-
     public static readonly Error InvalidId =
         Error.Validation("location.invalid_id", "Идентификатор локации не может быть пустым");
 

@@ -3,6 +3,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Validations;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Domain.Locations.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
@@ -12,6 +13,7 @@ namespace DirectoryService.Application.Departments.AddDepartment;
 public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
 {
     private readonly IDepartmentRepository _departmentRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILocationRepository _locationRepository;
     private readonly IValidator<AddDepartmentCommand> _validator;
     private readonly ILogger<AddDepartmentHendler> _logger;
@@ -19,11 +21,13 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
     public AddDepartmentHendler(
         ILogger<AddDepartmentHendler> logger,
         IDepartmentRepository departmentRepository,
+        ITransactionManager transactionManager,
         ILocationRepository locationRepository,
         IValidator<AddDepartmentCommand> validator)
     {
         _logger = logger;
         _departmentRepository = departmentRepository;
+        _transactionManager = transactionManager;
         _locationRepository = locationRepository;
         _validator = validator;
     }
@@ -36,9 +40,7 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
             return validationResult.ToError();
         }
 
-        _logger.LogInformation(
-            "Обработка AddDepartmentCommand: name:{name}",
-            command.DepartmentDto.Name);
+        _logger.LogInformation("Обработка AddDepartmentCommand: name:{name}", command.DepartmentDto.Name);
 
         var nameResult = DepartmentName.Create(command.DepartmentDto.Name);
         var identifierResult = DepartmentIdentifier.Create(command.DepartmentDto.Identifier);
@@ -73,26 +75,29 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
         }
 
         var locationResult = await _locationRepository
-            .GetByIdsAsync(command.DepartmentDto.LocationIds, cancellationToken);
+            .GetExistingIdsAsync(command.DepartmentDto.LocationIds, cancellationToken);
 
         if (locationResult.IsFailure)
         {
             return locationResult.Error.ToErrors();
         }
 
-        var addLocationResult = departmentResult.Value.AddLocations(locationResult.Value.Select(l => l.Id));
+        var normalizeLocations = locationResult.Value.Select(a => new LocationId(a));
+
+        var addLocationResult = departmentResult.Value.AddLocations(normalizeLocations);
         if (addLocationResult.IsFailure)
         {
             return addLocationResult.Error.ToErrors();
         }
 
-        var addResult = await _departmentRepository.AddAsync(departmentResult.Value, cancellationToken);
+        await _departmentRepository.AddAsync(departmentResult.Value, cancellationToken);
 
-        if (addResult.IsFailure)
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
         {
             _logger.LogError("Не получилось сохранить департамент:{departmentId}: {Error}", departmentResult.Value.Id,
-                addResult.Error);
-            return addResult.Error.ToErrors();
+                saveResult.Error);
+            return saveResult.Error.ToErrors();
         }
 
         _logger.LogInformation("Департамент с id:{departmentId} успешно создан", departmentResult.Value.Id);

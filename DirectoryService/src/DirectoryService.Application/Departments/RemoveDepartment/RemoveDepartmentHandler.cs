@@ -10,15 +10,18 @@ namespace DirectoryService.Application.Departments.RemoveDepartment;
 public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, Unit>
 {
     private readonly IDepartmentRepository _departmentRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<RemoveDepartmentHandler> _logger;
     private readonly IValidator<RemoveDepartmentCommand> _validator;
 
     public RemoveDepartmentHandler(
         IDepartmentRepository departmentRepository,
+        ITransactionManager transactionManager,
         ILogger<RemoveDepartmentHandler> logger,
         IValidator<RemoveDepartmentCommand> validator)
     {
         _departmentRepository = departmentRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
         _validator = validator;
     }
@@ -32,6 +35,7 @@ public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, 
         {
             return validationResult.ToError();
         }
+
         _logger.LogInformation("Обработка RemoveDepartmentCommand id:{departmentId}", command.departmentId);
 
         var removeResult = await _departmentRepository.DeleteByIdAsync(command.departmentId, cancellationToken);
@@ -42,6 +46,17 @@ public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, 
 
             return removeResult.Error.ToErrors();
         }
+
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            _logger.LogError("Не удалось удалить департамент id:{departmentId}: {Error}", command.departmentId,
+                saveResult.Error);
+
+            return saveResult.Error.ToErrors();
+        }
+
+        _logger.LogInformation("Департамент {departmentId} успешно удалён", command.departmentId);
 
         return Result.Success<Unit, Errors>(Unit.Value);
     }

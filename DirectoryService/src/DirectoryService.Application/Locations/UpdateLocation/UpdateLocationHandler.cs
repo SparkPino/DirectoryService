@@ -2,6 +2,7 @@
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Locations;
+using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Domain.Shared.ValueObjects;
 using FluentValidation;
@@ -13,15 +14,18 @@ namespace DirectoryService.Application.Locations.UpdateLocation;
 public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid>
 {
     private readonly ILocationRepository _locationRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<UpdateLocationHandler> _logger;
     private readonly IValidator<UpdateLocationCommand> _validator;
 
     public UpdateLocationHandler(
         ILocationRepository locationRepository,
+        ITransactionManager transactionManager,
         ILogger<UpdateLocationHandler> logger,
         IValidator<UpdateLocationCommand> validator)
     {
         _locationRepository = locationRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
         _validator = validator;
     }
@@ -30,20 +34,17 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
     {
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
-        {
             return validationResult.ToError();
-        }
 
         _logger.LogInformation("Обработка UpdateLocationCommand id:{id}", command.Id);
 
-        var locationResult = await _locationRepository.GetByIdAsync(command.Id, cancellationToken);
-        if (locationResult.IsFailure)
-            return locationResult.Error.ToErrors();
+        (_, bool isFailure, Location? location, Error? error) = await _locationRepository.GetByIdAsync(command.Id, cancellationToken);
+        if (isFailure) return error.ToErrors();
 
         Address? newAddress = null;
         if (command.UpdateLocationDto.AdressDto != null)
         {
-            var adressResult = locationResult.Value.Address.UpdateAdress(
+            var adressResult = location.Address.UpdateAdress(
                 command.UpdateLocationDto.AdressDto.Country,
                 command.UpdateLocationDto.AdressDto.City,
                 command.UpdateLocationDto.AdressDto.Street,
@@ -71,9 +72,10 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
             newName = nameResult.Value;
         }
 
-        locationResult.Value.UpdateLocation(newAddress, newTimeZone, newName);
+        location.UpdateLocation(newAddress, newTimeZone, newName);
 
-        await _locationRepository.SaveAsync(cancellationToken);
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure) return saveResult.Error.ToErrors();
 
         _logger.LogInformation("Location с id:{id} успешно обновлена", command.Id);
         return command.Id;

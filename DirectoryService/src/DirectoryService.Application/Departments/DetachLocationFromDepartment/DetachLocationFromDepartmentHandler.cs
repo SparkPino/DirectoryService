@@ -12,17 +12,20 @@ public class DetachLocationFromDepartmentHandler : ICommandHandler<DetachLocatio
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILocationRepository _locationRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<DetachLocationFromDepartmentHandler> _logger;
     private readonly IValidator<DetachLocationFromDepartmentCommand> _validator;
 
     public DetachLocationFromDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ILocationRepository locationRepository,
+        ITransactionManager transactionManager,
         ILogger<DetachLocationFromDepartmentHandler> logger,
         IValidator<DetachLocationFromDepartmentCommand> validator)
     {
         _departmentRepository = departmentRepository;
         _locationRepository = locationRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
         _validator = validator;
     }
@@ -60,7 +63,11 @@ public class DetachLocationFromDepartmentHandler : ICommandHandler<DetachLocatio
 
         department.Value.DetachLocation(locations.Value.Id);
 
-        await _departmentRepository.SaveAsync(cancellationToken);
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
+        }
 
         return command.LocationId;
     }

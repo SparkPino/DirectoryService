@@ -3,6 +3,7 @@ using DirectoryService.Application.Departments;
 using DirectoryService.Application.Departments.AddDepartment;
 using DirectoryService.Application.Departments.AttachLocationToDepartment;
 using DirectoryService.Application.Departments.DetachLocationFromDepartment;
+using DirectoryService.Application.Departments.MoveDepartment;
 using DirectoryService.Application.Departments.RemoveDepartment;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Contracts.Department;
@@ -61,4 +62,13 @@ public class DepartmentController : BaseApiController
         [FromServices] ICommandHandler<DetachLocationFromDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
+
+    [HttpPatch]
+    [Route("/api/departments/{departmentId}/move")]
+    public async Task<EndpointResult<Guid>> Move(
+        [FromRoute] Guid departmentId,
+        [FromBody] MoveDepartmentDto moveDepartmentDto,
+        [FromServices] ICommandHandler<MoveDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new MoveDepartmentCommand(departmentId, moveDepartmentDto.NewParentId), cancellationToken);
 }

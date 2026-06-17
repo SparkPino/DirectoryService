@@ -7,9 +7,7 @@ namespace DirectoryService.Application.Abstraction;
 
 public interface IDepartmentRepository
 {
-    Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken);
-
-    Task<int> SaveAsync(CancellationToken cancellationToken);
+    Task<Guid> AddAsync(Department department, CancellationToken cancellationToken);
 
     Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken);
 
@@ -17,4 +15,10 @@ public interface IDepartmentRepository
 
     Task<bool> IsLocationAttachedAsync(Guid departmentId, Guid locationId, CancellationToken cancellationToken);
     Task<Result<Department, Error>> GetByIdWithLocationsAsync(Guid departmentId, CancellationToken cancellationToken);
+
+    Task<int> UpdateDescendantsPathAsync(
+        DepartmentPath oldPath,
+        DepartmentPath newPath,
+        short depthDelta,
+        CancellationToken cancellationToken);
 }
