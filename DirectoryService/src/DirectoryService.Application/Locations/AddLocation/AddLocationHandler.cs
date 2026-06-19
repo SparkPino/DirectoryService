@@ -16,16 +16,19 @@ namespace DirectoryService.Application.Locations.AddLocation;
 public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
 {
     private readonly ILocationRepository _locationRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<AddLocationHandler> _logger;
     private readonly IValidator<AddLocationCommand> _validator;
 
 
     public AddLocationHandler(
         ILocationRepository locationRepository,
+        ITransactionManager transactionManager,
         ILogger<AddLocationHandler> logger,
         IValidator<AddLocationCommand> validator)
     {
         _locationRepository = locationRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
         _validator = validator;
     }
@@ -67,11 +70,14 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
 
         var location = Location.Create(nameResult.Value, addressResult.Value, timeZoneResult.Value);
 
-        var addLocationResult = await _locationRepository.AddAsync(location, cancellationToken);
-        if (addLocationResult.IsFailure)
+        await _locationRepository.AddAsync(location, cancellationToken);
+
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+
+        if (saveResult.IsFailure)
         {
-            _logger.LogError("Не удалось добавить локацию: {Error}", addLocationResult.Error);
-            return addLocationResult.Error.ToErrors();
+            _logger.LogError("Не удалось добавить локацию: {Error}", saveResult.Error);
+            return saveResult.Error.ToErrors();
         }
 
         _logger.LogInformation("Локация создана успешно с id: {LocationId}", location.Id);

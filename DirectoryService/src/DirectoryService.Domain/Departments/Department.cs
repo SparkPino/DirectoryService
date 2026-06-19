@@ -161,16 +161,10 @@ public sealed class Department
             childDepth,
             parent.Id);
 
-        var attachChildToParentResult = AttachChildToParent(createDepartmentChild, parent);
+        var attachChildToParentResult = parent.AttachChildToParent(createDepartmentChild);
         if (attachChildToParentResult.IsFailure) return attachChildToParentResult.Error.ToErrors();
 
         return createDepartmentChild;
-    }
-
-    private static UnitResult<Error> AttachChildToParent(Department child, Department parent)
-    {
-        parent.AttachChildToParent(child);
-        return UnitResult.Success<Error>();
     }
 
     private UnitResult<Error> AttachChildToParent(Department child)
@@ -241,6 +235,39 @@ public sealed class Department
         UpdatedAt = DateTimeOffset.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+
+    public Result<short, Errors> Relocate(Department? newParent)
+    {
+        if (newParent is not null)
+        {
+            bool movesIntoSelfOrDescendant =
+                newParent.Path.Path == Path.Path ||
+                newParent.Path.Path.StartsWith($"{Path.Path}.", StringComparison.Ordinal);
+
+            if (movesIntoSelfOrDescendant)
+            {
+                return Error.Conflict(
+                    "department.move.invalid_target",
+                    "Департамент не может быть перемещён в самого себя или в собственного потомка").ToErrors();
+            }
+        }
+
+        var pathResult = newParent is null
+            ? DepartmentPath.CreateParent(Identifier)
+            : newParent.Path.CreateChildPath(Identifier);
+
+        if (pathResult.IsFailure) return pathResult.Error;
+
+        short oldDepth = Depth;
+        short newDepth = newParent is null ? (short)0 : (short)(newParent.Depth + 1);
+
+        Path = pathResult.Value;
+        Depth = newDepth;
+        ParentId = newParent?.Id;
+        UpdatedAt = DateTimeOffset.UtcNow;
+
+        return (short)(newDepth - oldDepth);
     }
 
     public UnitResult<Errors> UpdateDepartment(

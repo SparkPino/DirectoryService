@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Dapper;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Domain.Locations;
@@ -35,33 +36,11 @@ public class LocationRepository : ILocationRepository
         return locations;
     }
 
-    public async Task<Result<Guid, Error>> AddAsync(Location location, CancellationToken cancellationToken)
+    public async Task<Guid> AddAsync(Location location, CancellationToken cancellationToken)
     {
         await _context.AddAsync(location, cancellationToken);
-        try
-        {
-            await _context.SaveChangesAsync(cancellationToken);
-            return location.Id.Id;
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            var errorDescription = LocationErrors.Concurrency;
-            _logger.LogError(ex.InnerException ?? ex,
-                "Конфликт параллельного доступа при добавлении локации {LocationId}", location.Id);
-            return errorDescription;
-        }
-        catch (DbUpdateException ex)
-        {
-            var errorDescription = LocationErrors.Database;
-            _logger.LogError(ex.InnerException ?? ex, "Ошибка базы данных при добавлении локации {LocationId}",
-                location.Id);
-            return errorDescription;
-        }
+        return location.Id.Id;
     }
-
-    public async Task<int> SaveAsync(CancellationToken cancellationToken) =>
-        await _context.SaveChangesAsync(cancellationToken);
-
 
     public Task<Result<Guid, Error>> DeleteAsync(Guid locationId, CancellationToken cancellationToken) =>
         throw new NotImplementedException();
@@ -101,5 +80,28 @@ public class LocationRepository : ILocationRepository
         }
 
         return locations;
+    }
+
+    public async Task<Result<IReadOnlyList<Guid>, Error>> GetExistingIdsAsync(
+        IEnumerable<Guid> locationId,
+        CancellationToken cancellationToken)
+    {
+        var idList = locationId.Select(g => new LocationId(g)).ToList();
+
+        var foundIds = await _context.Locations
+            .Where(l => idList.Contains(l.Id))
+            .Select(l => l.Id)
+            .ToListAsync(cancellationToken);
+
+        var foundGuids = foundIds.Select(id => id.Id).ToList();
+
+        if (foundGuids.Count != idList.Count)
+        {
+            var missingIds = idList.Select(id => id.Id).Except(foundGuids).ToList();
+            _logger.LogWarning("Локация с id:{LocationId} не найдена.", string.Join(", ", missingIds));
+            return LocationErrors.NotFoundMany(missingIds);
+        }
+
+        return foundGuids;
     }
 }

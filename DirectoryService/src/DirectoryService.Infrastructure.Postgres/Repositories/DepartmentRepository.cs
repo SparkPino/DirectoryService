@@ -21,55 +21,28 @@ public class DepartmentRepository : IDepartmentRepository
         _logger = logger;
     }
 
-    public async Task<Result<Guid, Error>> AddAsync(Department department, CancellationToken cancellationToken)
+    public async Task<Guid> AddAsync(Department department, CancellationToken cancellationToken)
     {
         await _context.Departments.AddAsync(department, cancellationToken);
-        try
-        {
-            await _context.SaveChangesAsync(cancellationToken);
-            return department.Id.Id;
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            _logger.LogError(ex.InnerException ?? ex,
-                "Конфликт параллельного доступа при добавлении департамента {DepartmentId}", department.Id);
-            return DepartmentError.Concurrency;
-        }
-        catch (DbUpdateException ex)
-        {
-            _logger.LogError(ex.InnerException ?? ex, "Ошибка базы данных при добавлении департамента {LocationId}",
-                department.Id);
-            return DepartmentError.Database;
-        }
+        return department.Id.Id;
     }
-
-    public async Task<int> SaveAsync(CancellationToken cancellationToken) =>
-        await _context.SaveChangesAsync(cancellationToken);
+    
 
     public async Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken)
     {
-        int deletedCount;
-        try
-        {
-            deletedCount = await _context.Departments
-                .Where(d => d.Id.Id == departmentId)
-                .ExecuteDeleteAsync(cancellationToken);
-        }
-        catch (DbUpdateException exception)
-        {
-            _logger.LogError(
-                exception.InnerException ?? exception,
-                "Ошибка базы данных при удалении департамента {DepartmentId}", departmentId);
-            return DepartmentError.Database;
-        }
+        var correctId = new DepartmentId(departmentId);
 
-        if (deletedCount == 0)
+        var department = await _context.Departments
+            .FirstOrDefaultAsync(d => d.Id == correctId, cancellationToken);
+
+        if (department == null)
         {
             _logger.LogWarning("Департамент с Id:{DepartmentId} не найден при удалении", departmentId);
             return DepartmentError.NotFound(departmentId);
         }
 
-        _logger.LogInformation("Департамент {DepartmentId} успешно удалён", departmentId);
+        _context.Departments.Remove(department);
+
         return Unit.Value;
     }
 
@@ -115,5 +88,24 @@ public class DepartmentRepository : IDepartmentRepository
         }
 
         return department;
+    }
+
+    public async Task<int> UpdateDescendantsPathAsync(
+        DepartmentPath oldPath,
+        DepartmentPath newPath,
+        short depthDelta,
+        CancellationToken cancellationToken)
+    {
+        string oldPrefix = $"{oldPath.Path}.";
+        string newPrefix = $"{newPath.Path}.";
+
+        return await _context.Departments
+            .Where(d => d.Path.Path.StartsWith(oldPrefix))
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(d => d.Path.Path, d => newPrefix + d.Path.Path.Substring(oldPrefix.Length))
+                    .SetProperty(d => d.Depth, d => (short)(d.Depth + depthDelta))
+                    .SetProperty(d => d.UpdatedAt, _ => DateTimeOffset.UtcNow),
+                cancellationToken);
     }
 }

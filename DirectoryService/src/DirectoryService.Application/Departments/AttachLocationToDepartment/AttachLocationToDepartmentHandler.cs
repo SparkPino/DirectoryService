@@ -11,17 +11,20 @@ public class AttachLocationToDepartmentHandler : ICommandHandler<AttachLocationT
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILocationRepository _locationRepository;
+    private readonly ITransactionManager _transactionManager;
     private readonly ILogger<AttachLocationToDepartmentHandler> _logger;
     private readonly IValidator<AttachLocationToDepartmentCommand> _validator;
 
     public AttachLocationToDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ILocationRepository locationRepository,
+        ITransactionManager transactionManager,
         ILogger<AttachLocationToDepartmentHandler> logger,
         IValidator<AttachLocationToDepartmentCommand> validator)
     {
         _departmentRepository = departmentRepository;
         _locationRepository = locationRepository;
+        _transactionManager = transactionManager;
         _logger = logger;
         _validator = validator;
     }
@@ -65,7 +68,12 @@ public class AttachLocationToDepartmentHandler : ICommandHandler<AttachLocationT
             return addLocationResult.Error.ToErrors();
         }
 
-        await _departmentRepository.SaveAsync(cancellationToken);
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
+        }
+
         return command.LocationId;
     }
 }

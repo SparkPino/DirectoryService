@@ -13,15 +13,17 @@ public class UpdateDepartmentHandler : ICommandHandler<UpdateDepartmentCommand, 
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILogger<UpdateDepartmentHandler> _logger;
     private readonly IValidator<UpdateDepartmentCommand> _validator;
+    private readonly ITransactionManager _transactionManager;
 
     public UpdateDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ILogger<UpdateDepartmentHandler> logger,
-        IValidator<UpdateDepartmentCommand> validator)
+        IValidator<UpdateDepartmentCommand> validator, ITransactionManager transactionManager)
     {
         _departmentRepository = departmentRepository;
         _logger = logger;
         _validator = validator;
+        _transactionManager = transactionManager;
     }
 
     public async Task<Result<Guid, Errors>> Handle(UpdateDepartmentCommand command, CancellationToken cancellationToken)
@@ -56,7 +58,12 @@ public class UpdateDepartmentHandler : ICommandHandler<UpdateDepartmentCommand, 
         var updateDepartmentResult =
             departmentResult.Value.UpdateDepartment(name, identifier);
         if (updateDepartmentResult.IsFailure) return updateDepartmentResult.Error;
-        await _departmentRepository.SaveAsync(cancellationToken);
+
+        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (saveResult.IsFailure)
+        {
+            return saveResult.Error.ToErrors();
+        }
 
         return command.Id;
     }
