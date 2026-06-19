@@ -86,20 +86,22 @@ public class LocationRepository : ILocationRepository
         IEnumerable<Guid> locationId,
         CancellationToken cancellationToken)
     {
-        var idList = locationId.ToList();
+        var idList = locationId.Select(g => new LocationId(g)).ToList();
 
         var foundIds = await _context.Locations
-            .Where(l => idList.Contains(l.Id.Id))
-            .Select(l => l.Id.Id)
+            .Where(l => idList.Contains(l.Id))
+            .Select(l => l.Id)
             .ToListAsync(cancellationToken);
 
-        if (foundIds.Count != idList.Count)
+        var foundGuids = foundIds.Select(id => id.Id).ToList();
+
+        if (foundGuids.Count != idList.Count)
         {
-            var missingIds = idList.Except(foundIds).ToList();
+            var missingIds = idList.Select(id => id.Id).Except(foundGuids).ToList();
             _logger.LogWarning("Локация с id:{LocationId} не найдена.", string.Join(", ", missingIds));
             return LocationErrors.NotFoundMany(missingIds);
         }
 
-        return foundIds;
+        return foundGuids;
     }
 }

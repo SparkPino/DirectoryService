@@ -5,7 +5,7 @@ namespace DirectoryService.Application.Abstraction;
 
 public interface ITransactionManager
 {
-    Task<Result<ITransactionScope, Errors>> TranstactionBegin(CancellationToken cancellationToken);
+    Task<Result<ITransactionScope, Errors>> TransactionBegin(CancellationToken cancellationToken);
 
     Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken);
 

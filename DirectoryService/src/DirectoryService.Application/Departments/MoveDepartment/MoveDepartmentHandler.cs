@@ -63,7 +63,7 @@ public class MoveDepartmentHandler : ICommandHandler<MoveDepartmentCommand, Guid
         // должны быть атомарны: потомки обновляются через ExecuteUpdateAsync, который пишет в БД
         // напрямую и не входит в SaveChangesAsync, поэтому без явной транзакции при сбое на втором
         // шаге перемещённое подразделение осталось бы сохранённым с "осиротевшими" путями потомков.
-        var transactionResult = await _transactionManager.TranstactionBegin(cancellationToken);
+        var transactionResult = await _transactionManager.TransactionBegin(cancellationToken);
         if (transactionResult.IsFailure) return transactionResult.Error;
 
         using var transaction = transactionResult.Value;
