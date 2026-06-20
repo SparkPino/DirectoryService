@@ -18,4 +18,7 @@ public static class ValidationExtensions
 
         return errors.ToList();
     }
+
+    public static Errors ToError(this IEnumerable<ValidationResult> validationResult) =>
+        validationResult.SelectMany(result => result.ToError()).ToList();
 }

@@ -31,12 +31,6 @@ public class DetachLocationFromDepartmentHandler : ICommandHandler<DetachLocatio
         DetachLocationFromDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         var department = await _departmentRepository.GetByIdWithLocationsAsync(command.DepartmentId, cancellationToken);
 
         if (department.IsFailure)

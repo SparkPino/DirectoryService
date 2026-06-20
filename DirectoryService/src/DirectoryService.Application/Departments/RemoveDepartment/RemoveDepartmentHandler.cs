@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 
+
 namespace DirectoryService.Application.Departments.RemoveDepartment;
 
 public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, Unit>
@@ -27,13 +28,6 @@ public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, 
         RemoveDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-        _logger.LogInformation("Обработка RemoveDepartmentCommand id:{departmentId}", command.departmentId);
-
         var removeResult = await _departmentRepository.DeleteByIdAsync(command.departmentId, cancellationToken);
         if (removeResult.IsFailure)
         {

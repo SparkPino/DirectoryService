@@ -49,11 +49,17 @@ public class DepartmentRepository : IDepartmentRepository
     public async Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken)
     {
         int deletedCount;
+        var correctId = new DepartmentId(departmentId);
         try
         {
             deletedCount = await _context.Departments
-                .Where(d => d.Id.Id == departmentId)
+                .Where(d => d.Id == correctId)
                 .ExecuteDeleteAsync(cancellationToken);
+
+            if (deletedCount == 0)
+            {
+                return Error.NotFound("department.not.found", "Департамент не найден");
+            }
         }
         catch (DbUpdateException exception)
         {

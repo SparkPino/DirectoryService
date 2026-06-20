@@ -2,4 +2,4 @@
 
 namespace DirectoryService.Application.Departments.DetachLocationFromDepartment;
 
-public record DetachLocationFromDepartmentCommand(Guid DepartmentId, Guid LocationId) : ICommand;
+public record DetachLocationFromDepartmentCommand(Guid DepartmentId, Guid LocationId) : ICommand<Guid>;

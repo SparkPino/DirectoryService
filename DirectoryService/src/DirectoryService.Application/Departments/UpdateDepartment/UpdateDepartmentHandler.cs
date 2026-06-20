@@ -26,14 +26,6 @@ public class UpdateDepartmentHandler : ICommandHandler<UpdateDepartmentCommand, 
 
     public async Task<Result<Guid, Errors>> Handle(UpdateDepartmentCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("Обработка UpdateDepartmentCommand id:{departmentId}", command.Id);
-
         var departmentResult = await _departmentRepository.GetByIdAsync(command.Id, cancellationToken);
         if (departmentResult.IsFailure) return departmentResult.Error.ToErrors();
         DepartmentName? name = null;

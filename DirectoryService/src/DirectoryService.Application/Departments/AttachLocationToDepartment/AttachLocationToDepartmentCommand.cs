@@ -2,4 +2,4 @@
 
 namespace DirectoryService.Application.Departments.AttachLocationToDepartment;
 
-public record AttachLocationToDepartmentCommand(Guid DepartmentId, Guid LocationId) : ICommand;
+public record AttachLocationToDepartmentCommand(Guid DepartmentId, Guid LocationId) : ICommand<Guid>;

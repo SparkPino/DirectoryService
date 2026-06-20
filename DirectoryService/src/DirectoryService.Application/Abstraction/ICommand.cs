@@ -1,5 +1,9 @@
-﻿namespace DirectoryService.Application.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using MediatR;
+using Shared;
 
-public interface ICommand
+namespace DirectoryService.Application.Abstraction;
+
+public interface ICommand<TResponse> : IRequest<Result<TResponse, Errors>>
 {
 }

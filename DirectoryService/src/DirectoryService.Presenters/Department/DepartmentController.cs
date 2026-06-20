@@ -7,10 +7,12 @@ using DirectoryService.Application.Departments.RemoveDepartment;
 using DirectoryService.Application.Departments.UpdateDepartment;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Presenters.Controllers;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using Shared.EndpointResult;
+using Unit = Shared.Unit;
 
 namespace DirectoryService.Presenters.Department;
 
@@ -23,34 +25,34 @@ public class DepartmentController : BaseApiController
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
         [FromBody] DepartmentDto departmentDto,
-        [FromServices] ICommandHandler<AddDepartmentCommand, Guid> handler,
+        [FromServices] ISender sender,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new AddDepartmentCommand(departmentDto), cancellationToken);
+        await sender.Send(new AddDepartmentCommand(departmentDto), cancellationToken);
 
     [HttpDelete]
     public async Task<EndpointResult<Unit>> Delete(
         [FromBody] Guid departmentId,
-        [FromServices] ICommandHandler<RemoveDepartmentCommand, Unit> handler,
+        [FromServices]  ISender sender,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new RemoveDepartmentCommand(departmentId), cancellationToken);
+        await sender.Send(new RemoveDepartmentCommand(departmentId), cancellationToken);
 
     [HttpPatch]
     [Route("/api/departments/{departmentId}")]
     public async Task<EndpointResult<Guid>> Update(
         [FromBody] UpdateDepartmentDto departmentDto,
         [FromRoute] Guid departmentId,
-        [FromServices] ICommandHandler<UpdateDepartmentCommand, Guid> handler,
+        [FromServices] ISender sender,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
+        await sender.Send(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
 
     [HttpPost]
     [Route("/api/departments/{departmentId}/locations/{locationId}")]
     public async Task<EndpointResult<Guid>> AttachLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
-        [FromServices] ICommandHandler<AttachLocationToDepartmentCommand, Guid> handler,
+        [FromServices] ISender sender,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new AttachLocationToDepartmentCommand(departmentId, locationId), cancellationToken);
+        await sender.Send(new AttachLocationToDepartmentCommand(departmentId, locationId), cancellationToken);
 
 
     [HttpDelete]
@@ -58,7 +60,7 @@ public class DepartmentController : BaseApiController
     public async Task<EndpointResult<Guid>> DetachLocation(
         [FromRoute] Guid departmentId,
         [FromRoute] Guid locationId,
-        [FromServices] ICommandHandler<DetachLocationFromDepartmentCommand, Guid> handler,
+        [FromServices] ISender sender,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
+        await sender.Send(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
 }

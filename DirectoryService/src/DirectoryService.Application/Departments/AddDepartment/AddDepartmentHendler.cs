@@ -30,16 +30,6 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
 
     public async Task<Result<Guid, Errors>> Handle(AddDepartmentCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation(
-            "Обработка AddDepartmentCommand: name:{name}",
-            command.DepartmentDto.Name);
-
         var nameResult = DepartmentName.Create(command.DepartmentDto.Name);
         var identifierResult = DepartmentIdentifier.Create(command.DepartmentDto.Identifier);
 
@@ -94,8 +84,6 @@ public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
                 addResult.Error);
             return addResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Департамент с id:{departmentId} успешно создан", departmentResult.Value.Id);
 
         return departmentResult.Value.Id.Id;
     }

@@ -34,8 +34,6 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
             return validationResult.ToError();
         }
 
-        _logger.LogInformation("Обработка UpdateLocationCommand id:{id}", command.Id);
-
         var locationResult = await _locationRepository.GetByIdAsync(command.Id, cancellationToken);
         if (locationResult.IsFailure)
             return locationResult.Error.ToErrors();
@@ -75,7 +73,6 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
 
         await _locationRepository.SaveAsync(cancellationToken);
 
-        _logger.LogInformation("Location с id:{id} успешно обновлена", command.Id);
         return command.Id;
     }
 }

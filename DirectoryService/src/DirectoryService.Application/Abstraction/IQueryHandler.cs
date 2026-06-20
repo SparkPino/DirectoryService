@@ -1,10 +1,10 @@
 ﻿using CSharpFunctionalExtensions;
+using MediatR;
 using Shared;
 
 namespace DirectoryService.Application.Abstraction;
 
-public interface IQueryHandler<in TQuery, TResult>
-    where TQuery : IQuery
+public interface IQueryHandler<in TQuery, TResponse> : IRequestHandler<TQuery, Result<TResponse, Errors>>
+    where TQuery : IQuery<TResponse>
 {
-    Task<Result<TResult, Errors>> Handle(TQuery query, CancellationToken cancellationToken);
 }

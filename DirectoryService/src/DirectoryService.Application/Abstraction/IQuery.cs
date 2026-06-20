@@ -1,5 +1,9 @@
-﻿namespace DirectoryService.Application.Abstraction;
+﻿using CSharpFunctionalExtensions;
+using MediatR;
+using Shared;
 
-public interface IQuery
+namespace DirectoryService.Application.Abstraction;
+
+public interface IQuery<TResponse> : IRequest<Result<TResponse, Errors>>
 {
 }

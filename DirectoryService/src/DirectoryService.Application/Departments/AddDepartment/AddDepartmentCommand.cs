@@ -3,4 +3,4 @@ using DirectoryService.Contracts.Department;
 
 namespace DirectoryService.Application.Departments.AddDepartment;
 
-public record AddDepartmentCommand(DepartmentDto DepartmentDto) : ICommand;
+public record AddDepartmentCommand(DepartmentDto DepartmentDto) : ICommand<Guid>;

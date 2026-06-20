@@ -39,8 +39,6 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
             return validationResult.ToError();
         }
 
-        _logger.LogInformation("Обработка AddLocationCommand name:{Name}", command.AddLocationDto.Name);
-
         var errors = new List<Error>();
 
         var nameResult = LocationName.Create(command.AddLocationDto.Name);
@@ -73,8 +71,6 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
             _logger.LogError("Не удалось добавить локацию: {Error}", addLocationResult.Error);
             return addLocationResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Локация создана успешно с id: {LocationId}", location.Id);
 
         return location.Id.Id;
     }
