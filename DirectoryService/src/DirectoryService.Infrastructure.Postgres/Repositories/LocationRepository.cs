@@ -42,8 +42,23 @@ public class LocationRepository : ILocationRepository
         return location.Id.Id;
     }
 
-    public Task<Result<Guid, Error>> DeleteAsync(Guid locationId, CancellationToken cancellationToken) =>
-        throw new NotImplementedException();
+    public async Task<Result<Guid, Error>> DeleteAsync(Guid locationId, CancellationToken cancellationToken)
+    {
+        var correctId = new LocationId(locationId);
+
+        var location = await _context.Locations
+            .FirstOrDefaultAsync(l => l.Id == correctId, cancellationToken);
+
+        if (location == null)
+        {
+            _logger.LogWarning("Локация с Id:{LocationId} не найдена при удалении", locationId);
+            return LocationErrors.NotFound(locationId);
+        }
+
+        _context.Locations.Remove(location);
+
+        return locationId;
+    }
 
     public async Task<Result<Location, Error>> GetByIdAsync(Guid locationId, CancellationToken cancellationToken)
     {
