@@ -35,9 +35,9 @@ public class PositionController : BaseApiController
 
     [HttpDelete]
     [Route("/api/positions/{id}")]
-    public async Task<EndpointResult<Unit>> Delete(
+    public async Task<EndpointResult<Guid>> Delete(
         [FromRoute] Guid id,
-        [FromServices] ICommandHandler<RemovePositionCommand, Unit> handler,
+        [FromServices] ICommandHandler<RemovePositionCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new RemovePositionCommand(id), cancellationToken);
 }

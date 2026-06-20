@@ -7,7 +7,7 @@ using Shared;
 
 namespace DirectoryService.Application.Positions.RemovePosition;
 
-public class RemovePositionHandler : ICommandHandler<RemovePositionCommand, Unit>
+public class RemovePositionHandler : ICommandHandler<RemovePositionCommand, Guid>
 {
     private readonly IPositionRepository _positionRepository;
     private readonly ITransactionManager _transactionManager;
@@ -26,7 +26,7 @@ public class RemovePositionHandler : ICommandHandler<RemovePositionCommand, Unit
         _validator = validator;
     }
 
-    public async Task<Result<Unit, Errors>> Handle(RemovePositionCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid, Errors>> Handle(RemovePositionCommand command, CancellationToken cancellationToken)
     {
         var validationResult = await _validator.ValidateAsync(command, cancellationToken);
         if (!validationResult.IsValid)
@@ -54,6 +54,6 @@ public class RemovePositionHandler : ICommandHandler<RemovePositionCommand, Unit
 
         _logger.LogInformation("Должность {positionId} успешно удалена", command.PositionId);
 
-        return Result.Success<Unit, Errors>(Unit.Value);
+        return command.PositionId;
     }
 }
