@@ -4,6 +4,7 @@ using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Application.Locations.GetAllLocations;
 using DirectoryService.Application.Locations.GetByIdLocation;
+using DirectoryService.Application.Locations.RemoveLocation;
 using DirectoryService.Application.Locations.UpdateLocation;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
@@ -52,4 +53,12 @@ public class LocationController : BaseApiController
         [FromQuery] GetAllLocationQuery query,
         [FromServices] IQueryHandler<GetAllLocationQuery, IReadOnlyList<AddLocationDto>> handler,
         CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
+
+    [HttpDelete]
+    [Route("/api/locations/{id}")]
+    public async Task<EndpointResult<Guid>> Delete(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<RemoveLocationCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new RemoveLocationCommand(id), cancellationToken);
 }

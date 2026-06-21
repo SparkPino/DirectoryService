@@ -38,14 +38,31 @@ public sealed class Position
     public IReadOnlyList<DepartmentPosition> DepartmentsPositions => _departmentsPositions;
 
 
-    public static Result<Position, string> Create(PositionName name, string? description, PositionId? id = null)
+    public static Result<Position, Error> Create(PositionName name, string? description, PositionId? id = null)
     {
         description = (description ?? string.Empty).Trim();
-        if (description.Length > 1000) return "Максимально 1000 символов";
+        if (description.Length > 1000)
+            return Error.Validation("position.description.length", "Максимально 1000 символов");
 
         var position = new Position(id, name, description);
 
         return position;
+    }
+
+    public UnitResult<Errors> Rename(PositionName? name = null, string? description = null)
+    {
+        if (name is null && description is null)
+            return Error.Validation("update.position", "нужно указать хотя бы одно поле").ToErrors();
+
+        description = description?.Trim();
+        if (description is not null && description.Length > 1000)
+            return Error.Validation("position.description.length", "Максимально 1000 символов").ToErrors();
+
+        Name = name ?? Name;
+        Description = description ?? Description;
+        UpdatedAt = DateTimeOffset.UtcNow;
+
+        return UnitResult.Success<Errors>();
     }
 
     public UnitResult<Error> AddDepartment(DepartmentId departmentId)

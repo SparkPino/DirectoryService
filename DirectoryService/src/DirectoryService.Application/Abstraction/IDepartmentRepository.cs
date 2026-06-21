@@ -16,6 +16,9 @@ public interface IDepartmentRepository
     Task<bool> IsLocationAttachedAsync(Guid departmentId, Guid locationId, CancellationToken cancellationToken);
     Task<Result<Department, Error>> GetByIdWithLocationsAsync(Guid departmentId, CancellationToken cancellationToken);
 
+    Task<bool> IsPositionAttachedAsync(Guid departmentId, Guid positionId, CancellationToken cancellationToken);
+    Task<Result<Department, Error>> GetByIdWithPositionsAsync(Guid departmentId, CancellationToken cancellationToken);
+
     Task<int> UpdateDescendantsPathAsync(
         DepartmentPath oldPath,
         DepartmentPath newPath,

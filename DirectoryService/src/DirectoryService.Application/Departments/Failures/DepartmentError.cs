@@ -12,4 +12,7 @@ public static class DepartmentError
 
     public static Error LocationNotAttached(Guid locationId) =>
         Error.Conflict("department.location.not_attached", $"Локация с id: {locationId} не прикреплена к данному департаменту");
+
+    public static Error PositionNotAttached(Guid positionId) =>
+        Error.Conflict("department.position.not_attached", $"Должность с id: {positionId} не прикреплена к данному департаменту");
 }

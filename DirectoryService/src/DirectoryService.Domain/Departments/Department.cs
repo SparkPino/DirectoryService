@@ -237,6 +237,19 @@ public sealed class Department
         return UnitResult.Success<Error>();
     }
 
+    public UnitResult<Error> DetachPosition(PositionId positionId)
+    {
+        if (!_departmentPositions.Any(p => p.PositionId == positionId))
+        {
+            return Error.NotFound("position.not.found", $"position с id:{positionId} не найдена");
+        }
+
+        var departmentPosition = _departmentPositions.FirstOrDefault(p => p.PositionId == positionId);
+        _departmentPositions.Remove(departmentPosition!);
+        UpdatedAt = DateTimeOffset.UtcNow;
+        return UnitResult.Success<Error>();
+    }
+
     public Result<short, Errors> Relocate(Department? newParent)
     {
         if (newParent is not null)

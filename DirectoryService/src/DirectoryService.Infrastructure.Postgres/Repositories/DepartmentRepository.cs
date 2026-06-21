@@ -4,6 +4,7 @@ using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations.ValueObjects;
+using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared;
@@ -79,6 +80,35 @@ public class DepartmentRepository : IDepartmentRepository
 
         var department = await _context.Departments
             .Include(d => d.DepartmentsLocations)
+            .FirstOrDefaultAsync(d => d.Id == correctId, cancellationToken);
+
+        if (department == null)
+        {
+            _logger.LogWarning("Департамент не найден Id:{departmentId}", departmentId);
+            return DepartmentError.NotFound(departmentId);
+        }
+
+        return department;
+    }
+
+    public async Task<bool> IsPositionAttachedAsync(Guid departmentId, Guid positionId,
+        CancellationToken cancellationToken)
+    {
+        bool result =
+            await _context.DepartmentPositions.AnyAsync(
+                a => a.PositionId == new PositionId(positionId) && a.DepartmentId == new DepartmentId(departmentId),
+                cancellationToken);
+        return result;
+    }
+
+    public async Task<Result<Department, Error>> GetByIdWithPositionsAsync(
+        Guid departmentId,
+        CancellationToken cancellationToken)
+    {
+        var correctId = new DepartmentId(departmentId);
+
+        var department = await _context.Departments
+            .Include(d => d.Positions)
             .FirstOrDefaultAsync(d => d.Id == correctId, cancellationToken);
 
         if (department == null)
