@@ -31,29 +31,27 @@ public class GetAllLocationHandler(
             return validatorResult.ToError();
         }
 
-        var locations = _readDbContext.ReadLocations
+        var locations = await _readDbContext.ReadLocations
             .OrderBy(l => l.Name).ThenBy(l => l.Id)
             .Skip((query.Page - 1) * query.PageSize)
-            .Take(query.PageSize);
-
-        await locations.ToListAsync(cancellationToken);
-
-        var result = locations.Select(a =>
-            new AddLocationDto
-            {
-                Name = a.Name.Name,
-                TimeZone = a.TimeZone.TimeZone,
-                Address = new AddressDto()
+            .Take(query.PageSize)
+            .Select(a =>
+                new AddLocationDto
                 {
-                    Country = a.Address.Country,
-                    City = a.Address.City,
-                    Street = a.Address.Street,
-                    BuildingNumber = a.Address.BuildingNumber,
-                    PostalCode = a.Address.PostalCode,
-                    Apartment = a.Address.Apartment,
-                },
-            }).ToList();
+                    Name = a.Name.Name,
+                    TimeZone = a.TimeZone.TimeZone,
+                    Address = new AddressDto()
+                    {
+                        Country = a.Address.Country,
+                        City = a.Address.City,
+                        Street = a.Address.Street,
+                        BuildingNumber = a.Address.BuildingNumber,
+                        PostalCode = a.Address.PostalCode,
+                        Apartment = a.Address.Apartment,
+                    },
+                }).ToListAsync(cancellationToken);
 
-        return result;
+
+        return locations;
     }
 }

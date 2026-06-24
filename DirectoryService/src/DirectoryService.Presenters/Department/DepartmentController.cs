@@ -31,12 +31,12 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new AddDepartmentCommand(departmentDto), cancellationToken);
 
-    [HttpGet]
+    [HttpGet("{departmentId:guid}")]
     public async Task<EndpointResult<DepartmentDto>> GetById(
-        [FromQuery] GetByIdDepartmentQuery departmentId,
+        [FromRoute] Guid departmentId,
         [FromServices] IQueryHandler<GetByIdDepartmentQuery, DepartmentDto> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(departmentId, cancellationToken);
+        await handler.Handle(new GetByIdDepartmentQuery(departmentId), cancellationToken);
 
     [HttpDelete]
     public async Task<EndpointResult<Unit>> Delete(
