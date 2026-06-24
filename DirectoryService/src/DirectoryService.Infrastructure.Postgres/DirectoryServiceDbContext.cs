@@ -1,4 +1,5 @@
-﻿using DirectoryService.Domain;
+﻿using DirectoryService.Application.Abstraction.Database;
+using DirectoryService.Domain;
 using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DirectoryService.Infrastructure.Postgres;
 
-public class DirectoryServiceDbContext : DbContext
+public class DirectoryServiceDbContext : DbContext, IReadDbContext
 {
     public DirectoryServiceDbContext(DbContextOptions<DirectoryServiceDbContext> options)
         : base(options)
@@ -31,4 +32,7 @@ public class DirectoryServiceDbContext : DbContext
     public DbSet<DepartmentLocation> DepartmentLocations => Set<DepartmentLocation>();
 
     public DbSet<DepartmentPosition> DepartmentPositions => Set<DepartmentPosition>();
+
+    public IQueryable<Location> ReadLocations => Set<Location>().AsQueryable().AsNoTracking();
+    public IQueryable<Department> ReadDepartments => Set<Department>().AsQueryable().AsNoTracking();
 }

@@ -1,6 +1,12 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data;
+using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Abstraction.Database;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Shared;
@@ -21,11 +27,18 @@ public class TransactionManager : ITransactionManager
         _loggerFactory = loggerFactory;
     }
 
-    public async Task<Result<ITransactionScope, Errors>> TransactionBegin(CancellationToken cancellationToken)
+    public async Task<Result<ITransactionScope, Errors>> BeginTransactionAsync(
+        CancellationToken cancellationToken = default,
+        IsolationLevel? isolationLevel = null)
     {
         try
         {
-            var transactionResult = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
+            var transactionResult =
+                await _dbContext.Database.BeginTransactionAsync(
+                    isolationLevel ?? IsolationLevel.ReadCommitted,
+                    cancellationToken);
+            // тут нужно  выбирать именно тот BeginTransaction метод  который находиться в библиотеке EF core ,
+            //он позволит выбрать уровень изоляции а IsolationLevel из system.data .
 
             //Стандартный способ создание логера в рантайме
             var transactionScopeLogger = _loggerFactory.CreateLogger<TransactionScope>();

@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using DirectoryService.Contracts.Locations;
 using Shared;
 
 namespace DirectoryService.Application.Abstraction;

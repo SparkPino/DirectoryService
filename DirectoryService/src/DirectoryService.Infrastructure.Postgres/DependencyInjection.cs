@@ -1,4 +1,6 @@
 ﻿using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Abstraction.Database;
+using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Locations;
 using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Infrastructure.Postgres.Repositories;
@@ -22,21 +24,28 @@ public static class DependencyInjection
             string? connectionString =
                 configuration.GetConnectionString(DbConstants.DIRECTORY_SERVICE_DB_CONNECTION_STRING_KEY);
 
-            IHostEnvironment hostEnviroment = sp.GetRequiredService<IHostEnvironment>(); // дает состояние проекта
+            IHostEnvironment hostEnvironment = sp.GetRequiredService<IHostEnvironment>(); // дает состояние проекта
 
             ILoggerFactory loggerFactory = sp.GetRequiredService<ILoggerFactory>(); // берем из di 
 
-            options.UseNpgsql(connectionString);
 
-            if (hostEnviroment.IsDevelopment())
+            options.UseNpgsql(connectionString, npgsqlOptions =>
+            {
+                npgsqlOptions.EnableRetryOnFailure(3, TimeSpan.FromSeconds(30), null);
+                npgsqlOptions.MigrationsAssembly(typeof(DirectoryServiceDbContext).Assembly.FullName);
+            });
+
+            if (hostEnvironment.IsDevelopment())
             {
                 options.EnableSensitiveDataLogging();
                 options.EnableDetailedErrors();
             }
 
-
             options.UseLoggerFactory(loggerFactory);
         });
+
+        services.AddScoped<IReadDbContext>(sp =>
+            sp.GetRequiredService<DirectoryServiceDbContext>()); // используем тоже подключение
 
         services.AddScoped<ILocationRepository, LocationRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
