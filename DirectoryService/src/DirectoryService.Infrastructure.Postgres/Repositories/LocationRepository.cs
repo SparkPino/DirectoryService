@@ -1,6 +1,13 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Abstraction.Database;
+using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -19,21 +26,6 @@ public class LocationRepository : ILocationRepository
     {
         _context = context;
         _logger = logger;
-    }
-
-    public async Task<IReadOnlyList<Location>> GetPaged(
-        int page,
-        int pageSize,
-        CancellationToken cancellationToken)
-    {
-        var locations = await _context.Locations
-            .AsNoTracking()
-            .OrderBy(l => l.Name).ThenBy(l => l.Id) // <- must have 
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        return locations;
     }
 
     public async Task<Guid> AddAsync(Location location, CancellationToken cancellationToken)

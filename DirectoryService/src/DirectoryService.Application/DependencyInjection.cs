@@ -1,6 +1,5 @@
 ﻿using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations;
-using DirectoryService.Application.Locations.AddLocation;
 using DirectoryService.Contracts;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;

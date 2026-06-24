@@ -1,13 +1,14 @@
 ﻿using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Departments;
-using DirectoryService.Application.Departments.AddDepartment;
-using DirectoryService.Application.Departments.AttachLocationToDepartment;
-using DirectoryService.Application.Departments.AttachPositionToDepartment;
-using DirectoryService.Application.Departments.DetachLocationFromDepartment;
-using DirectoryService.Application.Departments.DetachPositionFromDepartment;
-using DirectoryService.Application.Departments.MoveDepartment;
-using DirectoryService.Application.Departments.RemoveDepartment;
-using DirectoryService.Application.Departments.UpdateDepartment;
+using DirectoryService.Application.Departments.Commands.AddDepartment;
+using DirectoryService.Application.Departments.Commands.AttachLocationToDepartment;
+using DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
+using DirectoryService.Application.Departments.Commands.DetachLocationFromDepartment;
+using DirectoryService.Application.Departments.Commands.DetachPositionFromDepartment;
+using DirectoryService.Application.Departments.Commands.MoveDepartment;
+using DirectoryService.Application.Departments.Commands.RemoveDepartment;
+using DirectoryService.Application.Departments.Commands.UpdateDepartment;
+using DirectoryService.Application.Departments.Queries;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,13 @@ public class DepartmentController : BaseApiController
         [FromServices] ICommandHandler<AddDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new AddDepartmentCommand(departmentDto), cancellationToken);
+
+    [HttpGet("{departmentId:guid}")]
+    public async Task<EndpointResult<DepartmentDto>> GetById(
+        [FromRoute] Guid departmentId,
+        [FromServices] IQueryHandler<GetByIdDepartmentQuery, DepartmentDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new GetByIdDepartmentQuery(departmentId), cancellationToken);
 
     [HttpDelete]
     public async Task<EndpointResult<Unit>> Delete(

@@ -1,5 +1,11 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
+using DirectoryService.Application.Abstraction.Database;
+using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
@@ -108,7 +114,7 @@ public class DepartmentRepository : IDepartmentRepository
         var correctId = new DepartmentId(departmentId);
 
         var department = await _context.Departments
-            .Include(d => d.Positions)
+            .Include(d => d.DepartmentPositions)
             .FirstOrDefaultAsync(d => d.Id == correctId, cancellationToken);
 
         if (department == null)

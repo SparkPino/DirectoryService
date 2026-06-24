@@ -63,9 +63,9 @@ public sealed class Department
 
     public IReadOnlyList<Department> ChildDepartments => _childDepartments;
 
-    public IReadOnlyList<DepartmentLocation> DepartmentsLocations => _departmentsLocations;
+    public IReadOnlyList<DepartmentLocation> DepartmentsLocations => _departmentsLocations.AsReadOnly();
 
-    public IReadOnlyList<DepartmentPosition> Positions => _departmentPositions.AsReadOnly();
+    public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions.AsReadOnly();
 
     public static Result<Department, Errors> CreateDepartment(
         IEnumerable<DepartmentPosition> positions,
@@ -192,9 +192,6 @@ public sealed class Department
 
     public UnitResult<Error> AddLocation(LocationId locationId)
     {
-        if (_departmentsLocations.Any(l => l.LocationId.Id == locationId.Id))
-            return Error.Conflict("location.already.exist", "Location уже существует");
-
         var departmentLocation = new DepartmentLocation(Id, locationId);
 
         _departmentsLocations.Add(departmentLocation);
@@ -226,9 +223,6 @@ public sealed class Department
 
     public UnitResult<Error> AddPosition(PositionId positionId)
     {
-        if (_departmentPositions.Any(l => l.PositionId == positionId))
-            return Error.Conflict("position.already.exist", "Position уже существует");
-
         var departmentPosition = new DepartmentPosition(Id, positionId);
 
         _departmentPositions.Add(departmentPosition);

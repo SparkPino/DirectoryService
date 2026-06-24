@@ -50,7 +50,7 @@ public class DepartmentPositionConfiguration : IEntityTypeConfiguration<Departme
             .HasForeignKey(d => d.PositionId);
 
         builder.HasOne<Department>()
-            .WithMany(d => d.Positions)
+            .WithMany(d => d.DepartmentPositions)
             .IsRequired()
             .HasForeignKey(d => d.DepartmentId);
     }
