@@ -80,6 +80,11 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .HasColumnName("updated_at")
             .IsRequired(false);
 
+        builder.Property(d => d.RowVersion)
+            .IsRowVersion()
+            .HasColumnName("xmin")
+            .HasColumnType("xid");
+
         builder.HasQueryFilter(d => d.IsActive);
     }
 }

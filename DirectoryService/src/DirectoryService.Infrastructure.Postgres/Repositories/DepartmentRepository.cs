@@ -126,6 +126,11 @@ public class DepartmentRepository : IDepartmentRepository
         return department;
     }
 
+    public void SetRowVersion(Department department, uint rowVersion)
+    {
+        _context.Entry(department).Property(x => x.RowVersion).OriginalValue = rowVersion;
+    }
+
     public async Task<int> UpdateDescendantsPathAsync(
         DepartmentPath oldPath,
         DepartmentPath newPath,
