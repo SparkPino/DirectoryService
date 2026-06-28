@@ -28,7 +28,6 @@
     <ItemGroup>
       <Folder Include="Departments\Commands\" />
       <Folder Include="Locations\Commands\" />
-      <Folder Include="Locations\Queries\" />
     </ItemGroup>
 
 </Project>

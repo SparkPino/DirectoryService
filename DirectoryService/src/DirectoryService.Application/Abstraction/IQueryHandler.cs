@@ -9,3 +9,8 @@ public interface IQueryHandler<in TQuery, TResult>
 {
     Task<Result<TResult, Errors>> Handle(TQuery query, CancellationToken cancellationToken);
 }
+
+public interface IQueryHandler<TResult>
+{
+    Task<Result<TResult, Errors>> Handle(CancellationToken cancellationToken);
+}
