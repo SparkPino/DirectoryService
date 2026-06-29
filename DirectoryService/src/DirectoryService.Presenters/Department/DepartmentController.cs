@@ -10,6 +10,7 @@ using DirectoryService.Application.Departments.Commands.RemoveDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartment;
 using DirectoryService.Application.Departments.Queries;
 using DirectoryService.Contracts.Department;
+using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,13 @@ namespace DirectoryService.Presenters.Department;
 [Produces("application/json")]
 public class DepartmentController : BaseApiController
 {
+    [HttpGet("{departmentId:guid}/Dapper")]
+    public async Task<EndpointResult<DepartmentRow>> GetByIdDapper(
+        [FromRoute] Guid departmentId,
+        [FromServices] IQueryHandler<GetByIdDepartmentQuery, DepartmentRow> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new GetByIdDepartmentQuery(departmentId), cancellationToken);
+
     [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(

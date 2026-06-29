@@ -24,4 +24,6 @@ public interface IDepartmentRepository
         DepartmentPath newPath,
         short depthDelta,
         CancellationToken cancellationToken);
+
+    void SetRowVersion(Department department, uint rowVersion);
 }

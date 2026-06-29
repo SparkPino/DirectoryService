@@ -14,3 +14,9 @@ public record LocationResponseDto
 
     public DateTimeOffset? UpdatedAt { get; init; }
 }
+
+public sealed record ShortAdressDTO
+{
+    public Guid Id { get; init; }
+    
+}

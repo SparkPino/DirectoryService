@@ -6,6 +6,7 @@ using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Application.Locations.Queries.GetAllLocations;
 using DirectoryService.Application.Locations.Queries.GetByIdLocation;
+using DirectoryService.Application.Locations.Queries.GetLocationTop;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -22,6 +23,12 @@ namespace DirectoryService.Presenters.Locations;
 [Produces("application/json")]
 public class LocationController : BaseApiController
 {
+    [HttpGet("/api/locations/top")]
+    public async Task<EndpointResult<IReadOnlyCollection<GetLocationTopDto>>> Handle(
+        [FromServices] IQueryHandler<IReadOnlyCollection<GetLocationTopDto>> handler,
+        CancellationToken cancellationToken)
+        => await handler.Handle(cancellationToken);
+
     [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(

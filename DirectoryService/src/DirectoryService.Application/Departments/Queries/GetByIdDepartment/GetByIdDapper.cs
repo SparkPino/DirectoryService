@@ -4,6 +4,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Contracts.Department;
+using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Departments.ValueObjects;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
@@ -12,19 +13,19 @@ using Shared;
 
 namespace DirectoryService.Application.Departments.Queries.GetByIdDepartment;
 
-public class GetByIdDepartmentHandler(
+public class GetByIdDapper(
     IReadDbContext context,
     IDbConnectionFactory dbConnectionFactory,
     IValidator<GetByIdDepartmentQuery> validator,
     ILogger<GetByIdDepartmentHandler> logger)
-    : IQueryHandler<GetByIdDepartmentQuery, DepartmentDto>
+    : IQueryHandler<GetByIdDepartmentQuery, DepartmentRow>
 {
     private readonly IReadDbContext _context = context;
     private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
     private readonly IValidator<GetByIdDepartmentQuery> _validator = validator;
     private readonly ILogger<GetByIdDepartmentHandler> _logger = logger;
 
-    public async Task<Result<DepartmentDto, Errors>> Handle(
+    public async Task<Result<DepartmentRow, Errors>> Handle(
         GetByIdDepartmentQuery query,
         CancellationToken cancellationToken)
     {
@@ -34,35 +35,41 @@ public class GetByIdDepartmentHandler(
             return DepartmentError.InvalidId.ToErrors();
         }
 
-        DepartmentId departmentId = new DepartmentId(query.id);
 
-       // var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        DepartmentRow departmentRow = null;
+        var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
-        /*var result = await connection.QueryAsync<DepartmentRow>(
+        var department = await connection.QueryAsync<DepartmentRow, ShortAdressDTO, DepartmentRow>(
             """
             SELECT
             d.name,
             d.identifier,
-            array_agg(dl.location_id) AS location_ids,
             d.xmin::text::bigint AS row_version,
-            d.parent_id
+            d.parent_id,
+                
+            l.id
             FROM departments d
-            LEFT JOIN departments_location dl ON d.id = dl.department_id
-            WHERE d.id = @queryId
-            GROUP BY d.id;
+            JOIN departments_location dl ON d.id=dl.department_id     
+            LEFT JOIN locations l ON l.id = dl.location_id
+            WHERE d.id = @queryId;
             """,
-            param: new { queryId = query.id });*/   // @queryId = queryId
+            param: new
+            {
+                queryId = query.id // @queryId = queryId
+            },
+            splitOn: "id",
+            map:
+            (DepartmentRow, LocationResponseDto) =>
+            {
+                if (departmentRow is null)
+                {
+                    departmentRow = DepartmentRow;
+                }
 
+                departmentRow.LocationIds.Add(LocationResponseDto.Id);
+                return departmentRow;
+            });
 
-        var department = await _context.ReadDepartments
-            .Where(a => a.Id == departmentId)
-            .Select(a => new DepartmentDto(
-                a.Name.Value,
-                a.Identifier.Identifier,
-                a.DepartmentsLocations.Select(dl => dl.LocationId.Id), // сам делает джоин
-                a.RowVersion,
-                a.ParentId != null ? a.ParentId.Id : (Guid?)null))
-            .FirstOrDefaultAsync(cancellationToken);
 
         if (department is null)
         {
@@ -70,6 +77,6 @@ public class GetByIdDepartmentHandler(
             return DepartmentError.NotFound(query.id).ToErrors();
         }
 
-        return department;
+        return department.FirstOrDefault()!;
     }
 }

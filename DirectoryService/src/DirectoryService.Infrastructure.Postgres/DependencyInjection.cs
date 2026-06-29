@@ -1,4 +1,5 @@
-﻿using DirectoryService.Application.Abstraction;
+﻿using Dapper;
+using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Locations;
@@ -19,6 +20,8 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
         services.AddDbContextPool<DirectoryServiceDbContext>((sp, options) =>
         {
             string? connectionString =
@@ -46,6 +49,8 @@ public static class DependencyInjection
 
         services.AddScoped<IReadDbContext>(sp =>
             sp.GetRequiredService<DirectoryServiceDbContext>()); // используем тоже подключение
+
+        services.AddSingleton<IDbConnectionFactory, NpgsqlDbConnectionFactory>();
 
         services.AddScoped<ILocationRepository, LocationRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();

@@ -67,6 +67,8 @@ public sealed class Department
 
     public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions.AsReadOnly();
 
+    public uint RowVersion { get; private set; }
+
     public static Result<Department, Errors> CreateDepartment(
         IEnumerable<DepartmentPosition> positions,
         DepartmentName name,

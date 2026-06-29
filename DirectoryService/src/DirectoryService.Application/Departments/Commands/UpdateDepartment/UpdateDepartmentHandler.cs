@@ -57,6 +57,8 @@ public class UpdateDepartmentHandler : ICommandHandler<UpdateDepartmentCommand, 
         }
 
 
+        _departmentRepository.SetRowVersion(departmentResult.Value, command.DepartmentDto.RowVersion);
+
         var updateDepartmentResult =
             departmentResult.Value.UpdateDepartment(name, identifier);
         if (updateDepartmentResult.IsFailure) return updateDepartmentResult.Error;
