@@ -12,11 +12,11 @@ namespace DirectoryService.Application.Locations.Queries.GetLocationTop;
 public class GetLocationTopHandler : IQueryHandler<IReadOnlyCollection<GetLocationTopDto>>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly ILogger<GetLocationTopQuery> _logger;
+    private readonly ILogger<GetLocationTopHandler> _logger;
 
     public GetLocationTopHandler(
         IDbConnectionFactory dbConnectionFactory,
-        ILogger<GetLocationTopQuery> logger)
+        ILogger<GetLocationTopHandler> logger)
     {
         _dbConnectionFactory = dbConnectionFactory;
         _logger = logger;
@@ -29,13 +29,17 @@ public class GetLocationTopHandler : IQueryHandler<IReadOnlyCollection<GetLocati
         var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<GetLocationTopRow>(
             """
-            SELECT 
-                loc.name, 
+            SELECT
+                loc.name,
                 loc.addresses,
-                COUNT(dl.department_id)  AS department_count
+                COUNT(dl.department_id) AS department_count
             FROM departments_location dl
             INNER JOIN locations loc ON loc.id = dl.location_id
-            GROUP BY loc.id ORDER BY department_count DESC LIMIT 5;
+            INNER JOIN departments d ON d.id = dl.department_id
+            WHERE loc.is_active = true AND d.is_active = true
+            GROUP BY loc.id
+            ORDER BY department_count DESC, loc.id
+            LIMIT 5;
             """);
 
         var result = rows.Select(s => new GetLocationTopDto()
