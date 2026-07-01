@@ -14,7 +14,7 @@ public class GetDepartmentsValidation : AbstractValidator<GetDepartmentsQuery>
         RuleFor(a => a.Pagination.PageSize).Must(a => a < 100)
             .WithError(Error.Validation("pageSize.out.of.range", "PageSize должно быть не больше 100", "PageSize"));
 
-        RuleFor(a => a.Search).Must(a => a.Length < 150)
+        RuleFor(a => a.Search).Must(a => a is null || a.Length < 150)
             .WithError(Error.Validation("search.to.longe", "Search должно содержать не больше 150 символов", "Search"));
     }
 }
