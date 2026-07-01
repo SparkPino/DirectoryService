@@ -9,6 +9,7 @@ using DirectoryService.Application.Departments.Commands.MoveDepartment;
 using DirectoryService.Application.Departments.Commands.RemoveDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartment;
 using DirectoryService.Application.Departments.Queries;
+using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Presenters.Controllers;
@@ -24,6 +25,13 @@ namespace DirectoryService.Presenters.Department;
 [Produces("application/json")]
 public class DepartmentController : BaseApiController
 {
+    [HttpGet]
+    public async Task<EndpointResult<PagedResult<GetDepartmentDto>>> GetDepartments(
+        [FromQuery] GetDepartmentsQuery query,
+        [FromServices] IQueryHandler<GetDepartmentsQuery, PagedResult<GetDepartmentDto>> handler,
+        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
+
+
     [HttpGet("{departmentId:guid}/Dapper")]
     public async Task<EndpointResult<DepartmentRow>> GetByIdDapper(
         [FromRoute] Guid departmentId,
