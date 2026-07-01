@@ -26,13 +26,13 @@ public class GetLocationTopHandler : IQueryHandler<IReadOnlyCollection<GetLocati
         CancellationToken cancellationToken)
     {
         _logger.LogInformation("обоработка GetLocationTopDto начата");
-        var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
         var rows = await connection.QueryAsync<GetLocationTopRow>(
             """
             SELECT
                 loc.name,
                 loc.addresses,
-                COUNT(dl.department_id) AS department_count
+                COUNT(dl.department_id)  AS department_count
             FROM departments_location dl
             INNER JOIN locations loc ON loc.id = dl.location_id
             INNER JOIN departments d ON d.id = dl.department_id

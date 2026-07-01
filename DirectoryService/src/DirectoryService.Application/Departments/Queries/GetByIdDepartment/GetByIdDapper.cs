@@ -37,7 +37,7 @@ public class GetByIdDapper(
 
 
         DepartmentRow departmentRow = null;
-        var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         var department = await connection.QueryAsync<DepartmentRow, ShortAdressDTO, DepartmentRow>(
             """
