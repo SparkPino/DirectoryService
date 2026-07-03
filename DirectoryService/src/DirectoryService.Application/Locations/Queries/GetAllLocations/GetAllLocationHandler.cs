@@ -35,9 +35,9 @@ public class GetAllLocationHandler(
 
         IQueryable<LocationRow> locations = _locationReadRepository.SearchLocations(query.Search);
 
-        if (query.minDepartmentCount.HasValue && query.minDepartmentCount.Value > 0)
+        if (query.MinDepartmentCount.HasValue && query.MinDepartmentCount.Value > 0)
         {
-            locations = locations.Where(a => a.AttachDepartmentCount >= query.minDepartmentCount.Value);
+            locations = locations.Where(a => a.AttachDepartmentCount >= query.MinDepartmentCount.Value);
         }
 
         bool descending = query.SortDirection == SortDirection.DESC;

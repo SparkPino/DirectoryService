@@ -62,6 +62,12 @@ public class LocationController : BaseApiController
         [FromServices] IQueryHandler<GetAllLocationQuery, PagedResult<GetAllLocationDto>> handler,
         CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 
+    [HttpGet("/api/locations/Dapper")]
+    public async Task<EndpointResult<PagedResult<GetAllLocationDto>>> GetAllDapper(
+        [FromQuery] GetAllLocationQueryDapper query,
+        [FromServices] IQueryHandler<GetAllLocationQueryDapper, PagedResult<GetAllLocationDto>> handler,
+        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
+
     [HttpDelete]
     [Route("/api/locations/{id}")]
     public async Task<EndpointResult<Guid>> Delete(

@@ -3,7 +3,7 @@ using Shared;
 
 namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 
-public record GetAllLocationQuery(
+public record GetAllLocationQueryDapper(
     string? Search,
     int? MinDepartmentCount,
     string? OrderBy,
