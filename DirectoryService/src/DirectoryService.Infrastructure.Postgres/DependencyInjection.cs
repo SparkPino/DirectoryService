@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddSingleton<IDbConnectionFactory, NpgsqlDbConnectionFactory>();
 
         services.AddScoped<ILocationRepository, LocationRepository>();
+        services.AddScoped<ILocationReadRepository, LocationReadRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
 

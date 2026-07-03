@@ -13,6 +13,7 @@ using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Shared;
 using Shared.EndpointResult;
 
@@ -56,9 +57,9 @@ public class LocationController : BaseApiController
         await handler.Handle(new UpdateLocationCommand(locationDto, id), cancellationToken);
 
     [HttpGet]
-    public async Task<EndpointResult<IReadOnlyList<AddLocationDto>>> GetAll(
+    public async Task<EndpointResult<PagedResult<GetAllLocationDto>>> GetAll(
         [FromQuery] GetAllLocationQuery query,
-        [FromServices] IQueryHandler<GetAllLocationQuery, IReadOnlyList<AddLocationDto>> handler,
+        [FromServices] IQueryHandler<GetAllLocationQuery, PagedResult<GetAllLocationDto>> handler,
         CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 
     [HttpDelete]

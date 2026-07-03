@@ -34,5 +34,18 @@ public class DirectoryServiceDbContext : DbContext, IReadDbContext
     public DbSet<DepartmentPosition> DepartmentPositions => Set<DepartmentPosition>();
 
     public IQueryable<Location> ReadLocations => Set<Location>().AsQueryable().AsNoTracking();
+
     public IQueryable<Department> ReadDepartments => Set<Department>().AsQueryable().AsNoTracking();
+
+    /*public IQueryable<Location> SearchLocationsByName(string search) => Set<Location>()
+        .FromSqlInterpolated(
+            // Алиасы нужны через баг EF Core: при композиции LINQ поверх FromSql
+            // колонки complex/owned-свойств ищуться по именам по умолчанию,
+            // а не по HasColumnName
+            $"""
+             SELECT *, timezone AS "TimeZone_TimeZone", addresses AS "Address"
+             FROM locations
+             WHERE name ILIKE {"%" + search + "%"}
+             """)
+        .AsNoTracking();*/
 }

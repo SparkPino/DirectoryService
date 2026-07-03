@@ -1,6 +1,6 @@
 ﻿namespace DirectoryService.Contracts.Locations;
 
-public record LocationResponseDto
+public sealed record LocationResponseDto
 {
     public Guid Id { get; init; }
 
