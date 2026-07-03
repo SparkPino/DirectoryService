@@ -16,12 +16,12 @@ namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 
 public class GetAllLocationHandlerDapper(
     IDbConnectionFactory connection,
-    ILogger<GetAllLocationHandler> logger,
+    ILogger<GetAllLocationHandlerDapper> logger,
     IValidator<GetAllLocationQueryDapper> validator)
     : IQueryHandler<GetAllLocationQueryDapper, PagedResult<GetAllLocationDto>>
 {
     private readonly IDbConnectionFactory _connection = connection;
-    private readonly ILogger<GetAllLocationHandler> _logger = logger;
+    private readonly ILogger<GetAllLocationHandlerDapper> _logger = logger;
     private readonly IValidator<GetAllLocationQueryDapper> _validator = validator;
 
     private static readonly JsonSerializerOptions _addressJsonOptions =
@@ -100,7 +100,8 @@ public class GetAllLocationHandlerDapper(
         using var connectionCreated = await _connection.CreateConnectionAsync(cancellationToken);
 
         var rowResult =
-            await connectionCreated.QueryAsync<GetAllLocationRow>(new CommandDefinition(sb.ToString(), parameters));
+            await connectionCreated.QueryAsync<GetAllLocationRow>(new CommandDefinition(sb.ToString(), parameters,
+                cancellationToken: cancellationToken));
 
         var result = rowResult.Select(r => new GetAllLocationDto()
         {
