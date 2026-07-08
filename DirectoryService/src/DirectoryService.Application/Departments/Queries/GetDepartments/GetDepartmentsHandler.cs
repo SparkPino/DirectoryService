@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Data;
+using System.Text;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Abstraction;
@@ -54,12 +55,12 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
 
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
-            var normalize = query.Search.Trim();
+            string normalize = query.Search.Trim();
             sb.Append(" AND d.name ILIKE @Name");
             parameters.Add("Name", $"%{normalize}%");
         }
 
-        var sortBy = "d.name";
+        string? sortBy = "d.name";
         if (!string.IsNullOrWhiteSpace(query.SortBy))
         {
             sortBy = query.SortBy switch
@@ -78,16 +79,17 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
             }
         }
 
-        sb.Append($" ORDER BY {sortBy}");
-        sb.Append(query.SortDir == SortDirection.DESC ? " DESC" : " ASC");
+        string descending = query.SortDir == SortDirection.DESC ? " DESC" : " ASC";
+        sb.Append($" ORDER BY {sortBy} {descending}, d.id");
 
         const int pageSizeDefault = 20;
         const int pageDefault = 1;
 
-        var page = query.Pagination?.Page ?? pageDefault;
-        var pageSize = query.Pagination?.PageSize ?? pageSizeDefault;
+        int page = query.Pagination?.Page ?? pageDefault;
+        int pageSize = query.Pagination?.PageSize ?? pageSizeDefault;
         sb.Append(" LIMIT @Limit OFFSET @Offset");
-        parameters.Add("Limit", pageSize);
+        parameters.Add("Limit", pageSize,
+            DbType.Int32); // Просто щоб показати що таке є для таких ситуацій string? name = null;
         parameters.Add("Offset", (page - 1) * pageSize);
 
         using var connectionAsync = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
