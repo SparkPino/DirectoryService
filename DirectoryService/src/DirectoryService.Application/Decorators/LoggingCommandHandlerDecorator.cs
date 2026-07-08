@@ -9,11 +9,11 @@ public class LoggingCommandHandlerDecorator<TCommand, TResponse> : ICommandHandl
     where TCommand : ICommand<TResponse>
 {
     private readonly ICommandHandler<TCommand, TResponse> _inner;
-    private readonly ILogger<LoggingCommandHandlerDecorator<TCommand, TResponse>> _logger;
+    private readonly ILogger<TCommand> _logger;
 
     public LoggingCommandHandlerDecorator(
         ICommandHandler<TCommand, TResponse> inner,
-        ILogger<LoggingCommandHandlerDecorator<TCommand, TResponse>> logger)
+        ILogger<TCommand> logger)
     {
         _inner = inner;
         _logger = logger;
@@ -33,7 +33,8 @@ public class LoggingCommandHandlerDecorator<TCommand, TResponse> : ICommandHandl
         }
         else
         {
-            _logger.LogInformation("Команда {CommandName} успешно обработана. Результат: {@Result}", commandName, result.Value);
+            _logger.LogInformation("Команда {CommandName} успешно обработана. Результат: {@Result}", commandName,
+                result.Value);
         }
 
         return result;
