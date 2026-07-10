@@ -12,16 +12,16 @@ using Shared;
 
 namespace DirectoryService.Application.Departments.Commands.AddDepartment;
 
-public class AddDepartmentHendler : ICommandHandler<AddDepartmentCommand, Guid>
+public class AddDepartmentHandler : ICommandHandler<AddDepartmentCommand, Guid>
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly ILocationRepository _locationRepository;
     private readonly IValidator<AddDepartmentCommand> _validator;
-    private readonly ILogger<AddDepartmentHendler> _logger;
+    private readonly ILogger<AddDepartmentHandler> _logger;
 
-    public AddDepartmentHendler(
-        ILogger<AddDepartmentHendler> logger,
+    public AddDepartmentHandler(
+        ILogger<AddDepartmentHandler> logger,
         IDepartmentRepository departmentRepository,
         ITransactionManager transactionManager,
         ILocationRepository locationRepository,

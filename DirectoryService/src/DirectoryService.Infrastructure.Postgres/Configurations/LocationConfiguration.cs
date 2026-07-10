@@ -18,7 +18,8 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasDatabaseName("ix_location_name_is_active");
 
         builder.HasIndex(l => l.Name)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("is_active = true");
 
         builder.Property(l => l.Id)
             .HasColumnName("id")

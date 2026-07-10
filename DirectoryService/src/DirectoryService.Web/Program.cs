@@ -1,5 +1,4 @@
 using System.Globalization;
-using DirectoryService.Infrastructure.Postgres;
 using DirectoryService.Presentation;
 using DirectoryService.Presentation.Middlewares;
 using Serilog;
@@ -38,4 +37,9 @@ catch (Exception ex) when (ex is not HostAbortedException)
 finally
 {
     Log.CloseAndFlush(); // гарантировано завершить логирования без потери данных.
+}
+
+namespace DirectoryService.Presentation
+{
+    public partial class Program;
 }

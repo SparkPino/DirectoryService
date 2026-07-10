@@ -100,6 +100,11 @@ public class LocationRepository : ILocationRepository
             .Select(l => l.Id)
             .ToListAsync(cancellationToken);
 
+        if (foundIds.Count == 0)
+        {
+            return Error.NotFound("not.found.location", "локация не найдена");
+        }
+
         var foundGuids = foundIds.Select(id => id.Id).ToList();
 
         if (foundGuids.Count != idList.Count)
