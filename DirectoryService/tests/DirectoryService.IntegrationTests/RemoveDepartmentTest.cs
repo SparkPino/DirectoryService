@@ -51,7 +51,7 @@ public class RemoveDepartmentTest : DirectoryBaseTests
             await sut.Handle(command, cancellationToken));
 
         Assert.True(handlerResult.IsFailure);
-        Assert.Contains(handlerResult.Error, e => e.Code == "record.has.dependents");
+        Assert.Contains(handlerResult.Error, e => e.Code == "database.restrict_violation");
 
         await ExecuteInDb(async db =>
         {

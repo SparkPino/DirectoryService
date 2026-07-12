@@ -56,9 +56,12 @@ internal static class DbExceptionMapper
 
             case PostgresErrorCodes.RestrictViolation:
                 logger.LogWarning(
-                    exception, "Restrict violation on {Constraint}",
+                    exception,
+                    "Нарушение RESTRICT-ограничения при удалении. Constraint: {Constraint}",
                     exception.ConstraintName);
-                return Error.Conflict("record.has.dependents", "Нельзя удалить обьект пока на него кто-то ссылкаеться");
+                return Error.Conflict(
+                    "database.restrict_violation",
+                    "Нельзя удалить объект, пока на него кто-то ссылается");
 
             default:
                 logger.LogError(
