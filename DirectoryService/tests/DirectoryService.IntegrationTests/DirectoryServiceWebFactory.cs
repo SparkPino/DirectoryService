@@ -1,4 +1,5 @@
-﻿using DirectoryService.Infrastructure.Postgres;
+﻿using DirectoryService.Application.Abstraction.Database;
+using DirectoryService.Infrastructure.Postgres;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -56,6 +57,9 @@ public class DirectoryServiceWebFactory : WebApplicationFactory<Program>, IAsync
 
                 options.UseLoggerFactory(loggerFactory);
             });
+
+            services.AddScoped<IReadDbContext>(sp =>
+                sp.GetRequiredService<DirectoryServiceDbContext>());
         });
     }
 
@@ -66,7 +70,7 @@ public class DirectoryServiceWebFactory : WebApplicationFactory<Program>, IAsync
         await using var scope = Services.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DirectoryServiceDbContext>();
 
-        await dbContext.Database.EnsureCreatedAsync(); //Что бы проверить что базы нету (она удалена)
+        await dbContext.Database.EnsureDeletedAsync(); //Что бы проверить что базы нету (она удалена)
         await dbContext.Database.EnsureCreatedAsync(); //Создаем базу для контекста если ее нету
 
         _dbConnection = new NpgsqlConnection(_container.GetConnectionString());
@@ -77,11 +81,11 @@ public class DirectoryServiceWebFactory : WebApplicationFactory<Program>, IAsync
 
     public new async Task DisposeAsync()
     {
-        await _container.StopAsync();
-        await _container.DisposeAsync();
-
         await _dbConnection.CloseAsync();
         await _dbConnection.DisposeAsync();
+
+        await _container.StopAsync();
+        await _container.DisposeAsync();
     }
 
     public async Task ResetDatabaseAsync()

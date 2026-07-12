@@ -54,6 +54,12 @@ internal static class DbExceptionMapper
                     "database.foreign_key_violation",
                     "Операция невозможна из-за связанных записей");
 
+            case PostgresErrorCodes.RestrictViolation:
+                logger.LogWarning(
+                    exception, "Restrict violation on {Constraint}",
+                    exception.ConstraintName);
+                return Error.Conflict("record.has.dependents", "Нельзя удалить обьект пока на него кто-то ссылкаеться");
+
             default:
                 logger.LogError(
                     exception,
