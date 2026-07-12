@@ -3,9 +3,8 @@ using DirectoryService.Application.Departments.Commands.DetachPositionFromDepart
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Shared;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
 public class DetachPositionFromDepartmentTest : DirectoryBaseTests
 {

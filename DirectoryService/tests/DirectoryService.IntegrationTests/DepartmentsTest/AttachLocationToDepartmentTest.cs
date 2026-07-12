@@ -3,7 +3,7 @@ using DirectoryService.Domain.DepartmentLocations;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
 public class AttachLocationToDepartmentTest : DirectoryBaseTests
 {

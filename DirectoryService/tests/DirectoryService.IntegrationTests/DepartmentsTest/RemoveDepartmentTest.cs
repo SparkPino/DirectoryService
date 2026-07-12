@@ -1,4 +1,3 @@
-using CSharpFunctionalExtensions;
 using DirectoryService.Application.Departments.Commands.AttachLocationToDepartment;
 using DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
 using DirectoryService.Application.Departments.Commands.RemoveDepartment;
@@ -8,7 +7,7 @@ using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Shared;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
 public class RemoveDepartmentTest : DirectoryBaseTests
 {

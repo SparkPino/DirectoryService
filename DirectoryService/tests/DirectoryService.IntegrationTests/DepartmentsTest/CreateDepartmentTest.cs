@@ -1,11 +1,10 @@
-﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Departments.Commands.AddDepartment;
+﻿using DirectoryService.Application.Departments.Commands.AddDepartment;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Shared;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
 public class CreateDepartmentTest : DirectoryBaseTests
 {

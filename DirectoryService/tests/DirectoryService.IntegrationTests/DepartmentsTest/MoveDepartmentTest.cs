@@ -1,9 +1,8 @@
 using DirectoryService.Application.Departments.Commands.MoveDepartment;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Shared;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
 public class MoveDepartmentTest : DirectoryBaseTests
 {

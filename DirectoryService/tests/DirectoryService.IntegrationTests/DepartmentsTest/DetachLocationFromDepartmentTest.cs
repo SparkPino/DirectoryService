@@ -3,9 +3,8 @@ using DirectoryService.Application.Departments.Commands.DetachLocationFromDepart
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Shared;
 
-namespace DirectoryService.IntegrationTests;
+namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
 public class DetachLocationFromDepartmentTest : DirectoryBaseTests
 {
