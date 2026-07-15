@@ -31,6 +31,10 @@ public sealed class Position
 
     public bool IsActive { get; private set; }
 
+    public DateTimeOffset DeletedAt { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset? UpdatedAt { get; private set; }
@@ -76,5 +80,11 @@ public sealed class Position
         UpdatedAt = DateTimeOffset.UtcNow;
 
         return UnitResult.Success<Error>();
+    }
+
+    public void SoftDelete()
+    {
+        IsActive = false;
+        DeletedAt = DateTimeOffset.UtcNow;
     }
 }

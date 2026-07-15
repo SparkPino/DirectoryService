@@ -7,6 +7,7 @@ using DirectoryService.Application.Departments.Commands.DetachLocationFromDepart
 using DirectoryService.Application.Departments.Commands.DetachPositionFromDepartment;
 using DirectoryService.Application.Departments.Commands.MoveDepartment;
 using DirectoryService.Application.Departments.Commands.RemoveDepartment;
+using DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartment;
 using DirectoryService.Application.Departments.Queries;
 using DirectoryService.Application.Departments.Queries.GetDepartments;
@@ -88,6 +89,14 @@ public class DepartmentController : BaseApiController
         [FromServices] ICommandHandler<DetachLocationFromDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
+
+    [HttpDelete]
+    [Route("/api/department/{departmentId}")]
+    public async Task<EndpointResult<Guid>> SoftDelete(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<SoftDeleteDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new SoftDeleteDepartmentCommand(new DepartmentId(departmentId)), cancellationToken);
 
     [HttpPatch]
     [Route("/api/departments/{departmentId}/move")]

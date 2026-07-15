@@ -26,19 +26,19 @@ public class DirectoryServiceCollection : ICollectionFixture<DirectoryServiceWeb
 [Collection(DirectoryServiceCollection.Name)]
 public class DirectoryBaseTests : IAsyncLifetime
 {
-    private readonly Func<Task> _reserDatabase; // ніде не вживаний ? WTF
+    private readonly Func<Task> _resetDatabase;
 
     protected IServiceProvider Services { get; set; }
 
     protected DirectoryBaseTests(DirectoryServiceWebFactory factory)
     {
         Services = factory.Services;
-        _reserDatabase = factory.ResetDatabaseAsync;
+        _resetDatabase = factory.ResetDatabaseAsync;
     }
 
     public Task InitializeAsync() => Task.CompletedTask;
 
-    public async Task DisposeAsync() => await _reserDatabase();
+    public async Task DisposeAsync() => await _resetDatabase();
 
     protected async Task<Result<TResult, Errors>> ExecuteHandler<TCommand, TResult>(
         Func<ICommandHandler<TCommand, TResult>, Task<Result<TResult, Errors>>> action)
@@ -50,6 +50,28 @@ public class DirectoryBaseTests : IAsyncLifetime
         var sut = scope.ServiceProvider.GetRequiredService<ICommandHandler<TCommand, TResult>>();
 
         return await action(sut);
+    }
+
+    protected async Task<Result<TResult, Errors>> ExecuteQueryHandler<TQuery, TResult>(
+        Func<IQueryHandler<TQuery, TResult>, Task<Result<TResult, Errors>>> action)
+        where TQuery : IQuery
+    {
+        await using var scope = Services.CreateAsyncScope();
+
+        var sut = scope.ServiceProvider.GetRequiredService<IQueryHandler<TQuery, TResult>>();
+
+        return await action(sut);
+    }
+
+    protected async Task<TResult> ExecuteRepository<TRepository, TResult>(
+        Func<TRepository, Task<TResult>> action)
+        where TRepository : notnull
+    {
+        await using var scope = Services.CreateAsyncScope();
+
+        var repository = scope.ServiceProvider.GetRequiredService<TRepository>();
+
+        return await action(repository);
     }
 
     protected async Task<T> ExecuteInDb<T>(Func<DirectoryServiceDbContext, Task<T>> action)

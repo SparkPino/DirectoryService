@@ -30,7 +30,10 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .WithOne()
             .IsRequired(false)
             .HasForeignKey(d => d.ParentId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Property(d => d.DeletedAt)
+            .HasColumnName("deleted_at");
 
         builder.Property(n => n.Name)
             .HasColumnName("name")

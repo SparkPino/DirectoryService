@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -50,6 +51,21 @@ public class LocationRepository : ILocationRepository
         _context.Locations.Remove(location);
 
         return locationId;
+    }
+
+    public async Task<Result<Location, Error>> GetByAsync(
+        Expression<Func<Location, bool>> predicate,
+        CancellationToken cancellationToken)
+    {
+        var location = await _context.Locations
+            .FirstOrDefaultAsync(predicate, cancellationToken);
+        if (location == null)
+        {
+            _logger.LogWarning("Локация не найдена");
+            return Error.NotFound(null, "Локация не найдена");
+        }
+
+        return location;
     }
 
     public async Task<Result<Location, Error>> GetByIdAsync(Guid locationId, CancellationToken cancellationToken)

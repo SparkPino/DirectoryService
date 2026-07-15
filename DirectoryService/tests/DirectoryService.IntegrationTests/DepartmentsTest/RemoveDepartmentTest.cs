@@ -39,26 +39,31 @@ public class RemoveDepartmentTest : DirectoryBaseTests
     }
 
     [Fact]
-    public async Task Remove_Department_With_Child_Departments_Should_Fail()
+    public async Task Remove_Department_With_Child_Departments_Should_Succeed_And_SetNull_ChildParentId()
     {
         var parentId = await CreateDepartmentAsync("Parent", "Parent");
-        await CreateDepartmentAsync("Child", "Child", parentId);
+        var childId = await CreateDepartmentAsync("Child", "Child", parentId);
         var cancellationToken = CancellationToken.None;
 
         var command = new RemoveDepartmentCommand(parentId);
         var handlerResult = await ExecuteHandler<RemoveDepartmentCommand, Unit>(async sut =>
             await sut.Handle(command, cancellationToken));
 
-        Assert.True(handlerResult.IsFailure);
-        Assert.Contains(handlerResult.Error, e => e.Code == "database.restrict_violation");
+        Assert.True(handlerResult.IsSuccess);
 
         await ExecuteInDb(async db =>
         {
-            var parent = await db.Departments.FirstOrDefaultAsync(
-                d => d.Id == new DepartmentId(parentId),
+            var parent = await db.Departments
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(d => d.Id == new DepartmentId(parentId), cancellationToken);
+            Assert.Null(parent);
+
+            var child = await db.Departments.FirstOrDefaultAsync(
+                d => d.Id == new DepartmentId(childId),
                 cancellationToken);
 
-            Assert.NotNull(parent);
+            Assert.NotNull(child);
+            Assert.Null(child!.ParentId);
         });
     }
 

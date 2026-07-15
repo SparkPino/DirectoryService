@@ -5,6 +5,7 @@ using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Domain.Departments.ValueObjects;
+using DirectoryService.Domain.Locations.ValueObjects;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -36,7 +37,7 @@ public class GetByIdDepartmentHandler(
 
         DepartmentId departmentId = new DepartmentId(query.id);
 
-       // var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
+        // var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         /*var result = await connection.QueryAsync<DepartmentRow>(
             """
@@ -51,7 +52,7 @@ public class GetByIdDepartmentHandler(
             WHERE d.id = @queryId
             GROUP BY d.id;
             """,
-            param: new { queryId = query.id });*/   // @queryId = queryId
+            param: new { queryId = query.id });*/ // @queryId = queryId
 
 
         var department = await _context.ReadDepartments
@@ -59,7 +60,11 @@ public class GetByIdDepartmentHandler(
             .Select(a => new DepartmentDto(
                 a.Name.Value,
                 a.Identifier.Identifier,
-                a.DepartmentsLocations.Select(dl => dl.LocationId.Id), // сам делает джоин
+                a.DepartmentsLocations
+                    .Where(dl => _context.ReadLocations
+                        .Select(l => l.Id)
+                        .Contains(dl.LocationId))
+                    .Select(dl => dl.LocationId.Id).ToList(), // сам делает джоин
                 a.RowVersion,
                 a.ParentId != null ? a.ParentId.Id : (Guid?)null))
             .FirstOrDefaultAsync(cancellationToken);

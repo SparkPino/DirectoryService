@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -29,6 +30,21 @@ public class PositionRepository : IPositionRepository
     {
         await _context.Positions.AddAsync(position, cancellationToken);
         return position.Id.Id;
+    }
+
+    public async Task<Result<Position, Error>> GetByAsync(
+        Expression<Func<Position, bool>> predicate,
+        CancellationToken cancellationToken)
+    {
+        var position = await _context.Positions
+            .FirstOrDefaultAsync(predicate, cancellationToken);
+        if (position == null)
+        {
+            _logger.LogWarning("Должность не найдена");
+            return Error.NotFound(null, "Должность не найдена");
+        }
+
+        return position;
     }
 
     public async Task<Result<Position, Error>> GetByIdAsync(Guid positionId, CancellationToken cancellationToken)

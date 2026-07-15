@@ -77,6 +77,9 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
             .IsRequired()
             .HasDefaultValue(true);
 
+        builder.Property(l => l.DeletedAt)
+            .HasColumnName("deleted_at");
+
         builder.Property(l => l.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired()
@@ -86,6 +89,11 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.UpdatedAt)
             .HasColumnName("updated_at")
             .IsRequired(false);
+
+        builder.Property(l => l.RowVersion)
+            .IsRowVersion()
+            .HasColumnName("xmin")
+            .HasColumnType("xid");
 
         builder.HasQueryFilter(d => d.IsActive);
     }
