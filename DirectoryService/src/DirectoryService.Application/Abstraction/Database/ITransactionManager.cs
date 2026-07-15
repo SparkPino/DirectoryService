@@ -6,11 +6,15 @@ namespace DirectoryService.Application.Abstraction.Database;
 
 public interface ITransactionManager
 {
-    Task<Result<ITransactionScope, Errors>> BeginTransactionAsync(
-        CancellationToken cancellationToken = default,
-        IsolationLevel? transactionLevel = null);
-
     Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken);
 
-    Task<UnitResult<Error>> ExecuteAsync(Func<Task> operation);
+    // Оборачивает всю связку "открыть транзакцию -> сделать работу -> закоммитить" в
+    // CreateExecutionStrategy().ExecuteAsync, потому что EF Core запрещает вручную
+    // открытые транзакции (Database.BeginTransactionAsync) при включённом
+    // EnableRetryOnFailure — стратегия ретраев обязана владеть всей операцией целиком,
+    // чтобы при транзиентном сбое безопасно повторить её с нуля.
+    Task<Result<TResult, Errors>> ExecuteInTransactionAsync<TResult>(
+        Func<CancellationToken, Task<Result<TResult, Errors>>> operation,
+        CancellationToken cancellationToken,
+        IsolationLevel? isolationLevel = null);
 }

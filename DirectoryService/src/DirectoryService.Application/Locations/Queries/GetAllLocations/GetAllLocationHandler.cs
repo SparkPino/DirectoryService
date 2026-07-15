@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
@@ -42,28 +43,27 @@ public class GetAllLocationHandler(
 
         bool descending = query.SortDirection == SortDirection.DESC;
 
-        if (!string.IsNullOrWhiteSpace(query.OrderBy))
-        {
-            locations = query.OrderBy.Trim().ToLowerInvariant() switch
-            {
-                "name" => descending
-                    ? locations.OrderByDescending(a => a.Name).ThenByDescending(a => a.Id)
-                    : locations.OrderBy(a => a.Name).ThenBy(a => a.Id),
-                "createdat" => descending
-                    ? locations.OrderByDescending(a => a.CreatedAt).ThenByDescending(a => a.Id)
-                    : locations.OrderBy(a => a.CreatedAt).ThenBy(a => a.Id),
-                "departmentcount" => descending
-                    ? locations.OrderByDescending(a => a.AttachDepartmentCount).ThenBy(a => a.Id)
-                    : locations.OrderBy(a => a.AttachDepartmentCount).ThenBy(a => a.Id),
-                _ => locations.OrderBy(l => l.Name).ThenBy(l => l.Id),
-            };
-        }
-        else
+        if (query.OrderBy is null)
         {
             locations = descending
                 ? locations.OrderByDescending(a => a.Name).ThenByDescending(a => a.Id)
                 : locations.OrderBy(a => a.Name).ThenBy(a => a.Id);
         }
+        else
+        {
+            Expression<Func<LocationRow, object>> selectorKey = query?.OrderBy?.Trim().ToLowerInvariant() switch
+            {
+                "name" => a => a.Name,
+                "createdat" => a => a.CreatedAt,
+                "departmentcount" => a => a.AttachDepartmentCount,
+                _ => a => a.Name,
+            };
+
+            locations = descending
+                ? locations.OrderByDescending(selectorKey).ThenByDescending(a => a.Id)
+                : locations.OrderBy(selectorKey).ThenBy(a => a.Id);
+        }
+
 
         int count = await locations.CountAsync(cancellationToken);
 

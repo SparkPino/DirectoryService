@@ -17,39 +17,11 @@ public class TransactionManager : ITransactionManager
 {
     private readonly DirectoryServiceDbContext _dbContext;
     private readonly ILogger<TransactionManager> _logger;
-    private readonly ILoggerFactory _loggerFactory;
 
-    public TransactionManager(DirectoryServiceDbContext dbContext, ILogger<TransactionManager> logger,
-        ILoggerFactory loggerFactory)
+    public TransactionManager(DirectoryServiceDbContext dbContext, ILogger<TransactionManager> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _loggerFactory = loggerFactory;
-    }
-
-    public async Task<Result<ITransactionScope, Errors>> BeginTransactionAsync(
-        CancellationToken cancellationToken = default,
-        IsolationLevel? isolationLevel = null)
-    {
-        try
-        {
-            var transactionResult =
-                await _dbContext.Database.BeginTransactionAsync(
-                    isolationLevel ?? IsolationLevel.ReadCommitted,
-                    cancellationToken);
-            // тут нужно  выбирать именно тот BeginTransaction метод  который находиться в библиотеке EF core ,
-            //он позволит выбрать уровень изоляции а IsolationLevel из system.data .
-
-            //Стандартный способ создание логера в рантайме
-            var transactionScopeLogger = _loggerFactory.CreateLogger<TransactionScope>();
-
-            var transactionScope = new TransactionScope(transactionResult.GetDbTransaction(), transactionScopeLogger);
-            return transactionScope;
-        }
-        catch (Exception ex)
-        {
-            return DbExceptionMapper.Map(ex, _logger).ToErrors();
-        }
     }
 
     public async Task<UnitResult<Error>> SaveChangesAsync(CancellationToken cancellationToken)
@@ -65,16 +37,37 @@ public class TransactionManager : ITransactionManager
         }
     }
 
-    public async Task<UnitResult<Error>> ExecuteAsync(Func<Task> operation)
+    public async Task<Result<TResult, Errors>> ExecuteInTransactionAsync<TResult>(
+        Func<CancellationToken, Task<Result<TResult, Errors>>> operation,
+        CancellationToken cancellationToken,
+        IsolationLevel? isolationLevel = null)
     {
-        try
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
+
+        return await strategy.ExecuteAsync(async () =>
         {
-            await operation();
-            return UnitResult.Success<Error>();
-        }
-        catch (Exception e)
-        {
-            return DbExceptionMapper.Map(e, _logger);
-        }
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync(
+                isolationLevel ?? IsolationLevel.ReadCommitted,
+                cancellationToken);
+
+            try
+            {
+                var result = await operation(cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return result;
+                }
+
+                await transaction.CommitAsync(cancellationToken);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return DbExceptionMapper.Map(ex, _logger).ToErrors();
+            }
+        });
     }
 }

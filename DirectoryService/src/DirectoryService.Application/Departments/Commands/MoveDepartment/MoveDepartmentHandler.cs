@@ -65,37 +65,27 @@ public class MoveDepartmentHandler : ICommandHandler<MoveDepartmentCommand, Guid
 
         // Перенос самого подразделения и массовый пересчёт путей/глубины у всех его потомков
         // должны быть атомарны: потомки обновляются через ExecuteUpdateAsync, который пишет в БД
-        // напрямую и не входит в SaveChangesAsync, поэтому без явной транзакции при сбое на втором
-        // шаге перемещённое подразделение осталось бы сохранённым с "осиротевшими" путями потомков.
-        var transactionResult = await _transactionManager.BeginTransactionAsync(cancellationToken);
-        if (transactionResult.IsFailure) return transactionResult.Error;
+        // напрямую и не входит в SaveChangesAsync, поэтому без транзакции при сбое на втором шаге
+        // перемещённое подразделение осталось бы сохранённым с "осиротевшими" путями потомков.
+        // Вся операция обёрнута в ExecuteInTransactionAsync (а не в ручной BeginTransactionAsync),
+        // потому что EF Core не разрешает вручную открытые транзакции при включённом
+        // EnableRetryOnFailure — стратегия ретраев должна владеть всей операцией целиком.
+        var moveResult = await _transactionManager.ExecuteInTransactionAsync<Guid>(
+            async ct =>
+            {
+                var saveResult = await _transactionManager.SaveChangesAsync(ct);
+                if (saveResult.IsFailure) return saveResult.Error.ToErrors();
 
-        using var transaction = transactionResult.Value;
+                await _departmentRepository.UpdateDescendantsPathAsync(oldPath, department.Path, depthDelta, ct);
 
-        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-        {
-            transaction.Rollback();
-            return saveResult.Error.ToErrors();
-        }
+                return department.Id.Id;
+            },
+            cancellationToken);
 
-        var updateDescendantsResult = await _transactionManager.ExecuteAsync(() =>
-            _departmentRepository.UpdateDescendantsPathAsync(oldPath, department.Path, depthDelta, cancellationToken));
-
-        if (updateDescendantsResult.IsFailure)
-        {
-            transaction.Rollback();
-            return updateDescendantsResult.Error.ToErrors();
-        }
-
-        var commitResult = transaction.Commit();
-        if (commitResult.IsFailure)
-        {
-            return commitResult.Error.ToErrors();
-        }
+        if (moveResult.IsFailure) return moveResult.Error;
 
         _logger.LogInformation("Департамент {departmentId} успешно перемещён", command.DepartmentId);
 
-        return department.Id.Id;
+        return moveResult.Value;
     }
 }

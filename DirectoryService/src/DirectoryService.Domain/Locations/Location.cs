@@ -49,9 +49,9 @@ public sealed class Location
 
     public static Location Create(
         LocationName name, Address address,
-        LocationTimeZone timeZone, LocationId? positionId = null)
+        LocationTimeZone timeZone, LocationId? locationId = null)
     {
-        var location = new Location(positionId, name, address, timeZone);
+        var location = new Location(locationId, name, address, timeZone);
 
         return location;
     }
