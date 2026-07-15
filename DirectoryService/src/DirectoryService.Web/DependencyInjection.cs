@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using DirectoryService.Application;
+using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Postgres;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
@@ -16,7 +17,8 @@ public static class DependencyInjection
         .AddSerilogLogging(configuration)
         .AddWebDependencies()
         .AddDirectoryServiceDbContext(configuration)
-        .AddApplication();
+        .AddApplication()
+        .AddBackgroundServices(configuration);
 
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)
     {

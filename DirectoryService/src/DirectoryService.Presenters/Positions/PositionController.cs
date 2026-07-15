@@ -1,8 +1,10 @@
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Positions.AddPosition;
 using DirectoryService.Application.Positions.RemovePosition;
+using DirectoryService.Application.Positions.SoftDeletePosition;
 using DirectoryService.Application.Positions.UpdatePosition;
 using DirectoryService.Contracts.Positions;
+using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -40,4 +42,12 @@ public class PositionController : BaseApiController
         [FromServices] ICommandHandler<RemovePositionCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new RemovePositionCommand(id), cancellationToken);
+
+    [HttpDelete]
+    [Route("/api/positions/{id}/soft-delete")]
+    public async Task<EndpointResult<Guid>> SoftDelete(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<SoftDeletePositionCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new SoftDeletePositionCommand(new PositionId(id)), cancellationToken);
 }

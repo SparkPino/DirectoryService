@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DirectoryService.Infrastructure.Postgres;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DirectoryService.Infrastructure.Postgres.Migrations
 {
     [DbContext(typeof(DirectoryServiceDbContext))]
-    partial class DirectoryServiceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713220942_sadsad")]
+    partial class sadsad
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,8 +91,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<short>("Depth")
                         .HasColumnType("smallint")
@@ -166,8 +168,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -226,8 +227,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .HasDefaultValueSql("now()");
 
                     b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .HasColumnType("text")
@@ -299,7 +299,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                     b.HasOne("DirectoryService.Domain.Departments.Department", null)
                         .WithMany("ChildDepartments")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("DirectoryService.Domain.Locations.Location", b =>

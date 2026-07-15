@@ -22,6 +22,10 @@ public sealed class Location
 
     public bool IsActive { get; private set; }
 
+    public DateTimeOffset DeletedAt { get; private set; }
+
+    public uint RowVersion { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset? UpdatedAt { get; private set; }
@@ -54,6 +58,12 @@ public sealed class Location
         var location = new Location(locationId, name, address, timeZone);
 
         return location;
+    }
+
+    public void SoftDelete()
+    {
+        IsActive = false;
+        DeletedAt = DateTimeOffset.UtcNow;
     }
 
     public UnitResult<Error> AddDepartment(DepartmentId departmentId)

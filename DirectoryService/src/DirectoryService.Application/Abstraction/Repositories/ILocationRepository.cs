@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Linq.Expressions;
+using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
 using Shared;
 
@@ -16,5 +17,8 @@ public interface ILocationRepository
         CancellationToken cancellationToken);
 
     Task<Result<IReadOnlyList<Guid>, Error>> GetExistingIdsAsync(IEnumerable<Guid> locationId,
+        CancellationToken cancellationToken);
+
+    Task<Result<Location, Error>> GetByAsync(Expression<Func<Location, bool>> predicate,
         CancellationToken cancellationToken);
 }

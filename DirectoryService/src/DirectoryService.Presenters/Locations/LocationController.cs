@@ -2,6 +2,7 @@ using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Locations;
 using DirectoryService.Application.Locations.Commands.AddLocation;
 using DirectoryService.Application.Locations.Commands.RemoveLocation;
+using DirectoryService.Application.Locations.Commands.SoftDeleteLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Application.Locations.Queries.GetAllLocations;
@@ -75,4 +76,12 @@ public class LocationController : BaseApiController
         [FromServices] ICommandHandler<RemoveLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new RemoveLocationCommand(id), cancellationToken);
+
+    [HttpDelete]
+    [Route("/api/locations/{id}/soft-delete")]
+    public async Task<EndpointResult<Guid>> SoftDelete(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<SoftDeleteLocationCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new SoftDeleteLocationCommand(new LocationId(id)), cancellationToken);
 }

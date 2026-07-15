@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -33,7 +34,21 @@ public class DepartmentRepository : IDepartmentRepository
         await _context.Departments.AddAsync(department, cancellationToken);
         return department.Id.Id;
     }
-    
+
+    public async Task<Result<Department, Error>> GetByAsync(
+        Expression<Func<Department, bool>> predicate,
+        CancellationToken cancellationToken)
+    {
+        var department = await _context.Departments
+            .FirstOrDefaultAsync(predicate, cancellationToken);
+        if (department == null)
+        {
+            _logger.LogWarning("Департамент не найден");
+            return Error.NotFound(null, "Департамент не найден");
+        }
+
+        return department;
+    }
 
     public async Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken)
     {

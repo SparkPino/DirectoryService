@@ -57,6 +57,8 @@ public sealed class Department
 
     public bool IsActive { get; private set; }
 
+    public DateTimeOffset DeletedAt { get; private set; }
+
     public DateTimeOffset CreatedAt { get; private set; }
 
     public DateTimeOffset? UpdatedAt { get; private set; }
@@ -68,6 +70,7 @@ public sealed class Department
     public IReadOnlyList<DepartmentPosition> DepartmentPositions => _departmentPositions.AsReadOnly();
 
     public uint RowVersion { get; private set; }
+
 
     public static Result<Department, Errors> CreateDepartment(
         IEnumerable<DepartmentPosition> positions,
@@ -95,6 +98,12 @@ public sealed class Department
             name, identifier,
             pathResult.Value,
             depth);
+    }
+
+    public void SoftDelete()
+    {
+        IsActive = false;
+        DeletedAt = DateTimeOffset.UtcNow;
     }
 
     private static Department Create(

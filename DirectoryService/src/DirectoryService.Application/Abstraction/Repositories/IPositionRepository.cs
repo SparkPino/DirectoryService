@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Positions;
 using Shared;
@@ -11,4 +12,6 @@ public interface IPositionRepository
     Task<Result<Position, Error>> GetByIdAsync(Guid positionId, CancellationToken cancellationToken);
 
     Task<Result<Unit, Error>> DeleteByIdAsync(Guid positionId, CancellationToken cancellationToken);
+    
+    Task<Result<Position, Error>> GetByAsync(Expression<Func<Position, bool>> predicate, CancellationToken cancellationToken);
 }
