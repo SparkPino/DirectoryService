@@ -1,5 +1,6 @@
 ﻿using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Infrastructure.Postgres;
+using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -58,8 +59,14 @@ public class DirectoryServiceWebFactory : WebApplicationFactory<Program>, IAsync
                 options.UseLoggerFactory(loggerFactory);
             });
 
+            //QueryContext
             services.AddScoped<IReadDbContext>(sp =>
-                sp.GetRequiredService<DirectoryServiceDbContext>());
+                sp.GetRequiredService<DirectoryServiceDbContext>()); //Берем уже созданное подключение,не дублируем
+
+            //Dapper
+            services.RemoveAll<IDbConnectionFactory>();
+            services.AddSingleton<IDbConnectionFactory>(_ =>
+                new NpgsqlDbConnectionFactory(_container.GetConnectionString()));
         });
     }
 

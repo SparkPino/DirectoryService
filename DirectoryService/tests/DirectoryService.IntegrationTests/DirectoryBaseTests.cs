@@ -147,6 +147,17 @@ public class DirectoryBaseTests : IAsyncLifetime
         });
     }
 
+    protected async Task<(Guid alpha, Guid beta, Guid gamma, Guid delta, Guid epsilon)> SeedAlphaHierarchyAsync()
+    {
+        var alphaId = await CreateDepartmentAsync("Alpha", "alpha");
+        var betaId = await CreateDepartmentAsync("Beta", "beta", alphaId);
+        var gammaId = await CreateDepartmentAsync("Gamma", "gamma", betaId);
+        var deltaId = await CreateDepartmentAsync("Delta", "delta", betaId);
+        var epsilonId = await CreateDepartmentAsync("Epsilon", "epsilon", alphaId);
+
+        return (alphaId, betaId, gammaId, deltaId, epsilonId);
+    }
+
     protected async Task<Guid> CreatePositionAsync(string name, string? description = null)
     {
         var position = Position.Create(PositionName.Create(name).Value, description).Value;

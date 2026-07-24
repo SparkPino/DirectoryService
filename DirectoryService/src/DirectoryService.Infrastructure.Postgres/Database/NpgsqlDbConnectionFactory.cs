@@ -15,6 +15,11 @@ public sealed class NpgsqlDbConnectionFactory : IDbConnectionFactory
             ?? throw new InvalidOperationException("Connection string not found.");
     }
 
+    public NpgsqlDbConnectionFactory(string connectionString) // for tests
+    {
+        _connectionString = connectionString;
+    }
+
     public async Task<IDbConnection> CreateConnectionAsync(CancellationToken cancellationToken = default)
     {
         var connection = new NpgsqlConnection(_connectionString);

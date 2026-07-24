@@ -152,16 +152,17 @@ public class DepartmentRepository : IDepartmentRepository
         short depthDelta,
         CancellationToken cancellationToken)
     {
-        string oldPrefix = $"{oldPath.Path}.";
-        string newPrefix = $"{newPath.Path}.";
+        string newPathValue = newPath.Path;
+        string oldPathValue = oldPath.Path;
 
-        return await _context.Departments
-            .Where(d => d.Path.Path.StartsWith(oldPrefix))
-            .ExecuteUpdateAsync(
-                setters => setters
-                    .SetProperty(d => d.Path.Path, d => newPrefix + d.Path.Path.Substring(oldPrefix.Length))
-                    .SetProperty(d => d.Depth, d => (short)(d.Depth + depthDelta))
-                    .SetProperty(d => d.UpdatedAt, _ => DateTimeOffset.UtcNow),
-                cancellationToken);
+
+        FormattableString sqlCommand = $"""
+                                         UPDATE departments
+                                         SET path = {newPathValue}::ltree || subpath(path, nlevel({oldPathValue}::ltree)),
+                                          depth = depth +{depthDelta},
+                                             updated_at = now()
+                                             WHERE path <@ {oldPathValue}::ltree AND path != {oldPathValue}::ltree  -- AND is_active = true;
+                                        """;
+        return await _context.Database.ExecuteSqlInterpolatedAsync(sqlCommand, cancellationToken);
     }
 }

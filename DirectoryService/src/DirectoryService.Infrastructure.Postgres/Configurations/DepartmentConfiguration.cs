@@ -18,6 +18,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.HasIndex(d => new { d.IsActive, d.Name })
             .HasDatabaseName("ix_department_name");
 
+
         builder.Property(d => d.Id)
             .IsRequired()
             .HasColumnName("id")
@@ -51,11 +52,16 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 .HasColumnName("identifier");
         });
 
-        builder.ComplexProperty(d => d.Path, pb =>
+        builder.OwnsOne(d => d.Path, pb =>
         {
             pb.Property(d => d.Path)
                 .IsRequired()
-                .HasColumnName("path");
+                .HasColumnName("path")
+                .HasColumnType("ltree");
+
+            pb.HasIndex(d => d.Path)
+                .HasMethod("gist")
+                .HasDatabaseName("ix_department_path");
         });
 
         builder.Property(d => d.Depth)
