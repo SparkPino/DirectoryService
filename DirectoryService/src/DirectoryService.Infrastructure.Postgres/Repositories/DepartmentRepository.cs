@@ -159,9 +159,9 @@ public class DepartmentRepository : IDepartmentRepository
         FormattableString sqlCommand = $"""
                                          UPDATE departments
                                          SET path = {newPathValue}::ltree || subpath(path, nlevel({oldPathValue}::ltree)),
-                                          depth = {depthDelta} + 1,
+                                          depth = depth +{depthDelta},
                                              updated_at = now()
-                                             WHERE path <@ {oldPathValue}::ltree AND path != {oldPathValue}::ltree AND is_active = true;
+                                             WHERE path <@ {oldPathValue}::ltree AND path != {oldPathValue}::ltree  -- AND is_active = true;
                                         """;
         return await _context.Database.ExecuteSqlInterpolatedAsync(sqlCommand, cancellationToken);
     }

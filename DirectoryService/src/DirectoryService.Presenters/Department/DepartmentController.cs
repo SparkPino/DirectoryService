@@ -38,7 +38,7 @@ public class DepartmentController : BaseApiController
         [FromServices] IQueryHandler<GetDepartmentsQuery, PagedResult<GetDepartmentDto>> handler,
         CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 
-    [HttpPost("/LOL")]
+    [HttpPost("tree/identifier")]
     public async Task<EndpointResult<GetAllDepartmentChildrenDto>> GetDepartmentTreeFromIdentifier(
         [FromBody] GetAllChildrenQuery rootIdentifier,
         [FromServices] IQueryHandler<GetAllChildrenQuery, GetAllDepartmentChildrenDto> handler,

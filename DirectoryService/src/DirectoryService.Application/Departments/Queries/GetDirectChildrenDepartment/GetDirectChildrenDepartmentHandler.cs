@@ -41,8 +41,8 @@ public class GetDirectChildrenDepartmentHandler(
                                                        d.updated_at,
                                                        d.deleted_at
                                                 FROM departments d
-                                               WHERE d.parent_id = @parentId
-                                 OR (@parentId IS NULL AND d.parent_id IS NULL)
+                                               WHERE d.parent_id = @parentId 
+                                 OR (@parentId IS NULL AND d.parent_id IS NULL) AND d.is_active = true
                                                 ORDER BY d.created_at
                                                 OFFSET @level_offset LIMIT @level_limit)
 

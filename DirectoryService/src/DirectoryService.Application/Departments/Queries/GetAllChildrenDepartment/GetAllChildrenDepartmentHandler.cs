@@ -36,6 +36,7 @@ public class GetAllChildrenDepartmentHandler : IQueryHandler<GetAllChildrenQuery
                                     SELECT  d.id, d.name,  d.path, d.identifier , 0 AS level, d.parent_id
                                                                                FROM departments d
                                                                                WHERE d.identifier = @rootIdentifier
+                                                                               AND d.is_active = true
                                                                                
                                                                                UNION ALL
                                                                                SELECT  c.id, c.name,  c.path, c.identifier , d.level + 1 ,c.parent_id
@@ -52,7 +53,7 @@ public class GetAllChildrenDepartmentHandler : IQueryHandler<GetAllChildrenQuery
                                        SELECT *,nlevel(d.path) as Level
                                        FROM departments d
                                        CROSS JOIN child
-                                       WHERE d.path <@ child.path
+                                       WHERE d.path <@ child.path AND d.is_active = true
                                        ORDER BY d.depth
                                        """;
 
