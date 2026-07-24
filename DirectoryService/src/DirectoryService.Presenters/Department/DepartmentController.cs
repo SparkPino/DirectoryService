@@ -5,12 +5,18 @@ using DirectoryService.Application.Departments.Commands.AttachLocationToDepartme
 using DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
 using DirectoryService.Application.Departments.Commands.DetachLocationFromDepartment;
 using DirectoryService.Application.Departments.Commands.DetachPositionFromDepartment;
+using DirectoryService.Application.Departments.Commands.GetAllChildren;
 using DirectoryService.Application.Departments.Commands.MoveDepartment;
+using DirectoryService.Application.Departments.Queries.GetDirectChildrenDepartment;
 using DirectoryService.Application.Departments.Commands.RemoveDepartment;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartment;
 using DirectoryService.Application.Departments.Queries;
+using DirectoryService.Application.Departments.Queries.GetDepartmentAncestors;
+using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 using DirectoryService.Application.Departments.Queries.GetDepartments;
+using DirectoryService.Application.Departments.Queries.GetDepartmentTree;
+using DirectoryService.Application.Departments.Queries.SearchDepartmentTree;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Presenters.Controllers;
@@ -32,6 +38,48 @@ public class DepartmentController : BaseApiController
         [FromServices] IQueryHandler<GetDepartmentsQuery, PagedResult<GetDepartmentDto>> handler,
         CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 
+    [HttpPost("/LOL")]
+    public async Task<EndpointResult<GetAllDepartmentChildrenDto>> GetDepartmentTreeFromIdentifier(
+        [FromBody] GetAllChildrenQuery rootIdentifier,
+        [FromServices] IQueryHandler<GetAllChildrenQuery, GetAllDepartmentChildrenDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(rootIdentifier, cancellationToken);
+
+    
+    [HttpPost("direct-children")]
+    public async Task<EndpointResult<GetDirectChildrenDepartmentDto>> GetDirectChildren(
+        [FromBody] GetDirectChildrenDepartmentQuery query,
+        [FromServices] IQueryHandler<GetDirectChildrenDepartmentQuery, GetDirectChildrenDepartmentDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(query, cancellationToken);
+
+    [HttpGet("tree")]
+    public async Task<EndpointResult<List<DepartmentTreeNodeDto>>> GetTree(
+        [FromQuery] GetDepartmentTreeQuery query,
+        [FromServices] IQueryHandler<GetDepartmentTreeQuery, List<DepartmentTreeNodeDto>> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(query, cancellationToken);
+
+    [HttpGet("tree/search")]
+    public async Task<EndpointResult<List<DepartmentSearchResultDto>>> SearchTree(
+        [FromQuery] string q,
+        [FromServices] IQueryHandler<SearchDepartmentTreeQuery, List<DepartmentSearchResultDto>> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new SearchDepartmentTreeQuery(q), cancellationToken);
+
+    [HttpGet("{departmentId:guid}/children")]
+    public async Task<EndpointResult<List<DepartmentTreeNodeDto>>> GetChildren(
+        [FromRoute] Guid departmentId,
+        [FromServices] IQueryHandler<GetDepartmentChildrenQuery, List<DepartmentTreeNodeDto>> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new GetDepartmentChildrenQuery(departmentId), cancellationToken);
+
+    [HttpGet("{departmentId:guid}/ancestors")]
+    public async Task<EndpointResult<List<DepartmentTreeNodeDto>>> GetAncestors(
+        [FromRoute] Guid departmentId,
+        [FromServices] IQueryHandler<GetDepartmentAncestorsQuery, List<DepartmentTreeNodeDto>> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new GetDepartmentAncestorsQuery(departmentId), cancellationToken);
 
     [HttpGet("{departmentId:guid}/Dapper")]
     public async Task<EndpointResult<DepartmentRow>> GetByIdDapper(

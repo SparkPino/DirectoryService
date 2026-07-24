@@ -3,6 +3,7 @@ using Dapper;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Departments.Failures;
+using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Contracts.Locations;
 using DirectoryService.Domain.Departments.ValueObjects;
@@ -32,7 +33,7 @@ public class GetByIdDapper(
         var validationResult = await _validator.ValidateAsync(query, cancellationToken);
         if (!validationResult.IsValid)
         {
-            return DepartmentError.InvalidId.ToErrors();
+            return validationResult.ToError();
         }
 
 

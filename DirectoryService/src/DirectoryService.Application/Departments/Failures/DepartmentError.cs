@@ -5,7 +5,7 @@ namespace DirectoryService.Application.Departments.Failures;
 public static class DepartmentError
 {
     public static Error NotFound(Guid id) =>
-        Error.NotFound("department.not_found", $"Department с id: {id} не найдена");
+        Error.NotFound("department.not.found", $"Department с id: {id} не найдена");
 
     public static readonly Error InvalidId =
         Error.Validation("invalid.department.id", "Идентификатор департамента не может быть пустым");
