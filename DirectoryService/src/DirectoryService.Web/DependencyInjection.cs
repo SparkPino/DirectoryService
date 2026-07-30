@@ -25,9 +25,13 @@ public static class DependencyInjection
         services.AddControllers()
             .AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); //Microsoft.AspNetCore.Mvc.JsonOptions  
             });
 
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()); //Microsoft.AspNetCore.Http.Json.JsonOptions
+        });
         services.AddOpenApi(options =>
         {
             options.AddSchemaTransformer((schema, context, _) =>
