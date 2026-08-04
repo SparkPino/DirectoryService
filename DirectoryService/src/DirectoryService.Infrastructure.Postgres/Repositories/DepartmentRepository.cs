@@ -1,11 +1,5 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Domain.Departments;
@@ -29,6 +23,32 @@ public class DepartmentRepository : IDepartmentRepository
         _logger = logger;
     }
 
+    public async Task<Result<int, Error>> TakeCount(
+        FormattableString sqlQuery,
+        CancellationToken cancellationToken = default)
+    {
+        if (sqlQuery == null)
+        {
+            return Error.Validation("invalid.sql.query", "invalid SQL query");
+        }
+
+        var queryResult = _context.Database.SqlQuery<int>(sqlQuery);
+        int value = await queryResult.SingleAsync(cancellationToken);
+        return value;
+    }
+
+    public async Task<Result<int, Error>> UpdateBySqlAsync(
+        FormattableString sqlQuery,
+        CancellationToken cancellationToken = default)
+    {
+        if (sqlQuery == null)
+        {
+            return Error.Validation("invalid.sql.query", "invalid SQL query");
+        }
+
+        return await _context.Database.ExecuteSqlAsync(sqlQuery, cancellationToken);
+    }
+
     public async Task<Guid> AddAsync(Department department, CancellationToken cancellationToken)
     {
         await _context.Departments.AddAsync(department, cancellationToken);
@@ -37,10 +57,16 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task<Result<Department, Error>> GetByAsync(
         Expression<Func<Department, bool>> predicate,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool ignoreQueryFilter = false)
     {
-        var department = await _context.Departments
-            .FirstOrDefaultAsync(predicate, cancellationToken);
+        IQueryable<Department> query = _context.Departments;
+        if (ignoreQueryFilter)
+        {
+            query = query.IgnoreQueryFilters();
+        }
+
+        var department = await query.FirstOrDefaultAsync(predicate, cancellationToken);
         if (department == null)
         {
             _logger.LogWarning("Департамент не найден");
