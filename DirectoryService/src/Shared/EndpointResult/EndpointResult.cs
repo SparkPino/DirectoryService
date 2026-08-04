@@ -18,7 +18,7 @@ public class EndpointResult<TValue> : IResult
             : new ErrorResult(result.Error);
     }
 
-    public EndpointResult(Result<TValue, Errors> result)
+    public EndpointResult(Result<TValue?, Errors> result)
     {
         _result = result.IsSuccess
             ? new SuccessResult<TValue>(result.Value)

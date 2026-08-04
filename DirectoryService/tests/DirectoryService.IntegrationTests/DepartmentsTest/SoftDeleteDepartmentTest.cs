@@ -70,7 +70,7 @@ public class SoftDeleteDepartmentTest : DirectoryBaseTests
             await sut.Handle(new GetByIdDepartmentQuery(departmentId), cancellationToken));
 
         Assert.True(result.IsFailure);
-        Assert.Contains(result.Error, e => e.Code == "department.not_found");
+        Assert.Contains(result.Error, e => e.Code == "department.not.found");
     }
 
     [Fact]

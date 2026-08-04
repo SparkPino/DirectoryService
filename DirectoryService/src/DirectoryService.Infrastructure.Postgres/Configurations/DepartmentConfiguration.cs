@@ -15,8 +15,19 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
         builder.HasKey(d => d.Id)
             .HasName("pk_department");
 
-        builder.HasIndex(d => new { d.IsActive, d.Name })
-            .HasDatabaseName("ix_department_name");
+        // Для листинга без поиска: WHERE is_active = true ORDER BY name (GetDepartmentsHandler).
+        // Второй аргумент HasIndex - имя индекса на уровне МОДЕЛИ (не путать с HasDatabaseName) -
+        // без него EF считает оба HasIndex(d => d.Name) одним и тем же индексом (одинаковый список свойств)
+        // и просто перезаписывает конфигурацию вместо создания двух разных индексов.
+        builder.HasIndex(d => d.Name, "IX_department_name_sort")
+            .HasDatabaseName("ix_department_name")
+            .HasFilter("is_active = true");
+
+        // Для ILIKE '%...%' поиска по имени (GetDepartmentsHandler.Search, SearchDepartmentTreeHandler).
+        builder.HasIndex(d => d.Name, "IX_department_name_trgm")
+            .HasDatabaseName("ix_department_name_trgm")
+            .HasMethod("gin")
+            .HasOperators("gin_trgm_ops");
 
 
         builder.Property(d => d.Id)

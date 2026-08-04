@@ -20,6 +20,6 @@ public class SuccessResult<TValue> : IResult
 
         httpContext.Response.StatusCode = (int)HttpStatusCode.OK;
 
-        return httpContext.Response.WriteAsJsonAsync(envelope);
+        return httpContext.Response.WriteAsJsonAsync(envelope);  //Microsoft.AspNetCore.Http.Json.JsonOptions
     }
 }
