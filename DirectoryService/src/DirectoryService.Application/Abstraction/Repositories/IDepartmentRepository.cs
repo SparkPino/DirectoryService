@@ -9,8 +9,6 @@ namespace DirectoryService.Application.Abstraction.Repositories;
 
 public interface IDepartmentRepository
 {
-    Task<Result<int, Error>> TakeCount(FormattableString sqlQuery, CancellationToken cancellationToken);
-
     Task<Result<int, Error>> UpdateBySqlAsync(FormattableString sqlQuery, CancellationToken cancellationToken);
 
     Task<Guid> AddAsync(Department department, CancellationToken cancellationToken);

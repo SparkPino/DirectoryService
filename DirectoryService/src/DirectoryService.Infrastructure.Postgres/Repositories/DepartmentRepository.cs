@@ -23,20 +23,6 @@ public class DepartmentRepository : IDepartmentRepository
         _logger = logger;
     }
 
-    public async Task<Result<int, Error>> TakeCount(
-        FormattableString sqlQuery,
-        CancellationToken cancellationToken = default)
-    {
-        if (sqlQuery == null)
-        {
-            return Error.Validation("invalid.sql.query", "invalid SQL query");
-        }
-
-        var queryResult = _context.Database.SqlQuery<int>(sqlQuery);
-        int value = await queryResult.SingleAsync(cancellationToken);
-        return value;
-    }
-
     public async Task<Result<int, Error>> UpdateBySqlAsync(
         FormattableString sqlQuery,
         CancellationToken cancellationToken = default)

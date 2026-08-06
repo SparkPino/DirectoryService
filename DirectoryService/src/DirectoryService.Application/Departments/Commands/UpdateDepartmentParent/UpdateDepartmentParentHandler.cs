@@ -101,11 +101,6 @@ public class UpdateDepartmentParentHandler : ICommandHandler<UpdateDepartmentPar
                                                  AND d.path != {oldPath.Path}::ltree
                                                  """;
 
-        FormattableString childrensCountQuery = $"""
-                                                 SELECT COUNT(*) AS "Value" FROM departments 
-                                                 WHERE path <@ {oldPath.Path}::ltree
-                                                 AND path != {oldPath.Path}::ltree
-                                                 """;
         int updateCounter = 0;
         var transactionResult = await _transactionManager.ExecuteInTransactionAsync<DepartmentParentDto>(
             async o =>
@@ -116,27 +111,17 @@ public class UpdateDepartmentParentHandler : ICommandHandler<UpdateDepartmentPar
                     return saveResult.Error.ToErrors();
                 }
 
-                var childrensCount = await _departmentRepository.TakeCount(childrensCountQuery, o);
-                if (childrensCount.IsFailure)
+                var departmentChildrens = await _departmentRepository.UpdateBySqlAsync(updateChildrenQuery, o);
+                if (departmentChildrens.IsFailure)
                 {
-                    _logger.LogCritical("Что-то кардинально пошло не так");
-                    return childrensCount.Error.ToErrors();
+                    return departmentChildrens.Error.ToErrors();
                 }
 
-                if (childrensCount.Value != 0)
-                {
-                    var departmentChildrens = await _departmentRepository.UpdateBySqlAsync(updateChildrenQuery, o);
-                    if (departmentChildrens.IsFailure)
-                    {
-                        return departmentChildrens.Error.ToErrors();
-                    }
-
-                    updateCounter = departmentChildrens.Value;
-                }
+                updateCounter = departmentChildrens.Value;
 
                 return new DepartmentParentDto(department.Value.Id.Id, department.Value.ParentId?.Id,
                     department.Value.Path.Path,
-                    department.Value.Depth, department.Value.UpdatedAt!.Value);
+                    department.Value.Depth, department.Value.UpdatedAt);
             }, cancellationToken);
 
         if (transactionResult.IsFailure)
