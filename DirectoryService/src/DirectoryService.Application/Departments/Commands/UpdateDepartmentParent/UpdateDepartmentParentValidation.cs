@@ -13,8 +13,16 @@ public class UpdateDepartmentParentValidation : AbstractValidator<UpdateDepartme
             .NotEmpty().WithError(DepartmentError.InvalidId);
 
 
-        RuleFor(ud => ud.ParentId!.Id)
-            .Must(id => id != Guid.Empty) // id is null избыточна, id != Guid.Empty пропускает null.
-            .WithError(DepartmentError.InvalidId);
+        When(a => a.ParentId != null, () => // обертка тоже может быть null
+        {
+            RuleFor(ud => ud.ParentId!.Id)
+                .Must(id => id != Guid.Empty) // id is null избыточна, id != Guid.Empty пропускает null.
+                .WithError(DepartmentError.InvalidId);
+        });
+
+        // or
+        // RuleFor(ud => ud.ParentId)
+        //     .Must(p => p is null || p.Id != Guid.Empty)
+        //     .WithError(DepartmentError.InvalidId);
     }
 }

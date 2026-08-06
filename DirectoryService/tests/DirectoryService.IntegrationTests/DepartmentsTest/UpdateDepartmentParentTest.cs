@@ -78,6 +78,35 @@ public class UpdateDepartmentParentTest : DirectoryBaseTests
     }
 
     [Fact]
+    public async Task UpdateParent_With_Null_ParentId_Wrapper_Should_Be_Treated_As_Root()
+    {
+        // Тут ParentId - сама обёртка UpdateDepartmentParentParentDto равна null,
+        // а не new UpdateDepartmentParentParentDto(null) (где обёртка есть, а null - только Id внутри).
+        // Раньше RuleFor(ud => ud.ParentId.Id) падал с NullReferenceException именно на этом кейсе,
+        // потому что селектор пытался достать .Id у null-обёртки ещё до того, как отработает Must.
+        var alphaId = await CreateDepartmentAsync("Alpha", "alpha");
+        var betaId = await CreateDepartmentAsync("Beta", "beta", alphaId);
+        var cancellationToken = CancellationToken.None;
+
+        var command = new UpdateDepartmentParentCommand(betaId, null);
+        var handlerResult = await ExecuteHandler<UpdateDepartmentParentCommand, DepartmentParentDto>(async sut =>
+            await sut.Handle(command, cancellationToken));
+
+        Assert.True(handlerResult.IsSuccess);
+        Assert.Null(handlerResult.Value.ParentId);
+        Assert.Equal("beta", handlerResult.Value.Path);
+        Assert.Equal(0, handlerResult.Value.Depth);
+
+        await ExecuteInDb(async db =>
+        {
+            var beta = await db.Departments.FirstAsync(d => d.Id == new DepartmentId(betaId), cancellationToken);
+            Assert.Null(beta.ParentId);
+            Assert.Equal((short)0, beta.Depth);
+            Assert.Equal("beta", beta.Path.Path);
+        });
+    }
+
+    [Fact]
     public async Task UpdateParent_Into_Own_Descendant_Should_Return_Cycle_Conflict()
     {
         var alphaId = await CreateDepartmentAsync("Alpha", "alpha");
