@@ -11,6 +11,7 @@ using DirectoryService.Application.Departments.Queries.GetDirectChildrenDepartme
 using DirectoryService.Application.Departments.Commands.RemoveDepartment;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartment;
+using DirectoryService.Application.Departments.Commands.UpdateDepartmentParent;
 using DirectoryService.Application.Departments.Queries;
 using DirectoryService.Application.Departments.Queries.GetDepartmentAncestors;
 using DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
@@ -18,6 +19,7 @@ using DirectoryService.Application.Departments.Queries.GetDepartments;
 using DirectoryService.Application.Departments.Queries.GetDepartmentTree;
 using DirectoryService.Application.Departments.Queries.SearchDepartmentTree;
 using DirectoryService.Contracts.Department;
+using DirectoryService.Contracts.Department.UpdateDepartmentParent;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
@@ -45,7 +47,7 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(rootIdentifier, cancellationToken);
 
-    
+
     [HttpPost("direct-children")]
     public async Task<EndpointResult<GetDirectChildrenDepartmentDto>> GetDirectChildren(
         [FromBody] GetDirectChildrenDepartmentQuery query,
@@ -154,6 +156,18 @@ public class DepartmentController : BaseApiController
         [FromServices] ICommandHandler<MoveDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new MoveDepartmentCommand(departmentId, moveDepartmentDto.NewParentId), cancellationToken);
+
+    [HttpPut]
+    [Route("/api/departments/{departmentId}/parent")]
+    public async Task<EndpointResult<DepartmentParentDto>> UpdateDepartmentParent(
+        [FromRoute] Guid departmentId,
+        [FromBody] UpdateDepartmentParentParentDto newParentId,
+        [FromServices] ICommandHandler<UpdateDepartmentParentCommand, DepartmentParentDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(
+            new UpdateDepartmentParentCommand(departmentId,newParentId),
+            cancellationToken);
+
 
     [HttpPost]
     [Route("/api/departments/{departmentId}/positions/{positionId}")]

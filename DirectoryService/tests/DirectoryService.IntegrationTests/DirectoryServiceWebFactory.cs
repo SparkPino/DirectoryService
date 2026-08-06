@@ -1,6 +1,8 @@
 ﻿using DirectoryService.Application.Abstraction.Database;
+using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Infrastructure.Postgres;
 using DirectoryService.Infrastructure.Postgres.Database;
+using DirectoryService.Infrastructure.Postgres.Repositories;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;

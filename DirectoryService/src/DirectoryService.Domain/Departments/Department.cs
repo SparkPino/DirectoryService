@@ -259,16 +259,20 @@ public sealed class Department
     {
         if (newParent is not null)
         {
-            bool movesIntoSelfOrDescendant =
-                newParent.Path.Path == Path.Path ||
-                newParent.Path.Path.StartsWith($"{Path.Path}.", StringComparison.Ordinal);
+            if (newParent.Path.Path == Path.Path)
+            {
+                return Error.Validation(
+                    "department.move.parent_is_self",
+                    "Департамент не может быть перемещён в самого себя ").ToErrors();
+            }
 
-            if (movesIntoSelfOrDescendant)
+            if (newParent.Path.Path.StartsWith($"{Path.Path}.", StringComparison.Ordinal))
             {
                 return Error.Conflict(
-                    "department.move.invalid_target",
-                    "Департамент не может быть перемещён в самого себя или в собственного потомка").ToErrors();
+                    "department.move.cycle",
+                    "Департамент не может быть перемещён в собственное поддерево ").ToErrors();
             }
+
         }
 
         var pathResult = newParent is null
