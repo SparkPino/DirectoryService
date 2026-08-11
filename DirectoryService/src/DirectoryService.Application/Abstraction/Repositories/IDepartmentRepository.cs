@@ -9,8 +9,6 @@ namespace DirectoryService.Application.Abstraction.Repositories;
 
 public interface IDepartmentRepository
 {
-    Task<Result<int, Error>> UpdateBySqlAsync(FormattableString sqlQuery, CancellationToken cancellationToken);
-
     Task<Guid> AddAsync(Department department, CancellationToken cancellationToken);
 
     Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken);
@@ -27,6 +25,10 @@ public interface IDepartmentRepository
 
     Task<Result<Department, Error>> GetByAsync(
         Expression<Func<Department, bool>> predicate,
+        CancellationToken cancellationToken, bool ignoreQueryFilter = false);
+
+    Task<Result<Department, Error>> GetByIdWithLockAsync(
+        Guid departmentId,
         CancellationToken cancellationToken, bool ignoreQueryFilter = false);
 
     Task<int> UpdateDescendantsPathAsync(
