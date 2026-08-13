@@ -23,18 +23,6 @@ public class DepartmentRepository : IDepartmentRepository
         _logger = logger;
     }
 
-    public async Task<Result<int, Error>> UpdateBySqlAsync(
-        FormattableString sqlQuery,
-        CancellationToken cancellationToken = default)
-    {
-        if (sqlQuery == null)
-        {
-            return Error.Validation("invalid.sql.query", "invalid SQL query");
-        }
-
-        return await _context.Database.ExecuteSqlAsync(sqlQuery, cancellationToken);
-    }
-
     public async Task<Guid> AddAsync(Department department, CancellationToken cancellationToken)
     {
         await _context.Departments.AddAsync(department, cancellationToken);
@@ -86,6 +74,37 @@ public class DepartmentRepository : IDepartmentRepository
 
         var department = await _context.Departments
             .FirstOrDefaultAsync(l => l.Id == correctLocationId, cancellationToken);
+        if (department == null)
+        {
+            _logger.LogWarning("Департамент не найден Id:{departmentId}", departmentId);
+            return DepartmentError.NotFound(departmentId);
+        }
+
+        return department;
+    }
+
+    public async Task<Result<Department, Error>> GetByIdWithLockAsync(Guid departmentId,
+        CancellationToken cancellationToken, bool ignoreQueryFilter = false)
+    {
+        
+        // Alternative way await _context.Database.SqlQuery<int>().ToListAsync(cancellationToken); 
+        await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+                                                             SELECT 1
+                                                             FROM departments
+                                                             WHERE id = {departmentId} FOR UPDATE
+                                                             """, cancellationToken: cancellationToken);
+        
+        IQueryable<Department> query = _context.Departments;
+
+        if (ignoreQueryFilter)
+        {
+            query = query.IgnoreQueryFilters();
+        }
+
+        var department =
+            await query.FirstOrDefaultAsync(d => d.Id == new DepartmentId(departmentId), cancellationToken);
+
         if (department == null)
         {
             _logger.LogWarning("Департамент не найден Id:{departmentId}", departmentId);
@@ -166,7 +185,6 @@ public class DepartmentRepository : IDepartmentRepository
     {
         string newPathValue = newPath.Path;
         string oldPathValue = oldPath.Path;
-
 
         FormattableString sqlCommand = $"""
                                          UPDATE departments

@@ -63,6 +63,10 @@ internal static class DbExceptionMapper
                     "database.restrict_violation",
                     "Нельзя удалить объект, пока на него кто-то ссылается");
 
+            case PostgresErrorCodes.DeadlockDetected:
+                logger.LogWarning("Зафиксирована мертвая блокировка при выполнении транзакции");
+                return Error.Conflict("database.deadlock_detected", "Попробуйте повторить операцию");
+
             default:
                 logger.LogError(
                     exception,

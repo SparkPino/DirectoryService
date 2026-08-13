@@ -1,4 +1,5 @@
-﻿using CSharpFunctionalExtensions;
+﻿using System.Data;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
@@ -45,93 +46,110 @@ public class UpdateDepartmentParentHandler : ICommandHandler<UpdateDepartmentPar
             "Обработка UpdateDepartmentParentCommand departmentId:{DepartmentId} newParentId:{ParentId}", command.Id,
             command.ParentId?.Id);
 
-        Department? newParent = null;
-        if (command.ParentId is { Id: not null })
-        {
-            var newParentResult =
-                await _departmentRepository.GetByAsync(
-                    a => a.Id == new DepartmentId(command.ParentId.Id.Value),
-                    cancellationToken, true);
-            if (newParentResult.IsFailure)
-            {
-                var error = newParentResult.Error.Message;
-                return Error.NotFound("department.parent.not_found", error).ToErrors();
-            }
-
-            if (!newParentResult.Value.IsActive)
-            {
-                return Error.Conflict("department.move.parent_deleted", "Родительский департамент удалён").ToErrors();
-            }
-
-            newParent = newParentResult.Value;
-        }
-
-        var department =
-            await _departmentRepository.GetByAsync(
-                a => a.Id == new DepartmentId(command.Id),
-                cancellationToken);
-        if (department.IsFailure)
-        {
-            var error = department.Error.Message;
-            return Error.NotFound("department.not_found", error).ToErrors();
-        }
-
-        if (command.ParentId?.Id == department.Value.ParentId?.Id)
-        {
-            _logger.LogDebug("Родитель тот же для {DepartmentId} — ничего не делаем", command.Id);
-            return new DepartmentParentDto(department.Value.Id.Id, department.Value.ParentId?.Id,
-                department.Value.Path.Path,
-                department.Value.Depth, department.Value.UpdatedAt);
-        }
-
-        var oldPath = department.Value.Path;
-        var relocateResult = department.Value.Relocate(newParent);
-        if (relocateResult.IsFailure)
-        {
-            return relocateResult.Error;
-        }
-
-        short depthDelta = relocateResult.Value;
-        FormattableString updateChildrenQuery = $"""
-                                                 UPDATE departments d
-                                                 SET path = {department.Value.Path.Path}::ltree || subpath(d.path,nlevel({oldPath.Path}::ltree)),
-                                                     depth = d.depth + {depthDelta},
-                                                 updated_at = NOW()
-                                                 WHERE d.path <@ {oldPath.Path}::ltree
-                                                 AND d.path != {oldPath.Path}::ltree
-                                                 """;
-
+        DepartmentPath? oldPath = null;
+        DepartmentPath? newPath = null;
         int updateCounter = 0;
         var transactionResult = await _transactionManager.ExecuteInTransactionAsync<DepartmentParentDto>(
-            async o =>
+            async ct =>
             {
-                var saveResult = await _transactionManager.SaveChangesAsync(o);
+                var lockResult = await LockParticipantsAsync(command, ct);
+                if (lockResult.IsFailure)
+                {
+                    return lockResult.Error;
+                }
+
+                var (department, newParent) = lockResult.Value;
+
+                if (newParent is { IsActive: false })
+                {
+                    return Error.Conflict("department.move.parent_deleted", "Родительский департамент удалён")
+                        .ToErrors();
+                }
+
+                if (command.ParentId?.Id == department.ParentId?.Id)
+                {
+                    _logger.LogDebug("Родитель тот же для {DepartmentId} — ничего не делаем", command.Id);
+                    return new DepartmentParentDto(
+                        department.Id.Id, department.ParentId?.Id, department.Path.Path,
+                        department.Depth, department.UpdatedAt);
+                }
+
+                oldPath = department.Path;
+                var relocateResult = department.Relocate(newParent);
+                if (relocateResult.IsFailure)
+                {
+                    return relocateResult.Error;
+                }
+
+                newPath = department.Path;
+                short depthDelta = relocateResult.Value;
+
+                var saveResult = await _transactionManager.SaveChangesAsync(ct);
                 if (saveResult.IsFailure)
                 {
                     return saveResult.Error.ToErrors();
                 }
 
-                var departmentChildrens = await _departmentRepository.UpdateBySqlAsync(updateChildrenQuery, o);
-                if (departmentChildrens.IsFailure)
-                {
-                    return departmentChildrens.Error.ToErrors();
-                }
+                updateCounter = await _departmentRepository.UpdateDescendantsPathAsync(
+                    oldPath, newPath, depthDelta, ct);
 
-                updateCounter = departmentChildrens.Value;
+                _logger.LogInformation(
+                    "Департамент {DepartmentId} перемещён: {OldPath} → {NewPath}, затронуто потомков: {Count}",
+                    command.Id, oldPath.Path, newPath.Path, updateCounter);
 
-                return new DepartmentParentDto(department.Value.Id.Id, department.Value.ParentId?.Id,
-                    department.Value.Path.Path,
-                    department.Value.Depth, department.Value.UpdatedAt);
-            }, cancellationToken);
+                return new DepartmentParentDto(department.Id.Id, department.ParentId?.Id,
+                    department.Path.Path,
+                    department.Depth, department.UpdatedAt);
+            },
+            cancellationToken,
+            IsolationLevel.ReadCommitted);
 
         if (transactionResult.IsFailure)
         {
+            if (transactionResult.Error.Any(e => e.Code == "database.deadlock_detected"))
+            {
+                return Error.Conflict("department.move.conflict",
+                    "Перенос конфликтует с параллельной операцией, повторите запрос").ToErrors();
+            }
+
             return transactionResult.Error;
         }
 
-        _logger.LogInformation(
-            "Департамент {DepartmentId} перемещён: {OldPath} → {NewPath}, затронуто потомков: {Count}", command.Id,
-            oldPath.Path, department.Value.Path.Path, updateCounter);
         return transactionResult.Value;
+    }
+
+    private async Task<Result<(Department Department, Department? NewParent), Errors>> LockParticipantsAsync(
+        UpdateDepartmentParentCommand command, CancellationToken ct)
+    {
+        var listParticipants = new List<(Guid Id, bool IgnoreQueryFilter, string NotFoundCode)>()
+        {
+            (command.Id, false, "department.not_found"),
+        };
+        if (command.ParentId is { Id: not null })
+        {
+            listParticipants.Add((command.ParentId.Id.Value, true, "department.parent.not_found"));
+        }
+
+        var lockedById = new Dictionary<Guid, Department>();
+
+        foreach (var request in
+                 listParticipants.OrderBy(x => x.Id)
+                     .DistinctBy(a =>
+                         a.Id)) //OrderBy применяет CompareTo что обеспечивает всегда одинаковый порядок блокировок тех же айдишников, убирая таким образом проблему АБ БА
+        {
+            var lockResult =
+                await _departmentRepository.GetByIdWithLockAsync(request.Id, ct, request.IgnoreQueryFilter);
+            if (lockResult.IsFailure)
+            {
+                return Error.NotFound(request.NotFoundCode, lockResult.Error.Message).ToErrors();
+            }
+
+            lockedById[request.Id] = lockResult.Value;
+        }
+
+        var department = lockedById[command.Id];
+        Department? newParent = command.ParentId is { Id: not null } ? lockedById[command.ParentId.Id.Value] : null;
+
+        return (department, newParent);
     }
 }
