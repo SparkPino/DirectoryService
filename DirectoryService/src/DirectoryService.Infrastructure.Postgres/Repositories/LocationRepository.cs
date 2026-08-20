@@ -1,20 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
-using Dapper;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Repositories;
 

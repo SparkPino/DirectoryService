@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using DirectoryService.Domain.Shared;
 using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
 

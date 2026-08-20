@@ -1,11 +1,11 @@
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
-using DirectoryService.Application.Validations;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Shared;
+using Core;
+using Core.Database;
+using Core.Validations;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Positions.RemovePosition;
 

@@ -4,7 +4,7 @@ using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.CleanupTest;
 

@@ -1,4 +1,4 @@
-using DirectoryService.Application.Abstraction;
+using Core;
 using DirectoryService.Application.Positions.AddPosition;
 using DirectoryService.Application.Positions.RemovePosition;
 using DirectoryService.Application.Positions.SoftDeletePosition;
@@ -8,8 +8,8 @@ using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared;
 using Shared.EndpointResult;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Presenters.Positions;
 

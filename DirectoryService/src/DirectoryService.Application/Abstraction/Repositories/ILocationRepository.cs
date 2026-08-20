@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Abstraction.Repositories;
 

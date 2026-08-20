@@ -2,7 +2,7 @@
 using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Positions.ValueObjects;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Domain.Positions;
 

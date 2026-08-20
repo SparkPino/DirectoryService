@@ -1,14 +1,14 @@
 using System.Linq.Expressions;
 using System.Text.Json;
+using Core;
+using Core.Validations;
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Abstraction.Repositories;
-using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Locations;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 

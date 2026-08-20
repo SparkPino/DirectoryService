@@ -1,5 +1,4 @@
-﻿using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Departments;
+﻿using Core;
 using DirectoryService.Application.Departments.Commands.AddDepartment;
 using DirectoryService.Application.Departments.Commands.AttachLocationToDepartment;
 using DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
@@ -26,6 +25,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared;
 using Shared.EndpointResult;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Presenters.Department;
 

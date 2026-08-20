@@ -1,4 +1,4 @@
-﻿using DirectoryService.Application.Abstraction;
+﻿using Core;
 using DirectoryService.Contracts.Locations;
 
 namespace DirectoryService.Application.Locations.Commands.AddLocation;

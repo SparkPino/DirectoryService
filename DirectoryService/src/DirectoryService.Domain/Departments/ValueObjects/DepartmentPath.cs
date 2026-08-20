@@ -1,7 +1,6 @@
-﻿using System.Text.RegularExpressions;
-using CSharpFunctionalExtensions;
-using DirectoryService.Domain.Shared;
+﻿using CSharpFunctionalExtensions;
 using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Domain.Departments.ValueObjects;
 

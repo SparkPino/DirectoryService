@@ -1,12 +1,12 @@
+using Core;
+using Core.Database;
+using Core.Validations;
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
-using DirectoryService.Application.Validations;
 using DirectoryService.Domain.Positions.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Positions.UpdatePosition;
 

@@ -1,16 +1,15 @@
-﻿using CSharpFunctionalExtensions;
+﻿using Core;
+using Core.Database;
+using Core.Validations;
+using CSharpFunctionalExtensions;
 using Dapper;
-using DirectoryService.Application.Abstraction;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Departments.Failures;
-using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Contracts.Locations;
-using DirectoryService.Domain.Departments.ValueObjects;
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetByIdDepartment;
 

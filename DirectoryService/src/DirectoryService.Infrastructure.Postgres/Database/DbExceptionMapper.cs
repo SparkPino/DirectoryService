@@ -1,8 +1,7 @@
-using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 

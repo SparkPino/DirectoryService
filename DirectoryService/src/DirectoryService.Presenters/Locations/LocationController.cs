@@ -1,22 +1,18 @@
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Locations;
+using Core;
 using DirectoryService.Application.Locations.Commands.AddLocation;
 using DirectoryService.Application.Locations.Commands.RemoveLocation;
 using DirectoryService.Application.Locations.Commands.SoftDeleteLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
-using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Application.Locations.Queries.GetAllLocations;
 using DirectoryService.Application.Locations.Queries.GetByIdLocation;
 using DirectoryService.Application.Locations.Queries.GetLocationTop;
 using DirectoryService.Contracts.Locations;
-using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Presenters.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Shared;
 using Shared.EndpointResult;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Presenters.Locations;
 

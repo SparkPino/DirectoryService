@@ -1,16 +1,14 @@
 ﻿using System.Text;
 using System.Text.Json;
+using Core;
+using Core.Database;
+using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
-using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Locations;
 using FluentValidation;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 

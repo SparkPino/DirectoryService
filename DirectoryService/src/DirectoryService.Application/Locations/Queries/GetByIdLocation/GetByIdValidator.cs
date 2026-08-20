@@ -1,5 +1,5 @@
-﻿using DirectoryService.Application.Locations.Failures;
-using DirectoryService.Application.Validations;
+﻿using Core.Validations;
+using DirectoryService.Application.Locations.Failures;
 using FluentValidation;
 
 namespace DirectoryService.Application.Locations.Queries.GetByIdLocation;

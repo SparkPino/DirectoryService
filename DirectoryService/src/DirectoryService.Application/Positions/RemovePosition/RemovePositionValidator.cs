@@ -1,5 +1,5 @@
+using Core.Validations;
 using DirectoryService.Application.Positions.Failures;
-using DirectoryService.Application.Validations;
 using FluentValidation;
 
 namespace DirectoryService.Application.Positions.RemovePosition;

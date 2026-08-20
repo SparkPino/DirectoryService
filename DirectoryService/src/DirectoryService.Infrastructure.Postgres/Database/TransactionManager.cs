@@ -1,15 +1,9 @@
-﻿using System;
-using System.Data;
-using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Data;
+using Core.Database;
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Database;
 

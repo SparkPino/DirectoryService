@@ -1,8 +1,6 @@
-﻿using Dapper;
-using DirectoryService.Application.Abstraction;
+﻿using Core.Database;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
-using DirectoryService.Application.Locations;
 using DirectoryService.Infrastructure.Postgres.Database;
 using DirectoryService.Infrastructure.Postgres.Repositories;
 using Microsoft.EntityFrameworkCore;

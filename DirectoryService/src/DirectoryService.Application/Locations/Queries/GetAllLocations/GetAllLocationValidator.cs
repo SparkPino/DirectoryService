@@ -1,6 +1,6 @@
-﻿using DirectoryService.Application.Validations;
+﻿using Core.Validations;
 using FluentValidation;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 
