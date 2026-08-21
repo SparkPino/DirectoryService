@@ -9,6 +9,7 @@ using DirectoryService.Domain.Positions.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Repositories;
 

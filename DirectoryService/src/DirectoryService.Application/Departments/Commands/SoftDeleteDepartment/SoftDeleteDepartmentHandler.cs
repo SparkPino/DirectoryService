@@ -1,9 +1,8 @@
-﻿using System.Transactions;
+﻿using Core;
+using Core.Database;
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 

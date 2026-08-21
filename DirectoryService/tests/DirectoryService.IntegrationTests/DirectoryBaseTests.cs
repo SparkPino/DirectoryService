@@ -1,7 +1,6 @@
-﻿using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
+﻿using Core;
+using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Database;
-using DirectoryService.Application.Departments.Commands.AddDepartment;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations;
@@ -10,10 +9,9 @@ using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
 using DirectoryService.Domain.Shared.ValueObjects;
 using DirectoryService.Infrastructure.Postgres;
-using DirectoryService.Infrastructure.Postgres.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.IntegrationTests;
 

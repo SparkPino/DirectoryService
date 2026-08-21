@@ -1,7 +1,5 @@
-﻿using DirectoryService.Application.Abstraction;
-using DirectoryService.Contracts;
-using DirectoryService.Contracts.Department;
-using Shared;
+﻿using Core;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetDepartments;
 

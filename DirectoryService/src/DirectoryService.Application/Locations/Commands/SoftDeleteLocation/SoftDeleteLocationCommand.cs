@@ -1,4 +1,4 @@
-using DirectoryService.Application.Abstraction;
+using Core;
 using DirectoryService.Domain.Locations.ValueObjects;
 
 namespace DirectoryService.Application.Locations.Commands.SoftDeleteLocation;

@@ -1,15 +1,15 @@
 ﻿using System.Data;
+using Core;
+using Core.Database;
+using Core.Validations;
 using CSharpFunctionalExtensions;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Abstraction.Repositories;
-using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Department.UpdateDepartmentParent;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using FluentValidation;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.UpdateDepartmentParent;
 

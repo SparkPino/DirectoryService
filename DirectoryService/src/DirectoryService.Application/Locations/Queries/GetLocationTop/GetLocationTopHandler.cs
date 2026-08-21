@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
+using Core;
+using Core.Database;
 using CSharpFunctionalExtensions;
 using Dapper;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Contracts.Locations;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetLocationTop;
 

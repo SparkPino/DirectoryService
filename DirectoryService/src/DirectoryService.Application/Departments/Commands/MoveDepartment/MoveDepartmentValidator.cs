@@ -1,5 +1,5 @@
+using Core.Validations;
 using DirectoryService.Application.Departments.Failures;
-using DirectoryService.Application.Validations;
 using FluentValidation;
 
 namespace DirectoryService.Application.Departments.Commands.MoveDepartment;

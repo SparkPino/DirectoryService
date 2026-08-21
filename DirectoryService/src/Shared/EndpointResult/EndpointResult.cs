@@ -1,8 +1,6 @@
-﻿using System.Reflection;
-using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.Builder;
+﻿using CSharpFunctionalExtensions;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Metadata;
+using SharedLibrary.SharedKernel;
 using IResult = Microsoft.AspNetCore.Http.IResult;
 
 namespace Shared.EndpointResult;

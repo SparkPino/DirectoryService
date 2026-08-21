@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Positions;
 using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Abstraction.Repositories;
 

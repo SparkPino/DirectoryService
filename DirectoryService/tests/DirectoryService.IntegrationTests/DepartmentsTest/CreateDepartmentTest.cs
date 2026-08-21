@@ -2,7 +2,7 @@
 using DirectoryService.Contracts.Department;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.DepartmentsTest;
 

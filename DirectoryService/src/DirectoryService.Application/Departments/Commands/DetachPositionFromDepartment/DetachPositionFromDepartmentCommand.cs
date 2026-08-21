@@ -1,4 +1,4 @@
-using DirectoryService.Application.Abstraction;
+using Core;
 
 namespace DirectoryService.Application.Departments.Commands.DetachPositionFromDepartment;
 

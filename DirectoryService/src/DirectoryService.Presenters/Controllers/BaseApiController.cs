@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Presenters.Controllers;
 

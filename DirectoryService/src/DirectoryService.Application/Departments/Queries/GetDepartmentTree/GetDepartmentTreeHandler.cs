@@ -1,11 +1,11 @@
+using Core;
+using Core.Database;
+using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
-using DirectoryService.Application.Abstraction;
-using DirectoryService.Application.Abstraction.Database;
-using DirectoryService.Application.Validations;
 using DirectoryService.Contracts.Department;
 using FluentValidation;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetDepartmentTree;
 

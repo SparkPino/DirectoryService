@@ -1,12 +1,12 @@
 using System.Text.Json.Serialization;
+using Core;
 using DirectoryService.Application;
 using DirectoryService.Infrastructure;
 using DirectoryService.Infrastructure.Postgres;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Any;
-using Serilog;
-using Serilog.Exceptions;
-using Shared;
+using SharedLibrary.SharedKernel;
+using Framework.Logging;
 
 namespace DirectoryService.Presentation;
 
@@ -14,23 +14,26 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddProgramDependencies(this IServiceCollection services,
         IConfiguration configuration) => services
-        .AddSerilogLogging(configuration)
         .AddWebDependencies()
         .AddDirectoryServiceDbContext(configuration)
         .AddApplication()
-        .AddBackgroundServices(configuration);
+        .AddScruptor(typeof(ICommand).Assembly)
+        .AddBackgroundServices(configuration)
+        .AddSerilogLogging(configuration, "DirectoryService");
 
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)
     {
         services.AddControllers()
             .AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); //Microsoft.AspNetCore.Mvc.JsonOptions  
+                options.JsonSerializerOptions.Converters.Add(
+                    new JsonStringEnumConverter()); //Microsoft.AspNetCore.Mvc.JsonOptions  
             });
 
         services.ConfigureHttpJsonOptions(options =>
         {
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()); //Microsoft.AspNetCore.Http.Json.JsonOptions
+            options.SerializerOptions.Converters.Add(
+                new JsonStringEnumConverter()); //Microsoft.AspNetCore.Http.Json.JsonOptions
         });
         services.AddOpenApi(options =>
         {
@@ -66,20 +69,6 @@ public static class DependencyInjection
                 return new BadRequestObjectResult(new Errors(errors));
             };
         });
-
-        return services;
-    }
-
-    private static IServiceCollection AddSerilogLogging(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddSerilog((ServiceProvider, LoggerConfiguration) => LoggerConfiguration
-            .ReadFrom
-            .Configuration(
-                configuration) // читает настройки Serilog из IConfiguration (тоесть например, из appsettings.json)
-            .ReadFrom.Services(ServiceProvider) // позволяем Serilog использовать DI
-            .Enrich.FromLogContext() //for CorelationID ? 
-            .Enrich.WithExceptionDetails()
-            .Enrich.WithProperty("ServiceName", "DirectoryService")); // Key-Value
 
         return services;
     }

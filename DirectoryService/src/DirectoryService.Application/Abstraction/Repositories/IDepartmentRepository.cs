@@ -2,8 +2,8 @@
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
-using DirectoryService.Domain.Positions;
 using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Abstraction.Repositories;
 

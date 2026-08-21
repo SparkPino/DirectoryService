@@ -3,7 +3,7 @@ using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Infrastructure.Postgres.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Infrastructure.Postgres.Repositories;
 

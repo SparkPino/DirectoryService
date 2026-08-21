@@ -1,5 +1,5 @@
-﻿using DirectoryService.Application.Abstraction;
-using Shared;
+﻿using Core;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 

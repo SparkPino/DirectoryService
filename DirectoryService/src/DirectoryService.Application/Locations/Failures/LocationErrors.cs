@@ -1,5 +1,4 @@
-﻿using DirectoryService.Domain.Shared;
-using Shared;
+﻿using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Failures;
 

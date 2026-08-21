@@ -3,7 +3,7 @@ using DirectoryService.Application.Departments.Commands.UpdateDepartmentParent;
 using DirectoryService.Contracts.Department.UpdateDepartmentParent;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
-using Shared;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
