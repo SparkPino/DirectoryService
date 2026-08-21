@@ -483,3 +483,7 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 .claude/
+
+NuGet.Config
+nuget.config
+!/nuget.config
