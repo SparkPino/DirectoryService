@@ -41,7 +41,7 @@ export default function Playground() {
                         className={`rounded-none bg-muted/30 ring-1 ring-foreground/15 border-l-4 ${task.done ? "border-l-foreground" : "border-l-transparent"}`}
                     >
                         <CardContent className="relative flex items-center gap-2">
-                            <Checkbox checked={task.done} onCheckedChange={() => handleToggleTask(task.id)} />
+                            <Checkbox checked={task.done} onCheckedChange={() => handleToggleTask(task.id)} aria-label={task.text} />
                             <span className={`flex-1 text-center ${task.done ? "opacity-50 line-through" : ""}`}>{task.text}</span>
                             <Badge variant="outline" className="absolute top-1 right-2" title={task.id}>
                                 {task.id.slice(0, 8)}
