@@ -21,6 +21,7 @@ export default function LocationFilter({
   query,
   onChange,
 }: LocationFilterProps) {
+  const [prevQuery, setPrevQuery] = useState(query);
   const [search, setSearch] = useState(query.Search ?? "");
   const [minDepartmentCount, setMinDepartmentCount] = useState(
     query.MinDepartmentCount?.toString() ?? "",
@@ -30,7 +31,16 @@ export default function LocationFilter({
     query.SortDirection ?? "ASC",
   );
 
-  const [pageSize, setPageSize] = useState<number>(10);
+  const [pageSize, setPageSize] = useState<number>(query.PageSize ?? 10);
+
+  if (prevQuery !== query) {
+    setPrevQuery(query);
+    setSearch(query.Search ?? "");
+    setMinDepartmentCount(query.MinDepartmentCount?.toString() ?? "");
+    setOrderBy(query.OrderBy ?? "Name");
+    setSortDirection(query.SortDirection ?? "ASC");
+    setPageSize(query.PageSize ?? 10);
+  }
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
