@@ -1,5 +1,5 @@
 "use client"
-import { TextareaButton } from "@/widgets/textAreaButton";
+import { TextareaButton } from "@/widgets/text-area-button";
 import { Card, CardAction, CardContent } from "@/shared/ui/card";
 import { useState } from "react";
 import { Button } from "@/shared/ui/button";
