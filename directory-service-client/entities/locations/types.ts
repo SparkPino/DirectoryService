@@ -34,10 +34,12 @@ export type PagedResult<T> = {
 export type ApiError = {
   code?: string;
   message: string;
+  type?: string;
+  invalidField?: string | null;
 };
 
 export type Envelope<T> = {
-  result: T;
+  result: T | null;
   errorList: ApiError[] | null;
   isError: boolean;
   timeGenerated: string;
