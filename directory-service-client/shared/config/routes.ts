@@ -1,10 +1,11 @@
-import { Home, Users, MapPin, Briefcase } from "lucide-react"
+import { Home, Users, MapPin, Briefcase, FlaskConical } from "lucide-react"
 
 export const ROUTES = {
   home: "/",
   departments: "/departments",
   locations: "/locations",
   positions: "/positions",
+  playground: "/playground"
 } as const;
 
 
@@ -29,5 +30,9 @@ export const Navigation = [
     href: ROUTES.positions,
     icon: Briefcase,
   },
+  {
+    title: "Playground",
+    href: ROUTES.playground,
+    icon: FlaskConical,
+  }
 ];
-

@@ -10,10 +10,10 @@ public class GetAllLocationValidator : AbstractValidator<GetAllLocationQuery>
     {
         RuleFor(a => a.PageSize)
             .InclusiveBetween(1, 10)
-            .WithError(Error.Validation("page.out.of.range", "Page out of range 1 - 10"));
+            .WithError(Error.Validation("page-sizes.is.invalid", "Page out of range 1 - 10"));
 
         RuleFor(a => a.Page)
             .GreaterThanOrEqualTo(1)
-            .WithError(Error.Validation("page.invalid", "Page must be >= 1"));
+            .WithError(Error.Validation("page.is.invalid", "Page must be >= 1"));
     }
 }

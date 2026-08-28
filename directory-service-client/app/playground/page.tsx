@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Badge } from "@/shared/ui/badge";
-import useToDo from "@/entities/task/useToDo";
+import useToDo from "@/shared/hooks/task/use-todo";
 
 
 export default function Playground() {

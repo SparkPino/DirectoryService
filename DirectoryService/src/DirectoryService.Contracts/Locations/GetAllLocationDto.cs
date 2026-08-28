@@ -2,6 +2,7 @@
 
 public sealed class GetAllLocationDto
 {
+    public Guid Id { get; init; }
     public string Name { get; init; }
 
     public AddressDto Address { get; init; }

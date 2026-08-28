@@ -21,19 +21,23 @@ namespace DirectoryService.Presenters.Locations;
 [Produces("application/json")]
 public class LocationController : BaseApiController
 {
-    [HttpGet("/api/locations/top")]
-    public async Task<EndpointResult<IReadOnlyCollection<GetLocationTopDto>>> Handle(
+    [HttpGet("top")]
+    public async Task<EndpointResult<IReadOnlyCollection<GetLocationTopDto>>> GetTop(
         [FromServices] IQueryHandler<IReadOnlyCollection<GetLocationTopDto>> handler,
         CancellationToken cancellationToken)
         => await handler.Handle(cancellationToken);
 
-    [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
-    [HttpPost]
-    public async Task<EndpointResult<Guid>> Create(
-        [FromBody] AddLocationDto addLocationDto,
-        [FromServices] ICommandHandler<AddLocationCommand, Guid> handler,
-        CancellationToken cancellationToken) =>
-        await handler.Handle(new AddLocationCommand(addLocationDto), cancellationToken);
+    [HttpGet]
+    public async Task<EndpointResult<PagedResult<GetAllLocationDto>>> GetAll(
+        [FromQuery] GetAllLocationQuery query,
+        [FromServices] IQueryHandler<GetAllLocationQuery, PagedResult<GetAllLocationDto>> handler,
+        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
+
+    [HttpGet("dapper")]
+    public async Task<EndpointResult<PagedResult<GetAllLocationDto>>> GetAllDapper(
+        [FromQuery] GetAllLocationQueryDapper query,
+        [FromServices] IQueryHandler<GetAllLocationQueryDapper, PagedResult<GetAllLocationDto>> handler,
+        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 
     [HttpGet("{locationId:guid}")]
     public async Task<EndpointResult<LocationResponseDto>> GetById(
@@ -44,8 +48,15 @@ public class LocationController : BaseApiController
         return await handler.Handle(new GetByIdLocationQuery(new LocationId(locationId)), cancellationToken);
     }
 
-    [HttpPatch]
-    [Route("/api/locations/{id}")]
+    [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
+    [HttpPost]
+    public async Task<EndpointResult<Guid>> Create(
+        [FromBody] AddLocationDto addLocationDto,
+        [FromServices] ICommandHandler<AddLocationCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new AddLocationCommand(addLocationDto), cancellationToken);
+
+    [HttpPatch("{id:guid}")]
     public async Task<EndpointResult<Guid>> UpdateById(
         [FromBody] UpdateLocationDto locationDto,
         [FromRoute] Guid id,
@@ -53,28 +64,14 @@ public class LocationController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new UpdateLocationCommand(locationDto, id), cancellationToken);
 
-    [HttpGet]
-    public async Task<EndpointResult<PagedResult<GetAllLocationDto>>> GetAll(
-        [FromQuery] GetAllLocationQuery query,
-        [FromServices] IQueryHandler<GetAllLocationQuery, PagedResult<GetAllLocationDto>> handler,
-        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
-
-    [HttpGet("/api/locations/Dapper")]
-    public async Task<EndpointResult<PagedResult<GetAllLocationDto>>> GetAllDapper(
-        [FromQuery] GetAllLocationQueryDapper query,
-        [FromServices] IQueryHandler<GetAllLocationQueryDapper, PagedResult<GetAllLocationDto>> handler,
-        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
-
-    [HttpDelete]
-    [Route("/api/locations/{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<EndpointResult<Guid>> Delete(
         [FromRoute] Guid id,
         [FromServices] ICommandHandler<RemoveLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new RemoveLocationCommand(id), cancellationToken);
 
-    [HttpDelete]
-    [Route("/api/locations/{id}/soft-delete")]
+    [HttpDelete("{id:guid}/soft-delete")]
     public async Task<EndpointResult<Guid>> SoftDelete(
         [FromRoute] Guid id,
         [FromServices] ICommandHandler<SoftDeleteLocationCommand, Guid> handler,
