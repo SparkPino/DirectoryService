@@ -82,6 +82,7 @@ public class GetAllLocationHandler(
         var items = rows
             .Select(r => new GetAllLocationDto()
             {
+                Id = r.Id,
                 Name = r.Name,
                 CreatedAt = r.CreatedAt,
                 Address = JsonSerializer.Deserialize<AddressDto>(r.Addresses, _addressJsonOptions)!,

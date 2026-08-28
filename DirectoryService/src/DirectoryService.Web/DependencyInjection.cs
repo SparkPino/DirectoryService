@@ -23,6 +23,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddWebDependencies(this IServiceCollection services)
     {
+        services.AddCors();
         services.AddControllers()
             .AddJsonOptions(options =>
             {
