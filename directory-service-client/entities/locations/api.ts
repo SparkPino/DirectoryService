@@ -13,7 +13,7 @@ export const locationApi = {
     { query, signal }: GetLocationOptions = {
       query: { Page: 1, PageSize: 10 },
     },
-  ): Promise<Location[]> => {
+  ): Promise<PagedResult<Location>> => {
     try {
       const response = await apiClient.get<Envelope<PagedResult<Location>>>(
         "api/locations",
@@ -24,7 +24,6 @@ export const locationApi = {
       );
 
       const envelope = response.data;
-
       if (envelope.isError) {
         const firstError = envelope.errorList?.[0];
         throw new ApiRequestError(
@@ -34,7 +33,15 @@ export const locationApi = {
         );
       }
 
-      return envelope.result?.items || []; // например page , при переходе на след страницу
+      return (
+        envelope.result ?? {
+          items: [],
+          totalCount: 0,
+          page: query?.Page ?? 1,
+          pageSize: query?.PageSize ?? 10,
+          totalPages: 0,
+        }
+      );
     } catch (err) {
       if (
         axios.isAxiosError<Envelope<PagedResult<Location>>>(err) &&

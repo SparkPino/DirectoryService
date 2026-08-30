@@ -53,6 +53,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
 
         var parameters = new DynamicParameters();
 
+        
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             string normalize = query.Search.Trim();
@@ -85,20 +86,24 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
         const int pageSizeDefault = 20;
         const int pageDefault = 1;
 
-        int page = query.Pagination?.Page ?? pageDefault;
+        int pageFromQuery = query.Pagination?.Page ?? pageDefault;
         int pageSize = query.Pagination?.PageSize ?? pageSizeDefault;
+        int page = (pageFromQuery - 1) * pageSize;
+        
         sb.Append(" LIMIT @Limit OFFSET @Offset");
         parameters.Add("Limit", pageSize,
             DbType.Int32); // Просто щоб показати що таке є для таких ситуацій string? name = null;
-        parameters.Add("Offset", (page - 1) * pageSize);
+        parameters.Add("Offset", page);
 
         using var connectionAsync = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         var departmentsResult = (await connectionAsync.QueryAsync<GetDepartmentDto>(
             new CommandDefinition(sb.ToString(), parameters, cancellationToken: cancellationToken))).ToList();
+     
 
         var count = departmentsResult.FirstOrDefault()?.TotalCount ?? 0;
-        var result = new PagedResult<GetDepartmentDto>(departmentsResult, count);
+        var totalPage = (int)count / pageSize;
+        var result = new PagedResult<GetDepartmentDto>(departmentsResult, count, pageFromQuery, pageSize, totalPage);
         return result;
     }
 }

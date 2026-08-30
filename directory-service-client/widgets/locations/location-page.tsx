@@ -16,7 +16,7 @@ export default function LocationsPage() {
   const [error, setError] = useState<ApiRequestError | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-   useEffect(() => {
+  useEffect(() => {
     const controller = new AbortController();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- нужно сразу показать индикатор загрузки перед стартом запроса
     setIsLoading(true);
@@ -27,7 +27,7 @@ export default function LocationsPage() {
         signal: controller.signal,
       })
       .then((data) => {
-        setLocations(data);
+        setLocations(data.items);
         setError(null);
         setIsLoading(false);
       })

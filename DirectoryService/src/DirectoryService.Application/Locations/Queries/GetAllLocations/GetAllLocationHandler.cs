@@ -90,6 +90,6 @@ public class GetAllLocationHandler(
             })
             .ToList();
 
-        return new PagedResult<GetAllLocationDto>(items, count);
+        return new PagedResult<GetAllLocationDto>(items, count, null, null,null);
     }
 }

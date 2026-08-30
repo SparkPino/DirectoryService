@@ -1,3 +1,5 @@
+import { SortDirection } from "@/shared/api/type";
+
 export type LocationQuery = {
   Search?: string;
   MinDepartmentCount?: number;
@@ -6,8 +8,6 @@ export type LocationQuery = {
   Page?: number;
   PageSize?: number;
 };
-
-export type SortDirection = "ASC" | "DESC";
 
 export type LocationAddress = {
   country: string | null;
@@ -24,23 +24,4 @@ export type Location = {
   address: LocationAddress;
   createdAt: string;
   attachDepartmentCount: number;
-};
-
-export type PagedResult<T> = {
-  items: T[];
-  totalCount: number;
-};
-
-export type ApiError = {
-  code?: string;
-  message: string;
-  type?: string;
-  invalidField?: string | null;
-};
-
-export type Envelope<T> = {
-  result: T | null;
-  errorList: ApiError[] | null;
-  isError: boolean;
-  timeGenerated: string;
 };
