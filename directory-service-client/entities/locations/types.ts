@@ -7,6 +7,7 @@ export type LocationQuery = {
   SortDirection?: SortDirection;
   Page?: number;
   PageSize?: number;
+  TotalPage?: number;
 };
 
 export type LocationAddress = {

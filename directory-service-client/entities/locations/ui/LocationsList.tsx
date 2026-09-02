@@ -7,19 +7,16 @@ import {
   CardContent,
 } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
+import { EntityGrid } from "@/shared/ui/entity-grid";
+import { PagedResult } from "@/shared/api/type";
 
-type LocationsListProps = {
-  locations: Location[];
-};
-
-export function LocationsList({ locations }: LocationsListProps) {
+export function LocationsList({ items }: PagedResult<Location>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {locations.map((location) => (
-        <Card
-          key={location.id}
-          className="rounded-none ring-1 ring-foreground/15"
-        >
+    <EntityGrid
+      items={items}
+      getKey={(location) => location.id}
+      renderItem={(location) => (
+        <Card className="rounded-none ring-1 ring-foreground/15">
           <CardHeader>
             <CardTitle>{location.name}</CardTitle>
             <CardDescription>
@@ -33,7 +30,7 @@ export function LocationsList({ locations }: LocationsListProps) {
             </Badge>
           </CardContent>
         </Card>
-      ))}
-    </div>
+      )}
+    />
   );
 }

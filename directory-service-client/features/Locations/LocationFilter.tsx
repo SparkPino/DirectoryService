@@ -1,7 +1,7 @@
 "use client";
 
 import { Dispatch, SetStateAction, useState, FormEvent } from "react";
-import { LocationQuery, SortDirection } from "@/entities/locations/types";
+import { LocationQuery } from "@/entities/locations/types";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 import {
@@ -11,8 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { SortDirection } from "@/shared/api/type";
 
-type LocationFilterProps = {
+export type LocationFilterProps = {
   query: LocationQuery;
   onChange: Dispatch<SetStateAction<LocationQuery>>;
 };

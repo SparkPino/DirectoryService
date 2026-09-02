@@ -1,51 +1,21 @@
 "use client";
 
 import { locationApi } from "@/entities/locations/api";
-import { LocationQuery, Location } from "@/entities/locations/types";
+import { LocationQuery } from "@/entities/locations/types";
 import { LocationsList } from "@/entities/locations/ui/LocationsList";
 import LocationFilter from "@/features/Locations/LocationFilter";
-import { ApiRequestError } from "@/shared/api/ApiRequestError";
 import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
-import axios from "axios";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import Pagination from "../Pagination/Pagination";
+import { locationQueries } from "@/entities/locations/queries";
 
 export default function LocationsPage() {
   const [query, setQuery] = useState<LocationQuery>({ Page: 1, PageSize: 10 });
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [error, setError] = useState<ApiRequestError | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- нужно сразу показать индикатор загрузки перед стартом запроса
-    setIsLoading(true);
-
-    locationApi
-      .getAllLocations({
-        query,
-        signal: controller.signal,
-      })
-      .then((data) => {
-        setLocations(data.items);
-        setError(null);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        if (axios.isCancel(err)) return;
-        if (err instanceof ApiRequestError) {
-          setIsLoading(false);
-          setError(err);
-        } else {
-          setIsLoading(false);
-          setError(new ApiRequestError("Неизвестная ошибка"));
-        }
-      });
-
-    return () => {
-      controller.abort();
-    };
-  }, [query]);
+  const { data, error, isLoading, isFetched } = useQuery(
+    locationQueries.list(query),
+  );
 
   function handleRetry() {
     setQuery((q) => ({ ...q }));
@@ -72,14 +42,21 @@ export default function LocationsPage() {
         </div>
       )}
 
-      {!isLoading && !error && locations.length === 0 && (
+      {!isLoading && !error && data?.items.length === 0 && (
         <p className="text-center text-muted-foreground py-8">
           Локации не найдены
         </p>
       )}
 
-      {!isLoading && !error && locations.length > 0 && (
-        <LocationsList locations={locations} />
+      {!isLoading && !error && data && data.items.length > 0 && (
+        <LocationsList {...data} />
+      )}
+      {!isLoading && !error && data && (
+        <Pagination
+          page={data?.page || 1}
+          totalPages={data?.totalPage || 1}
+          onPageChange={(p) => setQuery((q) => ({ ...q, Page: p }))}
+        />
       )}
     </div>
   );

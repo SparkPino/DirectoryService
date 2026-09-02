@@ -1,7 +1,7 @@
 import { Pagination, SortDirection } from "@/shared/api/type";
 
 export type Department = {
-  guid: number;
+  departmentId: number;
   path: string;
   name: string;
   createdAt: string;
@@ -9,8 +9,8 @@ export type Department = {
 };
 
 export type GetDepartmentsQuery = {
-  Search: string;
-  SortBy: string;
+  Search?: string;
+  SortBy?: string;
   SortDirection?: SortDirection;
-  Pagination: Pagination;
+  Pagination?: Pagination;
 };
