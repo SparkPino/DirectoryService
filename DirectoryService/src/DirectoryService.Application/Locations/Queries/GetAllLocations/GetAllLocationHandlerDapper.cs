@@ -110,6 +110,6 @@ public class GetAllLocationHandlerDapper(
         }).ToList();
 
         var count = rowResult.Select(r => r.TotalCount).FirstOrDefault();
-        return new PagedResult<GetAllLocationDto>(result.ToList(), count);
+        return new PagedResult<GetAllLocationDto>(result.ToList(), count, null, null, null);
     }
 }
