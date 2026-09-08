@@ -10,6 +10,12 @@ export type LocationQuery = {
   TotalPage?: number;
 };
 
+export type CreateLocationsMutation = {
+  name: string;
+  address: LocationAddress;
+  timezone: string;
+};
+
 export type LocationAddress = {
   country: string | null;
   city: string | null;
@@ -25,4 +31,12 @@ export type Location = {
   address: LocationAddress;
   createdAt: string;
   attachDepartmentCount: number;
+};
+
+
+
+export type CreateLocationDto = {
+  name: string;
+  address: LocationAddress;
+  timezone: string;
 };

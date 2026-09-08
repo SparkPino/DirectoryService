@@ -36,6 +36,11 @@ export function DepartmentFilter({
     }));
   }
 
+  const sortByLabels: Record<string, string> = {
+    name: "Названию",
+    created_at: "Дате создания",
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -55,14 +60,20 @@ export function DepartmentFilter({
         <label className="text-xs text-muted-foreground">Сортировать по</label>
         <Select
           value={orderBy}
-          onValueChange={(value) => setOrderBy(value ?? "Name")}
+          onValueChange={(value) => setOrderBy(value ?? "name")}
         >
           <SelectTrigger className="w-40">
-            <SelectValue />
+            <SelectValue>
+              {(value: string | null) =>
+                value ? sortByLabels[value] : "Сортировать по"
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="name">Названию</SelectItem>
-            <SelectItem value="created_at">Дате создания</SelectItem>
+            <SelectItem value="name">{sortByLabels.name}</SelectItem>
+            <SelectItem value="created_at">
+              {sortByLabels.created_at}
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -76,7 +87,11 @@ export function DepartmentFilter({
           }
         >
           <SelectTrigger className="w-32">
-            <SelectValue />
+            <SelectValue>
+              {(value: string | null) =>
+                value === "ASC" ? "По возрастанию" : "По убыванию"
+              }
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ASC">По возрастанию</SelectItem>

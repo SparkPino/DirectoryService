@@ -1,6 +1,6 @@
 import { Envelope, PagedResult } from "@/shared/api/type";
 import { apiClient } from "@/shared/api/axios-instance";
-import { LocationQuery, Location } from "./types";
+import { LocationQuery, Location, CreateLocationDto } from "./types";
 
 type GetLocationOptions = {
   query?: LocationQuery;
@@ -30,5 +30,14 @@ export const locationApi = {
         totalPage: 0,
       }
     );
+  },
+
+  createLocation: async (
+    location: CreateLocationDto,
+  ): Promise<CreateLocationDto> => {
+    const response = await apiClient.post<CreateLocationDto>("api/locations", {
+      params: location,
+    });
+    return response.data;
   },
 };

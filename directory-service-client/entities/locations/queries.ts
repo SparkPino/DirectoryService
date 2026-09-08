@@ -7,6 +7,5 @@ export const locationQueries = {
     queryOptions({
       queryKey: ["locations", query],
       queryFn: ({ signal }) => locationApi.getAllLocations({ query, signal }),
-      retry: false,
     }),
 };
