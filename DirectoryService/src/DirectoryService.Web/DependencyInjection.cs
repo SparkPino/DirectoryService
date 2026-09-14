@@ -43,7 +43,7 @@ public static class DependencyInjection
                 var type = context.JsonTypeInfo.Type;
                 var enumType = type.IsEnum ? type : Nullable.GetUnderlyingType(type);
 
-                if (enumType is { IsEnum: true })
+                if (enumType is { IsEnum: true  })
                 {
                     schema.Type = "string";
                     schema.Enum = Enum.GetNames(enumType)

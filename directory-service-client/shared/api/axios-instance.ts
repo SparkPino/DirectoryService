@@ -17,8 +17,8 @@ apiClient.interceptors.response.use(
         firstError?.code,
         firstError?.type,
         firstError?.invalidField,
-        firstError?.status,
-      );
+        response?.status,
+        );
     }
     return response;
   },
@@ -31,7 +31,7 @@ apiClient.interceptors.response.use(
           firstError?.code,
           firstError?.type,
           firstError?.invalidField,
-          firstError?.status,
+          error.response?.status
         );
       }
     }

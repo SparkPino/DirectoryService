@@ -65,13 +65,14 @@ public class GetAllLocationHandler(
         }
 
 
-        int count = await locations.CountAsync(cancellationToken);
+        int totalCount = await locations.CountAsync(cancellationToken);
 
         int defaultPageSize = 20;
         int defaultPage = 1;
 
         int page = query.Page ?? defaultPage;
-        int pageSize = query.PageSize ?? defaultPageSize;
+        int pageSize = query.PageSize <= 0 ? 1 : query.PageSize ?? defaultPageSize;
+        int totalPage = (int)Math.Ceiling(totalCount / (float)pageSize);
 
         locations = locations
             .Skip((page - 1) * pageSize)
@@ -90,6 +91,6 @@ public class GetAllLocationHandler(
             })
             .ToList();
 
-        return new PagedResult<GetAllLocationDto>(items, count, page, pageSize,count);
+        return new PagedResult<GetAllLocationDto>(items, totalCount, page, pageSize, totalPage);
     }
 }
