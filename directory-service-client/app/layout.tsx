@@ -5,6 +5,7 @@ import Header from "@/widgets/header";
 import { SidebarProvider } from "@/shared/ui/sidebar";
 import AppSidebar from "@/widgets/sidebar/app-sidebar";
 import { QueryProvider } from "@/shared/api/query-provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <main className="flex flex-1 min-h-screen flex-col items-center justify-between p-24 font-sans">
                   {children}
                 </main>
+                <Toaster position="top-center" duration={3000} richColors={true} />
               </div>
             </div>
           </SidebarProvider>

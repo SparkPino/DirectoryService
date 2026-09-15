@@ -16,7 +16,7 @@ export type LocationAddress = {
   street: string | null;
   postalCode: string | null;
   buildingNumber: string | null;
-  apartment: string | null;
+  apartment?: string | null;
 };
 
 export type Location = {
@@ -25,4 +25,10 @@ export type Location = {
   address: LocationAddress;
   createdAt: string;
   attachDepartmentCount: number;
+};
+
+export type CreateLocationDto = {
+  name: string;
+  address: LocationAddress;
+  timezone: string;
 };

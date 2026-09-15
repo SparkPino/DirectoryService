@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState, FormEvent } from "react";
+import { Dispatch, SetStateAction, useState, FormEvent, useEffect, useRef } from "react";
 import { LocationQuery } from "@/entities/locations/types";
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
@@ -16,11 +16,13 @@ import { SortDirection } from "@/shared/api/type";
 export type LocationFilterProps = {
   query: LocationQuery;
   onChange: Dispatch<SetStateAction<LocationQuery>>;
+  retryTrigger?: number;
 };
 
 export default function LocationFilter({
   query,
   onChange,
+  retryTrigger = 0,
 }: LocationFilterProps) {
   const [prevQuery, setPrevQuery] = useState(query);
   const [search, setSearch] = useState(query.Search ?? "");
@@ -33,6 +35,25 @@ export default function LocationFilter({
   );
 
   const [pageSize, setPageSize] = useState<number>(query.PageSize ?? 10);
+
+  // Ref завжди містить актуальну функцію сабміту з поточними значеннями стейту
+  const submitRef = useRef<() => void>(() => {});
+  submitRef.current = () => {
+    onChange((prev) => ({
+      ...prev,
+      Search: search || undefined,
+      MinDepartmentCount: minDepartmentCount ? Number(minDepartmentCount) : undefined,
+      OrderBy: orderBy,
+      SortDirection: sortDirection,
+      Page: 1,
+      PageSize: pageSize,
+    }));
+  };
+
+  useEffect(() => {
+    if (retryTrigger === 0) return;
+    submitRef.current();
+  }, [retryTrigger]);
 
   if (prevQuery !== query) {
     setPrevQuery(query);

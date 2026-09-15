@@ -16,7 +16,7 @@ public sealed record LocationName
     {
         name = name.Trim();
 
-        if (!StringValidator<LocationName>.For(name,nameof(LocationName))
+        if (!StringValidator<LocationName>.For(name, nameof(LocationName))
                 .IsNullOrWhiteSpace()
                 .LengthMinMax(3, 120)
                 .IsValid(out List<Error>? errorMessage))

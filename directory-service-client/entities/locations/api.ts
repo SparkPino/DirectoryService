@@ -1,6 +1,7 @@
 import { Envelope, PagedResult } from "@/shared/api/type";
 import { apiClient } from "@/shared/api/axios-instance";
-import { LocationQuery, Location } from "./types";
+import { LocationQuery, Location, CreateLocationDto } from "./types";
+import { queryOptions } from "@tanstack/react-query";
 
 type GetLocationOptions = {
   query?: LocationQuery;
@@ -31,4 +32,22 @@ export const locationApi = {
       }
     );
   },
+
+  createLocation: async (
+    location: CreateLocationDto,
+  ): Promise<string> => {
+    const response = await apiClient.post<Envelope<string>>("api/locations", location);
+    return response.data.result ?? "";
+  },
 };
+
+
+export const locationQueryOptions = {
+  baseKey: ["locations"],
+
+  getLocationOptions: (query: LocationQuery) =>
+   { return queryOptions({
+      queryKey: [...locationQueryOptions.baseKey, query],
+      queryFn: ({ signal }) => locationApi.getAllLocations({ query, signal }),
+    })},
+}

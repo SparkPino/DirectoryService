@@ -7,6 +7,5 @@ export const departmentQueries = {
     queryOptions({
       queryKey: ["departments", query],
       queryFn: ({ signal }) => departmentApi.getDepartments({ query, signal }),
-      retry: false,
     }),
 };
