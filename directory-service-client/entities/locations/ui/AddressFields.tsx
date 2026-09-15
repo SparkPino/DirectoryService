@@ -47,7 +47,7 @@ export function AddressFields({ register, errors }: AddressFieldsProps) {
       <div className="flex gap-3">
         <Field className="w-32">
           <Label>Квартира / офис</Label>
-          <Input {...register("address.apartment")} placeholder="Необязательно" />
+          <Input {...register("address.apartment", { setValueAs: (v) => v === "" ? null : v })} placeholder="Необязательно" />
           {errors?.apartment?.message && <p className="text-destructive text-sm mt-1">{errors.apartment.message}</p>}
         </Field>
         <Field className="flex-1">

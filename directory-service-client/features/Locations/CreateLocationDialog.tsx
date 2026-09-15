@@ -18,7 +18,7 @@ const createLocationSchema = z.object({
   timezone: z.string()
   .min(2, "Временная зона должна быть не менее 2 символов")
   .max(20, "Временная зона должна быть не более 20 символов")
-  .regex(/^[a-zA-Z]+\/[a-zA-Z_]+$/, "Временная зона должна быть в формате 'Continent/City'"),
+  .regex(/^[A-Za-z]+(?:\/[A-Za-z_\-]+)+$/, "Временная зона должна быть в формате 'Continent/City'"),
   address: 
   z.object({
       country: z.string()
@@ -34,11 +34,9 @@ const createLocationSchema = z.object({
      .min(3 , "Название должно быть не менее 3 символов")
     .nullable(),
     buildingNumber: z.string()
-     .min(3 , "Название должно быть не менее 3 символов")
+     .min(1 , "Поле обязательно для заполнения")
     .nullable(),
-    apartment: z.string()
-     .min(3 , "Название должно быть не менее 3 символов")
-    .nullable(),
+    apartment: z.string().max(10, "Квартира/офис должна быть не более 10 символов").nullable(),
   }),
 });
 
