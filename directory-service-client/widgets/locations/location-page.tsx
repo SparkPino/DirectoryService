@@ -21,7 +21,7 @@ export default function LocationsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4 space-y-3а">
+    <div className="max-w-2xl mx-auto py-10 px-4 space-y-3">
       <h1 className="text-2xl font-semibold mb-6 text-center">Локации</h1>
       <LocationFilter query={query} onChange={setQuery} retryTrigger={retryTrigger} />
       <Button onClick={() => setOpen(true)} className="mb-4">

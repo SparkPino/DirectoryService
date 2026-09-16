@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
+import { ApiRequestError } from "./ApiRequestError";
 
 export type PagedResult<T> = {
   items: T[];
@@ -30,7 +31,7 @@ export type ApiError = {
 
 declare module "@tanstack/react-query" {
   interface Register {
-    defaultError: ApiError;
+    defaultError: ApiRequestError;
   }
 }
 export type FilterProps<TQuery> = {
