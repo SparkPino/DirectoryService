@@ -13,7 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const createLocationSchema = z.object({
   name: z.string()
-  .min(3 , "Название должно быть не менее 3 символов")
+  .min(2 , "Название должно быть не менее 2 символов")
   .max(120, "Название должно быть не более 120 символов"),
   timezone: z.string()
   .min(2, "Временная зона должна быть не менее 2 символов")
@@ -57,13 +57,13 @@ const initialForm: CreateLocationFormData = {
 
 export function CreateLocationDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
 
-  const { register, handleSubmit, reset, formState: { errors, isValid } } = useForm<CreateLocationFormData>({
+  const { register, handleSubmit, reset, setError, formState: { errors, isValid } } = useForm<CreateLocationFormData>({
     defaultValues: initialForm,
     resolver: zodResolver(createLocationSchema),
     mode: "onChange", // Валидация будет происходить при изменении полей
   });
 
-  const { createLocation, isPending } = useCreateLocation();
+  const { createLocation, isPending  ,error } = useCreateLocation(setError);
 
   const onSubmit = async (data: CreateLocationFormData) => {
     try {
@@ -76,7 +76,7 @@ export function CreateLocationDialog({ open, onClose }: { open: boolean; onClose
     } catch {
       // помилка вже обробляється в хуку через toast
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -110,9 +110,16 @@ export function CreateLocationDialog({ open, onClose }: { open: boolean; onClose
               />
               {errors.timezone && 
               <p className="text-destructive text-sm mt-1">{errors.timezone.message}</p>}
-            </Field>   
+            </Field>
             <AddressFields register={register} errors={errors.address as any} />
           </FieldGroup>
+
+          {error && !error.firstError?.invalidField && (
+            <ul className="text-destructive text-sm mt-3">
+              {(error.allErrorsLikeString.length > 0 ? error.allErrorsLikeString : ["Неизвестная ошибка"])
+                .map((msg, i) => <li key={i}>{msg}</li>)}
+            </ul>
+          )}
 
           <DialogFooter className="mt-6">
           <Button type="submit" disabled={isPending || !isValid}>
