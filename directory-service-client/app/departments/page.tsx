@@ -1,8 +1,4 @@
-import { ROUTES } from "@/shared/config/routes";
-import { cn } from "@/shared/lib/utils";
-import { buttonVariants } from "@/shared/ui/button";
 import DepartmentPage from "@/widgets/departments/department-page";
-import Link from "next/link";
 
 export const metadata = { title: "Департаменты" };
 

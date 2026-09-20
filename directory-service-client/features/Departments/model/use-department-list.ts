@@ -38,6 +38,7 @@ export function useDepartmentList(query: GetDepartmentsQuery) {
     [fetchNextPage, hasNextPage, isFetchingNextPage],
   );
 
+  const canLoadMore = hasNextPage && !isError;
   // у useInfiniteQuery другая форма data,для useInfiniteQuery
   // data — это не то, что вернул queryFn напрямую. React Query оборачивает результат в специальную структуру:
   // pages: PagedResult<Department>[],  // результат queryFn с КАЖДОЙ загруженной страницы, по одному элементу на страницу
@@ -54,5 +55,6 @@ export function useDepartmentList(query: GetDepartmentsQuery) {
     refetch,
     cursorRef,
     isFetchingNextPage,
+    canLoadMore,
   };
 }

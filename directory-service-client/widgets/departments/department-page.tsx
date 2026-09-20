@@ -4,7 +4,7 @@ import { DepartmentList } from "@/entities/departments/ui/DepartmentsList";
 import { DepartmentFilter } from "@/features/Departments/DepartmentFilter";
 import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
-import { RefCallback, useCallback, useState } from "react";
+import { useState } from "react";
 import { useDepartmentList } from "@/features/Departments/model/use-department-list";
 
 export default function DepartmentPage() {
@@ -13,7 +13,7 @@ export default function DepartmentPage() {
     Pagination: { Page: 1, PageSize: 10 },
   });
 
-  const { data, error, isPending, cursorRef, isFetchingNextPage } =
+  const { data, error, isPending, cursorRef, isFetchingNextPage, canLoadMore } =
     useDepartmentList(query);
 
   function handleRetry() {
@@ -55,10 +55,11 @@ export default function DepartmentPage() {
           <DepartmentList {...data} />
         )}
       </div>
-
-      <div ref={cursorRef} className="flex justify-center ppy-4">
-        {isFetchingNextPage && <Spinner className="size-6" />}
-      </div>
+      {canLoadMore && (
+        <div ref={cursorRef} className="flex justify-center py-4">
+          {isFetchingNextPage && <Spinner className="size-6" />}
+        </div>
+      )}
     </div>
   );
 }

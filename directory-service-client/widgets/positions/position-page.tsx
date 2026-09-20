@@ -13,7 +13,7 @@ export default function PositionPage() {
     Pagination: { Page: 1, PageSize: 10 },
   });
 
-  const { data, error, isPending, cursorRef, isFetchingNextPage } =
+  const { data, error, isPending, cursorRef, isFetchingNextPage, canLoadMore } =
     usePositionList(query);
 
   function handleRetry() {
@@ -55,10 +55,11 @@ export default function PositionPage() {
           <PositionList {...data} />
         )}
       </div>
-
-      <div ref={cursorRef} className="flex justify-center py-4">
-        {isFetchingNextPage && <Spinner className="size-6" />}
-      </div>
+      {canLoadMore && (
+        <div ref={cursorRef} className="flex justify-center py-4">
+          {isFetchingNextPage && <Spinner className="size-6" />}
+        </div>
+      )}
     </div>
   );
 }

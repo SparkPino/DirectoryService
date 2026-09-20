@@ -41,6 +41,8 @@ export function usePositionList(query: GetPositionsQuery) {
     [fetchNextPage, hasNextPage, isFetchingNextPage],
   );
 
+  const canLoadMore = hasNextPage && !isError;
+
   return {
     data,
     isPending,
@@ -49,5 +51,6 @@ export function usePositionList(query: GetPositionsQuery) {
     refetch,
     cursorRef,
     isFetchingNextPage,
+    canLoadMore,
   };
 }
