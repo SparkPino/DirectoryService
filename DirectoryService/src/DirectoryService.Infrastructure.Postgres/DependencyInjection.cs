@@ -54,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<ILocationReadRepository, LocationReadRepository>();
         services.AddScoped<IDepartmentRepository, DepartmentRepository>();
         services.AddScoped<IPositionRepository, PositionRepository>();
+        services.AddScoped<IPositionReadRepository, PositionReadRepository>();
         services.AddScoped<ISoftDeleteCleanupRepository, SoftDeleteCleanupRepository>();
 
         services.AddScoped<ITransactionManager, TransactionManager>();

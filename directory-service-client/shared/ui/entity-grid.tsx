@@ -8,7 +8,7 @@ type EntityGridProps<T> = {
 
 export function EntityGrid<T>({ items, getKey, renderItem }: EntityGridProps<T>) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
       {items.map((item) => (
         <div key={getKey(item)}>{renderItem(item)}</div>
       ))}

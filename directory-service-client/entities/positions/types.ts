@@ -1,14 +1,14 @@
 import { Pagination, SortDirection } from "@/shared/api/type";
 
-export type Department = {
-  departmentId: number;
-  path: string;
+export type Position = {
+  id: string;
   name: string;
+  description: string | null;
   createdAt: string;
-  totalCount: number;
+  attachDepartmentCount: number;
 };
 
-export type GetDepartmentsQuery = {
+export type GetPositionsQuery = {
   Search?: string;
   SortBy?: string;
   SortDir?: SortDirection;

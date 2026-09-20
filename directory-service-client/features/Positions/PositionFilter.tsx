@@ -1,4 +1,4 @@
-import { GetDepartmentsQuery } from "@/entities/departments/types";
+import { GetPositionsQuery } from "@/entities/positions/types";
 import { SortDirection } from "@/shared/api/type";
 import { Button } from "@/shared/ui/button";
 import {
@@ -12,13 +12,12 @@ import { Input } from "@/shared/ui/input";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 
 export type FilterProps = {
-  query: GetDepartmentsQuery;
-  onChange: Dispatch<SetStateAction<GetDepartmentsQuery>>;
+  query: GetPositionsQuery;
+  onChange: Dispatch<SetStateAction<GetPositionsQuery>>;
   retryTrigger?: number;
 };
 
-
-export function DepartmentFilter({
+export function PositionFilter({
   query,
   onChange,
   retryTrigger = 0,
@@ -37,9 +36,9 @@ export function DepartmentFilter({
     setSortDirection(query.SortDir ?? "ASC");
   }
 
-const submitRef = useRef<()=> void>(()=>{});
-  
-submitRef.current = () =>{
+  const submitRef = useRef<() => void>(() => {});
+
+  submitRef.current = () => {
     onChange((prev) => ({
       ...prev,
       Search: search || undefined,
@@ -53,10 +52,10 @@ submitRef.current = () =>{
     }));
   };
 
-  useEffect(() =>{
-    if(retryTrigger === 0) return
+  useEffect(() => {
+    if (retryTrigger === 0) return;
     submitRef.current();
-  }, [retryTrigger])
+  }, [retryTrigger]);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -88,7 +87,7 @@ submitRef.current = () =>{
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Название локации..."
+          placeholder="Название должности..."
           className="w-48"
         />
       </div>
