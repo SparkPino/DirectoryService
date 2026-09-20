@@ -21,6 +21,7 @@ export type Pagination = {
   Page?: number;
   PageSize?: number;
 };
+
 export type ApiError = {
   code?: string;
   message: string;
@@ -34,10 +35,7 @@ declare module "@tanstack/react-query" {
     defaultError: ApiRequestError;
   }
 }
-export type FilterProps<TQuery> = {
-  query: TQuery;
-  onChange: Dispatch<SetStateAction<TQuery>>;
-};
+
 
 export type PaginationProps = {
   page: number;

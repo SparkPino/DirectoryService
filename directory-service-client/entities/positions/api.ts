@@ -1,20 +1,20 @@
 import { apiClient } from "@/shared/api/axios-instance";
-import { Department, GetDepartmentsQuery } from "./types";
+import { Position, GetPositionsQuery } from "./types";
 import { Envelope, PagedResult } from "@/shared/api/type";
-import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions } from "@tanstack/react-query";
 
-type GetDepartmentOptions = {
-  query: GetDepartmentsQuery;
+type GetPositionsOptions = {
+  query: GetPositionsQuery;
   signal: AbortSignal;
 };
 
-export const departmentApi = {
-  getDepartments: async ({
+export const positionApi = {
+  getPositions: async ({
     query,
     signal,
-  }: GetDepartmentOptions): Promise<PagedResult<Department>> => {
-    const response = await apiClient.get<Envelope<PagedResult<Department>>>(
-      "api/departments",
+  }: GetPositionsOptions): Promise<PagedResult<Position>> => {
+    const response = await apiClient.get<Envelope<PagedResult<Position>>>(
+      "api/positions",
       { params: query, signal },
     );
 
@@ -30,22 +30,15 @@ export const departmentApi = {
   },
 };
 
-export const departmentQueryOptions = {
-  baseKey: ["departments"],
+export const positionQueryOptions = {
+  baseKey: ["positions"],
 
-  getDepartmentOptions: (query: GetDepartmentsQuery) => {
-    return queryOptions({
-      queryKey: [...departmentQueryOptions.baseKey, query],
-      queryFn: ({ signal }) => departmentApi.getDepartments({ query, signal }),
-    });
-  },
-
-  getDepartmentInfinityOptions: (query: GetDepartmentsQuery) => {
+  getPositionInfinityOptions: (query: GetPositionsQuery) => {
     const pageSize = query.Pagination?.PageSize ?? 10;
 
     return infiniteQueryOptions({
       queryKey: [
-        ...departmentQueryOptions.baseKey,
+        ...positionQueryOptions.baseKey,
         "infinite",
         query.Search,
         query.SortBy,
@@ -53,7 +46,7 @@ export const departmentQueryOptions = {
         pageSize,
       ],
       queryFn: ({ signal, pageParam }) =>
-        departmentApi.getDepartments({
+        positionApi.getPositions({
           query: {
             ...query,
             Pagination: { Page: pageParam, PageSize: pageSize },
@@ -67,7 +60,7 @@ export const departmentQueryOptions = {
           : lastPage.page + 1;
       },
 
-      select: (data): PagedResult<Department> => ({
+      select: (data): PagedResult<Position> => ({
         items: data.pages.flatMap((page) => page.items ?? []),
         totalCount: data.pages[0].totalCount ?? 0,
         page: data.pages[0].page ?? 1,

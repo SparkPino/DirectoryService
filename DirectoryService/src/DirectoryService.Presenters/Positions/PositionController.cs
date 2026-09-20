@@ -1,5 +1,6 @@
 using Core;
 using DirectoryService.Application.Positions.AddPosition;
+using DirectoryService.Application.Positions.Queries.GetAllPositions;
 using DirectoryService.Application.Positions.RemovePosition;
 using DirectoryService.Application.Positions.SoftDeletePosition;
 using DirectoryService.Application.Positions.UpdatePosition;
@@ -18,6 +19,12 @@ namespace DirectoryService.Presenters.Positions;
 [Produces("application/json")]
 public class PositionController : BaseApiController
 {
+    [HttpGet]
+    public async Task<EndpointResult<PagedResult<GetAllPositionDto>>> GetAll(
+        [FromQuery] GetAllPositionsQuery query,
+        [FromServices] IQueryHandler<GetAllPositionsQuery, PagedResult<GetAllPositionDto>> handler,
+        CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
+
     [ProducesResponseType(typeof(Envelope<Guid>), StatusCodes.Status200OK)]
     [HttpPost]
     public async Task<EndpointResult<Guid>> Create(
