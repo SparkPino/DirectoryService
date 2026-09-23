@@ -24,7 +24,7 @@ export function LocationsList({ items, onEdit, onDelete }: LocationsListProps) {
       items={items}
       getKey={(location) => location.id}
       renderItem={(location) => (
-        <Card className="rounded-none ring-1 ring-foreground/15 rounded">
+        <Card className="rounded ring-1 ring-foreground/15">
           <CardHeader>
             <CardTitle>{location.name}</CardTitle>
             <CardDescription>
