@@ -12,6 +12,8 @@ public sealed class LocationRow
 
     public string Addresses { get; init; } = null!;
 
+    public string TimeZone { get; init; } = null!;
+
     public DateTimeOffset CreatedAt { get; init; }
 
     public int AttachDepartmentCount { get; init; }

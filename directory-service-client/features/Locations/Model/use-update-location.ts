@@ -1,24 +1,26 @@
 import { locationApi, locationQueryOptions } from "@/entities/locations/api";
-import { LocationDto } from "@/entities/locations/types";
+import { LocationUpdate } from "@/entities/locations/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-export function useCreateLocation() {
+export default function useUpdateLocation() {
   const queryClient = useQueryClient();
 
   const { mutateAsync, isPending, error, isError } = useMutation({
-    mutationFn: (location: LocationDto) => locationApi.createLocation(location),
+    mutationFn: (query: LocationUpdate) => locationApi.updateLocation(query),
     onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: locationQueryOptions.baseKey }),
+      queryClient.invalidateQueries({
+        queryKey: locationQueryOptions.baseKey,
+      }),
     onSuccess: () => {
-      toast.success("Локация успешно создана");
+      toast.success("Локация успешно обновлена");
     },
   });
 
   return {
-    createLocation: mutateAsync,
-    isError,
+    mutateAsync,
     isPending,
     error,
+    isError,
   };
 }

@@ -1,6 +1,12 @@
 import { Envelope, PagedResult } from "@/shared/api/type";
 import { apiClient } from "@/shared/api/axios-instance";
-import { LocationQuery, Location, CreateLocationDto } from "./types";
+import {
+  LocationQuery,
+  Location,
+  LocationDto,
+  LocationUpdate,
+  UpdateLocationRequest,
+} from "./types";
 import { queryOptions } from "@tanstack/react-query";
 
 type GetLocationOptions = {
@@ -33,21 +39,49 @@ export const locationApi = {
     );
   },
 
-  createLocation: async (
-    location: CreateLocationDto,
+  createLocation: async (location: LocationDto): Promise<string> => {
+    const response = await apiClient.post<Envelope<string>>(
+      "api/locations",
+      location,
+    );
+    return response.data.result ?? "";
+  },
+
+  updateLocation: async (
+    updateLocationObject: LocationUpdate,
   ): Promise<string> => {
-    const response = await apiClient.post<Envelope<string>>("api/locations", location);
+    const { id, query } = updateLocationObject;
+
+    const body: UpdateLocationRequest = {
+      locationName: query.name,
+      adressDto: query.address,
+      timeZone: query.timezone,
+    };
+
+    const response = await apiClient.patch<Envelope<string>>(
+      `api/locations/${id}`,
+      body,
+    );
+
+    return response.data.result ?? "";
+  },
+
+  deleteLocation: async (id: string): Promise<string> => {
+    const response = await apiClient.delete<Envelope<string>>(
+      `api/locations/${id}/soft-delete`,
+    );
+
     return response.data.result ?? "";
   },
 };
 
-
 export const locationQueryOptions = {
   baseKey: ["locations"],
 
-  getLocationOptions: (query: LocationQuery) =>
-   { return queryOptions({
+  getLocationOptions: (query: LocationQuery) => {
+    return queryOptions({
       queryKey: [...locationQueryOptions.baseKey, query],
       queryFn: ({ signal }) => locationApi.getAllLocations({ query, signal }),
-    })},
-}
+    });
+  },
+};
