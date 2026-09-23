@@ -7,7 +7,6 @@ export type LocationQuery = {
   SortDirection?: SortDirection;
   Page?: number;
   PageSize?: number;
-  TotalPage?: number;
 };
 
 export type LocationAddress = {
@@ -25,10 +24,21 @@ export type Location = {
   address: LocationAddress;
   createdAt: string;
   attachDepartmentCount: number;
+  timeZone: string;
 };
 
-export type CreateLocationDto = {
+export type LocationDto = {
   name: string;
   address: LocationAddress;
   timezone: string;
+};
+export type LocationUpdate = {
+  query: LocationDto;
+  id: string;
+};
+
+export type UpdateLocationRequest = {
+  locationName?: string;
+  adressDto?: LocationAddress;
+  timeZone?: string;
 };

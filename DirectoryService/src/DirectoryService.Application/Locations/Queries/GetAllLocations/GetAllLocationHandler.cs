@@ -78,7 +78,7 @@ public class GetAllLocationHandler(
             .Skip((page - 1) * pageSize)
             .Take(pageSize);
 
-        var rows = await locations.ToListAsync(cancellationToken);
+        List<LocationRow> rows = await locations.ToListAsync(cancellationToken);
 
         var items = rows
             .Select(r => new GetAllLocationDto()
@@ -88,6 +88,7 @@ public class GetAllLocationHandler(
                 CreatedAt = r.CreatedAt,
                 Address = JsonSerializer.Deserialize<AddressDto>(r.Addresses, _addressJsonOptions)!,
                 AttachDepartmentCount = r.AttachDepartmentCount,
+                TimeZone = r.TimeZone,
             })
             .ToList();
 

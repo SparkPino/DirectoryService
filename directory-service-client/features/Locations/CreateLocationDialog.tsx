@@ -1,48 +1,25 @@
 "use client";
 
 import { Button } from "@/shared/ui/button";
-import { DialogFooter, DialogContent, Dialog, DialogHeader, DialogDescription, DialogTitle } from "@/shared/ui/dialog";
-import { Field, FieldGroup } from "@/shared/ui/field";
-import { Input } from "@/shared/ui/input";
-import { Label } from "@/shared/ui/label";
+import {
+  DialogFooter,
+  DialogContent,
+  Dialog,
+  DialogHeader,
+  DialogDescription,
+  DialogTitle,
+} from "@/shared/ui/dialog";
+import { FieldGroup } from "@/shared/ui/field";
 import { useCreateLocation } from "./Model/use-create-location";
 import { AddressFields } from "@/entities/locations/ui/AddressFields";
+import { LocationNameFields } from "@/entities/locations/ui/LocationNameFields";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { locationSchema, LocationFormData } from "./Model/location-schema";
+import { locationFieldMap } from "./Model/location-field-map";
+import { handleServerError } from "@/shared/api/handle-server-error";
 
-const createLocationSchema = z.object({
-  name: z.string()
-  .min(2 , "Название должно быть не менее 2 символов")
-  .max(120, "Название должно быть не более 120 символов"),
-  timezone: z.string()
-  .min(2, "Временная зона должна быть не менее 2 символов")
-  .max(20, "Временная зона должна быть не более 20 символов")
-  .regex(/^[A-Za-z]+(?:\/[A-Za-z_\-]+)+$/, "Временная зона должна быть в формате 'Continent/City'"),
-  address: 
-  z.object({
-      country: z.string()
-       .min(3 , "Название должно быть не менее 3 символов")
-      .nullable(),
-      city: z.string()
-       .min(3 , "Название должно быть не менее 3 символов")
-      .nullable(),
-    street: z.string()
-     .min(3 , "Название должно быть не менее 3 символов")
-    .nullable(),
-    postalCode: z.string()
-     .min(3 , "Название должно быть не менее 3 символов")
-    .nullable(),
-    buildingNumber: z.string()
-     .min(1 , "Поле обязательно для заполнения")
-    .nullable(),
-    apartment: z.string().max(10, "Квартира/офис должна быть не более 10 символов").nullable(),
-  }),
-});
-
-type CreateLocationFormData = z.infer<typeof createLocationSchema>;
-
-const initialForm: CreateLocationFormData = {
+const initialForm: LocationFormData = {
   name: "",
   timezone: "",
   address: {
@@ -55,74 +32,59 @@ const initialForm: CreateLocationFormData = {
   },
 };
 
-export function CreateLocationDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-
-  const { register, handleSubmit, reset, setError, formState: { errors, isValid } } = useForm<CreateLocationFormData>({
+export function CreateLocationDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isValid },
+  } = useForm<LocationFormData>({
     defaultValues: initialForm,
-    resolver: zodResolver(createLocationSchema),
+    resolver: zodResolver(locationSchema),
     mode: "onChange", // Валидация будет происходить при изменении полей
   });
 
-  const { createLocation, isPending  ,error } = useCreateLocation(setError);
+  const { createLocation, isPending } = useCreateLocation();
 
-  const onSubmit = async (data: CreateLocationFormData) => {
+  const onSubmit = async (data: LocationFormData) => {
     try {
       await createLocation(data, {
+        onError: (error) => {
+          handleServerError(error, setError, locationFieldMap);
+        },
         onSuccess: () => {
           reset(initialForm);
           onClose();
-        }
+        },
       });
-    } catch {
-      // помилка вже обробляється в хуку через toast
-    }
-  }
+    } catch {}
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <DialogHeader>
-            <DialogTitle>Создать локацию</DialogTitle>
+          <DialogHeader className="mb-4">
+            <DialogTitle className={"font-bold"}>Создать локацию</DialogTitle>
             <DialogDescription>
               Введите название локации и нажмите (Сохранить)
             </DialogDescription>
           </DialogHeader>
 
           <FieldGroup>
-            <Field>
-              <Label htmlFor="name">Название</Label>
-              <Input
-                id="name"
-                placeholder="Введите название локации"
-                {...register("name")}
-              />
-              {errors.name && 
-              <p className="text-destructive text-sm mt-1">{errors.name.message}</p>}
-              
-            </Field>
-            <Field>
-              <Label htmlFor="timezone">Регион (timezone)</Label>
-              <Input
-                id="timezone"
-                placeholder="Europe/Warsaw"
-                {...register("timezone")}
-              />
-              {errors.timezone && 
-              <p className="text-destructive text-sm mt-1">{errors.timezone.message}</p>}
-            </Field>
+            <LocationNameFields register={register} errors={errors} />
             <AddressFields register={register} errors={errors.address as any} />
           </FieldGroup>
 
-          {error && !error.firstError?.invalidField && (
-            <ul className="text-destructive text-sm mt-3">
-              {(error.allErrorsLikeString.length > 0 ? error.allErrorsLikeString : ["Неизвестная ошибка"])
-                .map((msg, i) => <li key={i}>{msg}</li>)}
-            </ul>
-          )}
-
           <DialogFooter className="mt-6">
-          <Button type="submit" disabled={isPending || !isValid}>
+            <Button type="submit" disabled={isPending || !isValid}>
               {isPending ? "Создание..." : "Создать"}
             </Button>
           </DialogFooter>

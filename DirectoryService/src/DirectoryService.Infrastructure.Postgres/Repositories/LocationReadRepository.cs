@@ -23,6 +23,7 @@ public class LocationReadRepository : ILocationReadRepository
                      l.name AS "Name", 
                      l.addresses AS "Addresses",
                      l.created_at AS "CreatedAt",
+                     l.timezone AS "TimeZone",
                      COUNT(dl.department_id) AS "AttachDepartmentCount"
                  FROM locations l
                  LEFT JOIN departments_location dl ON l.id = dl.location_id
@@ -40,6 +41,7 @@ public class LocationReadRepository : ILocationReadRepository
                 l.name AS "Name", 
                 l.addresses AS "Addresses",
                 l.created_at AS "CreatedAt",
+                l.timezone AS "TimeZone",
                  COUNT(dl.department_id) AS "AttachDepartmentCount"
              FROM locations l
              LEFT JOIN departments_location dl ON l.id = dl.location_id

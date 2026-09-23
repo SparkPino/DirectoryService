@@ -74,7 +74,7 @@ public class GetAllLocationHandlerDapper(
             {
                 "name" => "l.name",
                 "createdat" => "l.created_at",
-                "departmentcount" => "DepartmentCount",
+                "departmentcount" => "COUNT(dl.department_id)",
                 _ => defaultOrderBy,
             };
         }
@@ -87,7 +87,7 @@ public class GetAllLocationHandlerDapper(
 
         sb.AppendLine($" ORDER BY {defaultOrderBy} {defaultDirection}, l.id");
 
-        int defaultPageSize = 20;
+        int defaultPageSize = 20; 
         int defaultPage = 1;
 
         int page = query.Page ?? defaultPage;
@@ -109,7 +109,8 @@ public class GetAllLocationHandlerDapper(
             AttachDepartmentCount = r.AttachDepartmentCount,
         }).ToList();
 
-        var count = rowResult.Select(r => r.TotalCount).FirstOrDefault();
-        return new PagedResult<GetAllLocationDto>(result.ToList(), count, null, null, null);
+        long count = rowResult.Select(r => r.TotalCount).FirstOrDefault();
+        double totalPage = Math.Ceiling((double)count / pageSize);
+        return new PagedResult<GetAllLocationDto>(result.ToList(), count, page, pageSize, (int)totalPage);
     }
 }

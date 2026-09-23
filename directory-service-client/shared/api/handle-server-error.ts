@@ -5,14 +5,23 @@ import { ApiRequestError } from "./ApiRequestError";
 export function handleServerError(
   error: ApiRequestError,
   setError: UseFormSetError<any>,
-  fieldMap: Record<string, string> = {}
+  fieldMap: Record<string, string> = {},
 ) {
-  const invalidField = error.firstError?.invalidField;
+  const generalMessages: string[] = [];
 
-  if (invalidField) {
-    const fieldName = fieldMap[invalidField] ?? invalidField;
-    setError(fieldName, { message: error.firstError!.message });
-  } else {
-    toast.error(error.message || "Ошибка при создании");
+  for (const apiError of error.allErrors) {
+    const fieldName = apiError.invalidField
+      ? (fieldMap[apiError.invalidField] ?? apiError.invalidField)
+      : null;
+
+    if (fieldName) {
+      setError(fieldName, { message: apiError.message });
+    } else {
+      generalMessages.push(apiError.message);
+    }
+  }
+
+  if (generalMessages.length > 0) {
+    toast.error(generalMessages.join("\n"));
   }
 }
