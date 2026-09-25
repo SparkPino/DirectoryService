@@ -1,12 +1,20 @@
 function flatten(
   value: unknown,
   prefix: string,
-  out: Record<string, string>,
+  out: URLSearchParams,
 ): void {
   if (value === undefined || value === null) return;
 
+  // Массивы передаём повторяющимся ключом (ids=a&ids=b) — такой формат понимает ASP.NET [FromQuery]
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      flatten(item, prefix, out);
+    }
+    return;
+  }
+
   if (typeof value !== "object" || value instanceof Date) {
-    out[prefix] = String(value);
+    out.append(prefix, String(value));
     return;
   }
 
@@ -16,9 +24,9 @@ function flatten(
 }
 
 export function dotParamsSerializer(params: Record<string, unknown>): string {
-  const flat: Record<string, string> = {};
+  const out = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    flatten(value, key, flat);
+    flatten(value, key, out);
   }
-  return new URLSearchParams(flat).toString();
+  return out.toString();
 }

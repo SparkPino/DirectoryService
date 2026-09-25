@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Core;
 using DirectoryService.Application;
@@ -43,7 +44,7 @@ public static class DependencyInjection
                 var type = context.JsonTypeInfo.Type;
                 var enumType = type.IsEnum ? type : Nullable.GetUnderlyingType(type);
 
-                if (enumType is { IsEnum: true  })
+                if (enumType is { IsEnum: true })
                 {
                     schema.Type = "string";
                     schema.Enum = Enum.GetNames(enumType)
@@ -64,10 +65,10 @@ public static class DependencyInjection
                 var errors = context.ModelState
                     .Where(x => x.Value?.Errors.Count > 0)
                     .SelectMany(x => x.Value!.Errors.Select(e =>
-                        Error.Validation(x.Key.ToLower(), e.ErrorMessage, x.Key)))
+                        Error.Validation($"{JsonNamingPolicy.CamelCase.ConvertName(x.Key)}.invalid", e.ErrorMessage, x.Key)))
                     .ToList();
 
-                return new BadRequestObjectResult(new Errors(errors));
+                return new BadRequestObjectResult(Envelope.Error(errors));
             };
         });
 
