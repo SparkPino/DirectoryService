@@ -6,6 +6,8 @@ import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Badge } from "@/shared/ui/badge";
 import useToDo from "@/shared/hooks/task/use-todo";
+import { Separator } from "@/shared/ui/separator";
+import { PlaygroundNotes } from "@/widgets/playground/notes";
 
 
 export default function Playground() {
@@ -55,6 +57,9 @@ export default function Playground() {
                     </Card>
                 ))}
             </div>
+
+            <Separator className="my-10" />
+            <PlaygroundNotes />
         </div>
     )
 }

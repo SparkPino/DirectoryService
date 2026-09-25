@@ -12,4 +12,12 @@ public record GetDepartmentsQuery : IQuery
     public SortDirection? SortDir { get; set; } = SortDirection.ASC;
 
     public Pagination? Pagination { get; set; }
+
+    public bool? IsActive { get; set; }
+
+    public Guid? ParentId { get; set; }
+
+    public List<Guid>? LocationIds { get; set; }
+
+    public List<Guid>? ExcludeIds { get; set; }
 }

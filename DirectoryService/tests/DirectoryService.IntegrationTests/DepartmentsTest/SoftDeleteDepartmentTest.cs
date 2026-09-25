@@ -83,7 +83,7 @@ public class SoftDeleteDepartmentTest : DirectoryBaseTests
             await sut.Handle(new SoftDeleteDepartmentCommand(new DepartmentId(departmentId)), cancellationToken));
 
         var result = await ExecuteQueryHandler<GetDepartmentsQuery, PagedResult<GetDepartmentDto>>(async sut =>
-            await sut.Handle(new GetDepartmentsQuery { Search = "UniqueSoftDeleteName" }, cancellationToken));
+            await sut.Handle(new GetDepartmentsQuery { Search = "UniqueSoftDeleteName",IsActive = true}, cancellationToken));
 
         Assert.True(result.IsSuccess);
         Assert.DoesNotContain(result.Value.Items, d => d.DepartmentId == departmentId);
