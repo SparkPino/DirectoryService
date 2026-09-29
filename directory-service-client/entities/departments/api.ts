@@ -50,6 +50,10 @@ export const departmentQueryOptions = {
         query.Search,
         query.SortBy,
         query.SortDir,
+        query.IsActive,
+        query.ExcludeIds,
+        query.LocationIds,
+        query.ParentId,
         pageSize,
       ],
       queryFn: ({ signal, pageParam }) =>
