@@ -1,5 +1,4 @@
 import { Home, Users, MapPin, Briefcase, FlaskConical } from "lucide-react";
-import { title } from "process";
 
 export const ROUTES = {
   home: "/",

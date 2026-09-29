@@ -4,7 +4,7 @@ import { Department } from "@/entities/departments/types";
 import { DepartmentSelectDialog } from "@/features/Department-Select/Department-Select-Dialog";
 import { useState } from "react";
 
-export function departmentSelect() {
+export function DepartmentSelect() {
   const [singleValue, setSingleValue] = useState<Department | null>(null);
   const [multiValue, setMultiValue] = useState<Department[]>([]);
   return (

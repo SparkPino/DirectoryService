@@ -1,3 +1,3 @@
-import { departmentSelect } from "@/features/Department-Select/Department-Select";
+import { DepartmentSelect } from "@/features/Department-Select/Department-Select";
 
-export default departmentSelect;
+export default DepartmentSelect;
