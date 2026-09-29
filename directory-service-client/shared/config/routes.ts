@@ -1,13 +1,14 @@
-import { Home, Users, MapPin, Briefcase, FlaskConical } from "lucide-react"
+import { Home, Users, MapPin, Briefcase, FlaskConical } from "lucide-react";
+import { title } from "process";
 
 export const ROUTES = {
   home: "/",
   departments: "/departments",
   locations: "/locations",
   positions: "/positions",
-  playground: "/playground"
+  playground: "/playground",
+  departmentSelect: "/department-select",
 } as const;
-
 
 export const Navigation = [
   {
@@ -34,5 +35,10 @@ export const Navigation = [
     title: "Playground",
     href: ROUTES.playground,
     icon: FlaskConical,
-  }
+  },
+  {
+    title: "Department-Select",
+    href: ROUTES.departmentSelect,
+    icon: Briefcase,
+  },
 ];
