@@ -41,6 +41,7 @@ export function PositionFilter({
   submitRef.current = () => {
     onChange((prev) => ({
       ...prev,
+      DepartmentId: undefined,
       Search: search || undefined,
       SortBy: orderBy,
       SortDir: sortDirection,
@@ -61,6 +62,7 @@ export function PositionFilter({
     e.preventDefault();
     onChange((prev) => ({
       ...prev,
+      DepartmentId: undefined,
       Search: search || undefined,
       SortBy: orderBy,
       SortDir: sortDirection,

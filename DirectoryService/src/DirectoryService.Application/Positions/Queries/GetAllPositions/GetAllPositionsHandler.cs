@@ -33,7 +33,7 @@ public class GetAllPositionsHandler(
 
         _logger.LogInformation("GetAllPositionsHandler начал обработку запроса");
 
-        IQueryable<PositionRow> positions = _positionReadRepository.SearchPositions(query.Search);
+        IQueryable<PositionRow> positions = _positionReadRepository.SearchPositions(query.DepartmentId, query.Search);
 
         bool descending = query.SortDir == SortDirection.DESC;
 

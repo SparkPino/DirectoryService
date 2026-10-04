@@ -5,6 +5,7 @@ namespace DirectoryService.Application.Positions.Queries.GetAllPositions;
 
 public record GetAllPositionsQuery : IQuery
 {
+    public Guid? DepartmentId { get; set; }
     public string? Search { get; set; }
 
     public string? SortBy { get; set; }

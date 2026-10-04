@@ -1,10 +1,25 @@
 import { apiClient } from "@/shared/api/axios-instance";
-import { Department, GetDepartmentsQuery } from "./types";
+import {
+  Department,
+  DepartmentTreeNodesDto,
+  GetDepartmentsQuery,
+  GetDepartmentTreeParams,
+} from "./types";
 import { Envelope, PagedResult } from "@/shared/api/type";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 type GetDepartmentOptions = {
   query: GetDepartmentsQuery;
+  signal: AbortSignal;
+};
+
+type GetDepartmentNods = {
+  query: GetDepartmentTreeParams;
+  signal: AbortSignal;
+};
+
+type GetDeparmentChildrenNods = {
+  parentId: string;
   signal: AbortSignal;
 };
 
@@ -28,6 +43,28 @@ export const departmentApi = {
       }
     );
   },
+
+  getDepartmentTree: async (
+    query: GetDepartmentNods,
+  ): Promise<DepartmentTreeNodesDto[]> => {
+    const response = await apiClient.get<Envelope<DepartmentTreeNodesDto[]>>(
+      "api/departments/tree",
+      { params: query.query, signal: query.signal },
+    );
+
+    return response.data.result || [];
+  },
+
+  getDepartmentChildren: async (
+    query: GetDeparmentChildrenNods,
+  ): Promise<DepartmentTreeNodesDto[]> => {
+    const response = await apiClient.get<Envelope<DepartmentTreeNodesDto[]>>(
+      `api/departments/${query.parentId}/children`,
+      { signal: query.signal },
+    );
+
+    return response.data.result || [];
+  },
 };
 
 export const departmentQueryOptions = {
@@ -37,6 +74,22 @@ export const departmentQueryOptions = {
     return queryOptions({
       queryKey: [...departmentQueryOptions.baseKey, query],
       queryFn: ({ signal }) => departmentApi.getDepartments({ query, signal }),
+    });
+  },
+
+  getDepartmentTreeOptions: (params?: GetDepartmentTreeParams) => {
+    return queryOptions({
+      queryKey: [...departmentQueryOptions.baseKey, "tree", params],
+      queryFn: ({ signal }) =>
+        departmentApi.getDepartmentTree({ query: params ?? {}, signal }),
+    });
+  },
+  getDepartmentTreeChildrenOptions: (parentId: string) => {
+    return queryOptions({
+      queryKey: [...departmentQueryOptions.baseKey, "tree", parentId],
+      queryFn: ({ signal }) =>
+        departmentApi.getDepartmentChildren({ parentId, signal }),
+      staleTime: Infinity,
     });
   },
 

@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <Folder Include="Locations\Commands\"/>
+    <Folder Include="Positions\Commands\" />
   </ItemGroup>
 
 </Project>

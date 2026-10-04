@@ -39,8 +39,7 @@ public class SearchDepartmentTreeHandler(
                                            d.id AS match_id
                                     FROM departments d
                                     WHERE d.is_active = true
-                                      AND d.name ILIKE @Q
-                                ORDER BY d.created_at)
+                                      AND d.name ILIKE @Q)
 
                                 SELECT *
                                 FROM node
@@ -59,8 +58,7 @@ public class SearchDepartmentTreeHandler(
                                 FROM departments d
                                     WHERE d.path @> nd.path
                                       AND d.path != nd.path
-                                    AND d.is_active = true
-                                    ORDER BY d.created_at) c
+                                    AND d.is_active = true) c
                                 """;
 
         var command = new CommandDefinition(sqlQuery, new { Q = $"%{query.Q}%" }, cancellationToken: cancellationToken);
