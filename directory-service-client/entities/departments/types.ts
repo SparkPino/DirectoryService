@@ -22,3 +22,16 @@ export type GetDepartmentsQuery = {
   LocationIds?: string[];
   ExcludeIds?: string[];
 };
+
+export type DepartmentTreeNodesDto = {
+  id: string;
+  parentId: string | null;
+  name: string;
+  identifier: string;
+  path: string;
+  depth: number;
+  hasChildren: boolean;
+  childrenCount: number | null;
+};
+
+export type GetDepartmentTreeParams = { Limit?: number; Offset?: number };

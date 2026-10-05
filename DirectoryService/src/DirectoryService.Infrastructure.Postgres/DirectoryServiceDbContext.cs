@@ -36,6 +36,8 @@ public class DirectoryServiceDbContext : DbContext, IReadDbContext
     public IQueryable<Location> ReadLocations => Set<Location>().AsQueryable().AsNoTracking();
 
     public IQueryable<Department> ReadDepartments => Set<Department>().AsQueryable().AsNoTracking();
+    
+    public IQueryable<Position> ReadPositions => Set<Position>().AsQueryable().AsNoTracking();
 
     /*public IQueryable<Location> SearchLocationsByName(string search) => Set<Location>()
         .FromSqlInterpolated(

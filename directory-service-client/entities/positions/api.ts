@@ -40,6 +40,7 @@ export const positionQueryOptions = {
       queryKey: [
         ...positionQueryOptions.baseKey,
         "infinite",
+        query.DepartmentId,
         query.Search,
         query.SortBy,
         query.SortDir,

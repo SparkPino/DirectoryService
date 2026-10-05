@@ -9,6 +9,7 @@ export type Position = {
 };
 
 export type GetPositionsQuery = {
+  DepartmentId?: string;
   Search?: string;
   SortBy?: string;
   SortDir?: SortDirection;
