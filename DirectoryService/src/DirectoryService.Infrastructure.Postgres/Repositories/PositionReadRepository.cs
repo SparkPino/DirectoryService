@@ -1,4 +1,5 @@
 using DirectoryService.Application.Abstraction.Repositories;
+using DirectoryService.Domain.DepartmentPositions;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,9 +32,10 @@ public class PositionReadRepository : IPositionReadRepository
 
         if (departmentId.HasValue)
         {
+            var depId = new DepartmentId(departmentId.Value);
             var positionIds = _context.DepartmentPositions
-                .Where(a => a.DepartmentId == new DepartmentId(departmentId.Value))
-                .Select(a => a.PositionId.Id);
+                .Where(a => a.DepartmentId == depId)
+                .Select(a => EF.Property<Guid>(a, nameof(DepartmentPosition.PositionId)));
 
             query = query.Where(r => positionIds.Contains(r.Id));
         }
@@ -47,6 +49,4 @@ public class PositionReadRepository : IPositionReadRepository
 
         return query;
     }
-
-    
 }

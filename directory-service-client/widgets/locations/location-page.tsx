@@ -11,12 +11,15 @@ import { useLocationsList } from "@/features/Locations/Model/use-locations-list"
 import { CreateLocationDialog } from "@/features/Locations/CreateLocationDialog";
 import { UpdateLocationDialog } from "@/features/Locations/UpdateLocation-dialog";
 import { DeleteLocationDialog } from "@/features/Locations/DeleteLocationDialog";
+import { DepartmentSelectDialog } from "@/features/Department-Select/Department-Select-Dialog";
+import { Department } from "@/entities/departments/types";
 
 export default function LocationsPage() {
   const [query, setQuery] = useState<LocationQuery>({ Page: 1, PageSize: 10 });
   const { data, error, isPending } = useLocationsList(query);
   const [open, setOpen] = useState(false);
   const [retryTrigger, setRetryTrigger] = useState(0);
+  const [multiValue, setMultiValue] = useState<Department[]>([]);
 
   const [selectedUpdateLocation, setSelectedLocation] =
     useState<Location | null>(null);
@@ -49,6 +52,11 @@ export default function LocationsPage() {
         query={query}
         onChange={setQuery}
         retryTrigger={retryTrigger}
+      />
+      <DepartmentSelectDialog
+        mode="multiply"
+        value={multiValue}
+        onChange={setMultiValue}
       />
       <Button onClick={() => setOpen(true)} className="mb-4">
         Создать локацию
