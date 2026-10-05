@@ -24,7 +24,7 @@ export function DepartmentTree(state: DepartmentTreeState) {
         <div className="flex flex-col items-center gap-3 py-8 text-center">
           <span className="text-sm text-muted-foreground">
             Неудалось загрузить дерево отделов. Попробуйте обновить страницу.
-            Не удалось загрузить дерево отделов. Попробуйте обновить страницу.
+          </span>
           <Button onClick={() => refetch()}>Повторить попытку</Button>
         </div>
       )}
