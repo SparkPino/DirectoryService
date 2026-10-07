@@ -34,7 +34,7 @@ public class GetAllLocationHandler(
             return validatorResult.ToError();
         }
 
-        IQueryable<LocationRow> locations = _locationReadRepository.SearchLocations(query.Search);
+        IQueryable<LocationRow> locations = _locationReadRepository.SearchLocations(query.DepartmentIds, query.Search);
 
         if (query.MinDepartmentCount.HasValue && query.MinDepartmentCount.Value > 0)
         {

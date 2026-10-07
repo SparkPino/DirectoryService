@@ -5,6 +5,7 @@ namespace DirectoryService.Application.Departments.Queries.GetDepartments;
 
 public record GetDepartmentsQuery : IQuery
 {
+    public List<Guid>? DepartmentIds { get; set; }
     public string? Search { get; set; }
 
     public string? SortBy { get; set; }

@@ -21,6 +21,7 @@ export type GetDepartmentsQuery = {
   ParentId?: string;
   LocationIds?: string[];
   ExcludeIds?: string[];
+  DepartmentIds?: string[];
 };
 
 export type DepartmentTreeNodesDto = {

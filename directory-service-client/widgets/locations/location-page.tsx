@@ -13,14 +13,22 @@ import { UpdateLocationDialog } from "@/features/Locations/UpdateLocation-dialog
 import { DeleteLocationDialog } from "@/features/Locations/DeleteLocationDialog";
 import { DepartmentSelectDialog } from "@/features/Department-Select/Department-Select-Dialog";
 import { Department } from "@/entities/departments/types";
-
+import { useLocationDepartmentFilter } from "@/features/Locations/Model/use-location-department-filter";
 export default function LocationsPage() {
   const [query, setQuery] = useState<LocationQuery>({ Page: 1, PageSize: 10 });
-  const { data, error, isPending } = useLocationsList(query);
   const [open, setOpen] = useState(false);
   const [retryTrigger, setRetryTrigger] = useState(0);
+  const [restored, setRestored] = useState(false);
+
   const [multiValue, setMultiValue] = useState<Department[]>([]);
 
+  const { departmentIds, setDepartmentIds, selectedDepartments } =
+    useLocationDepartmentFilter();
+  const isActiveDepartmentFilter = departmentIds.length > 0;
+  const { data, error, isPending } = useLocationsList({
+    ...query,
+    DepartmentIds: isActiveDepartmentFilter ? departmentIds : undefined,
+  });
   const [selectedUpdateLocation, setSelectedLocation] =
     useState<Location | null>(null);
 
@@ -29,6 +37,18 @@ export default function LocationsPage() {
 
   function onEdit(location: Location) {
     setSelectedLocation(location);
+  }
+
+  function handleDepartmentsChange(departments: Department[]) {
+    setMultiValue(departments);
+    setRestored(true);
+    setQuery((q) => ({ ...q, Page: 1 }));
+    const ids = departments.map((d) => d.departmentId);
+    setDepartmentIds(ids);
+  }
+
+  function handleResetFilter() {
+    handleDepartmentsChange([]);
   }
 
   function handleLocationDelete() {
@@ -45,19 +65,32 @@ export default function LocationsPage() {
     setRetryTrigger((t) => t + 1);
   }
 
+  if (!restored && selectedDepartments) {
+    setRestored(true);
+    setMultiValue(selectedDepartments.items);
+  }
+
   return (
     <div className="max-w-2xl mx-auto py-10 px-4 space-y-3">
       <h1 className="text-2xl font-semibold mb-6 text-center">Локации</h1>
+      <div className="flex flex-wrap items-end gap-3">
+        <DepartmentSelectDialog
+          mode="multiply"
+          value={multiValue}
+          onChange={handleDepartmentsChange}
+        />
+        {isActiveDepartmentFilter && (
+          <Button variant="outline" onClick={handleResetFilter}>
+            Сбросить фильтр
+          </Button>
+        )}
+      </div>
       <LocationFilter
         query={query}
         onChange={setQuery}
         retryTrigger={retryTrigger}
       />
-      <DepartmentSelectDialog
-        mode="multiply"
-        value={multiValue}
-        onChange={setMultiValue}
-      />
+
       <Button onClick={() => setOpen(true)} className="mb-4">
         Создать локацию
       </Button>
@@ -75,11 +108,25 @@ export default function LocationsPage() {
           <Button onClick={handleRetry}>Повторить</Button>
         </div>
       )}
-      {!isPending && !error && data?.totalCount === 0 && (
-        <p className="text-center text-muted-foreground py-8">
-          Локации не найдены
-        </p>
-      )}
+      {!isPending &&
+        !error &&
+        data?.totalCount === 0 &&
+        isActiveDepartmentFilter && (
+          <div className="flex flex-col items-center gap-3 py-8 text-center">
+            <span>Нет локаций для выбранных подразделений</span>
+            <Button variant="outline" onClick={handleResetFilter}>
+              Сбросить фильтр
+            </Button>
+          </div>
+        )}
+      {!isPending &&
+        !error &&
+        data?.totalCount === 0 &&
+        !isActiveDepartmentFilter && (
+          <p className="text-center text-muted-foreground py-8">
+            Локации не найдены
+          </p>
+        )}
       {!isPending && !error && data && data.totalCount > 0 && (
         <LocationsList
           {...data}
