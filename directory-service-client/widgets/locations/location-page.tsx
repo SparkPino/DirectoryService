@@ -18,12 +18,12 @@ export default function LocationsPage() {
   const [query, setQuery] = useState<LocationQuery>({ Page: 1, PageSize: 10 });
   const [open, setOpen] = useState(false);
   const [retryTrigger, setRetryTrigger] = useState(0);
-  const [restored, setRestored] = useState(false);
 
-  const [multiValue, setMultiValue] = useState<Department[]>([]);
+  const [userSelection, setUserSelection] = useState<Department[] | null>(null);
 
   const { departmentIds, setDepartmentIds, selectedDepartments } =
     useLocationDepartmentFilter();
+  const selectValue = userSelection ?? selectedDepartments?.items ?? [];
   const isActiveDepartmentFilter = departmentIds.length > 0;
   const { data, error, isPending } = useLocationsList({
     ...query,
@@ -40,8 +40,7 @@ export default function LocationsPage() {
   }
 
   function handleDepartmentsChange(departments: Department[]) {
-    setMultiValue(departments);
-    setRestored(true);
+    setUserSelection(departments);
     setQuery((q) => ({ ...q, Page: 1 }));
     const ids = departments.map((d) => d.departmentId);
     setDepartmentIds(ids);
@@ -65,18 +64,13 @@ export default function LocationsPage() {
     setRetryTrigger((t) => t + 1);
   }
 
-  if (!restored && selectedDepartments) {
-    setRestored(true);
-    setMultiValue(selectedDepartments.items);
-  }
-
   return (
     <div className="max-w-2xl mx-auto py-10 px-4 space-y-3">
       <h1 className="text-2xl font-semibold mb-6 text-center">Локации</h1>
       <div className="flex flex-wrap items-end gap-3">
         <DepartmentSelectDialog
           mode="multiply"
-          value={multiValue}
+          value={selectValue}
           onChange={handleDepartmentsChange}
         />
         {isActiveDepartmentFilter && (
