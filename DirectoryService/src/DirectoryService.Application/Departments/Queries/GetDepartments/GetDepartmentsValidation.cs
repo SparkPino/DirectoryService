@@ -53,5 +53,9 @@ public class GetDepartmentsValidation : AbstractValidator<GetDepartmentsQuery>
                 "parentId.invalid",
                 "parentId не может быть пустым идентификатором",
                 "ParentId"));
+
+        RuleFor(a => a.DepartmentIds)
+            .Must(ids => ids is null || ids.Count <= 100)
+            .WithError(Error.Validation("departmentIds.invalid","departmentIds может содержать не больше 100 значений", "DepartmentIds"));
     }
 }

@@ -64,6 +64,12 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
             parameters.Add("IsActive", query.IsActive.Value);
         }
 
+        if (query.DepartmentIds != null && query.DepartmentIds.Any())
+        {
+            sb.Append(" AND d.id = ANY(@DepartmentIds)");
+            parameters.Add("DepartmentIds", query.DepartmentIds.ToArray());
+        }
+
         if (query.ParentId.HasValue)
         {
             sb.Append(" AND d.parent_id = @ParentId");

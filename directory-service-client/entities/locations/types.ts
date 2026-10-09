@@ -1,6 +1,7 @@
 import { SortDirection } from "@/shared/api/type";
 
 export type LocationQuery = {
+  DepartmentIds?: string[];
   Search?: string;
   MinDepartmentCount?: number;
   OrderBy?: string;
