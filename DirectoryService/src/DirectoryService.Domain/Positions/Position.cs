@@ -31,7 +31,7 @@ public sealed class Position
 
     public bool IsActive { get; private set; }
 
-    public DateTimeOffset DeletedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
 
     public uint RowVersion { get; private set; }
 

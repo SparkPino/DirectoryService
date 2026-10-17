@@ -1,4 +1,4 @@
-using CSharpFunctionalExtensions;
+﻿using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations.ValueObjects;
@@ -131,7 +131,7 @@ public class SoftDeleteCleanupTest : DirectoryBaseTests
     }
 
     [Fact]
-    public async Task Cleanup_Should_SetNull_ParentId_When_Parent_Deleted_While_Child_Still_Exists()
+    public async Task Cleanup_Should_Cascade_Delete_Children_When_Parent_Deleted()
     {
         var cancellationToken = CancellationToken.None;
         var parentId = await CreateDepartmentAsync("ParentToDelete", "ParentToDelete");
@@ -152,10 +152,11 @@ public class SoftDeleteCleanupTest : DirectoryBaseTests
                 .FirstOrDefaultAsync(d => d.Id == new DepartmentId(parentId), cancellationToken);
             Assert.Null(parent);
 
+            // FK parent_id настроен на Cascade: без родителя ребёнок с его path существовать не может
             var child = await db.Departments
+                .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(d => d.Id == new DepartmentId(childId), cancellationToken);
-            Assert.NotNull(child);
-            Assert.Null(child!.ParentId);
+            Assert.Null(child);
         });
     }
 
@@ -167,8 +168,7 @@ public class SoftDeleteCleanupTest : DirectoryBaseTests
                 .IgnoreQueryFilters()
                 .FirstAsync(d => d.Id == new DepartmentId(departmentId));
 
-            department.SoftDelete();
-            db.Entry(department).Property(d => d.DeletedAt).CurrentValue = DateTimeOffset.UtcNow - age;
+            department.SoftDelete([], DateTimeOffset.UtcNow - age);
             await db.SaveChangesAsync();
         });
     }

@@ -2,11 +2,13 @@
 using Core.Database;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
+using DirectoryService.Application.Departments.Failures;
+using Shared;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 
-public class SoftDeleteDepartmentHandler : ICommandHandler<SoftDeleteDepartmentCommand, Guid>
+public class SoftDeleteDepartmentHandler : ICommandHandler<SoftDeleteDepartmentCommand, Unit>
 {
     private readonly IDepartmentRepository _repository;
     private readonly ITransactionManager _transactionManager;
@@ -17,22 +19,25 @@ public class SoftDeleteDepartmentHandler : ICommandHandler<SoftDeleteDepartmentC
         _transactionManager = transactionManager;
     }
 
-    public async Task<Result<Guid, Errors>> Handle(SoftDeleteDepartmentCommand command,
+    public async Task<Result<Unit, Errors>> Handle(SoftDeleteDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var department = await _repository.GetByAsync(d => d.Id == command.Id, cancellationToken);
-        if (department.IsFailure)
+        DateTimeOffset now = DateTimeOffset.UtcNow;
+
+        var subTreeWithRoots = await _repository.GetSubtreesAsync([command.Id.Id], cancellationToken);
+
+        if (subTreeWithRoots.Count == 0)
+            return DepartmentError.NotFound(command.Id.Id).ToErrors();
+
+        foreach (var subTree in subTreeWithRoots)
         {
-            return department.Error.ToErrors();
+            subTree.Key.SoftDelete(subTree.Value, now);
         }
 
-        department.Value.SoftDelete();
-        var saveChangesResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveChangesResult.IsFailure)
-        {
-            return saveChangesResult.Error.ToErrors();
-        }
+        var result = await _transactionManager.SaveChangesAsync(cancellationToken);
+        if (result.IsFailure) return result.Error.ToErrors();
 
-        return department.Value.Id.Id;
+
+        return Unit.Value;
     }
 }

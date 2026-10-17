@@ -1,24 +1,72 @@
 import { PagedResult } from "@/shared/api/type";
 import { Department } from "../types";
 import { EntityGrid } from "@/shared/ui/entity-grid";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { ArchiveRestore, Trash2 } from "lucide-react";
 
-export function DepartmentList({ items }: PagedResult<Department>) {
+export type DepartmentView = "active" | "archived";
+
+type DepartmentListProps = PagedResult<Department> & {
+  view: DepartmentView;
+  onEdit?: (department: Department) => void;
+  onDelete?: (department: Department) => void;
+  onRestore?: (department: Department) => void;
+};
+
+export function DepartmentList({
+  items,
+  view,
+  onEdit,
+  onDelete,
+  onRestore,
+}: DepartmentListProps) {
   return (
     <EntityGrid
       items={items}
       getKey={(department) => department.departmentId.toString()}
       renderItem={(department) => (
-        <Card className="h-36 rounded-none ring-1 ring-foreground/15">
+        <Card className="min-h-36 rounded-none ring-1 ring-foreground/15">
           <CardHeader>
             <CardTitle className="line-clamp-2">{department.name}</CardTitle>
           </CardHeader>
-          <CardContent className="mt-auto">
+          <CardContent className="mt-auto flex flex-wrap gap-2">
             <Badge variant="outline">
-              Created At: {department.createdAt.substring(0, 10)}
+              Создано: {department.createdAt.substring(0, 10)}
             </Badge>
+            {view === "archived" && (
+              <Badge variant="destructive">
+                Удалено: {department.deletedAt?.substring(0, 10) ?? "—"}
+              </Badge>
+            )}
           </CardContent>
+          <CardFooter className="justify-end gap-2">
+            {view === "active" ? (
+              <>
+                <Button onClick={() => onEdit?.(department)}>Обновить</Button>
+                <Button
+                  onClick={() => onDelete?.(department)}
+                  variant="destructive"
+                  size="icon"
+                  aria-label="Удалить"
+                >
+                  <Trash2 />
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => onRestore?.(department)} variant="outline">
+                <ArchiveRestore />
+                Восстановить
+              </Button>
+            )}
+          </CardFooter>
         </Card>
       )}
     />

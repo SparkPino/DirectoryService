@@ -47,10 +47,16 @@ public class LocationRepository : ILocationRepository
 
     public async Task<Result<Location, Error>> GetByAsync(
         Expression<Func<Location, bool>> predicate,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool ignoreQueryFilter = false)
     {
-        var location = await _context.Locations
-            .FirstOrDefaultAsync(predicate, cancellationToken);
+        IQueryable<Location> query = _context.Locations;
+        if (ignoreQueryFilter)
+        {
+            query = query.IgnoreQueryFilters();
+        }
+
+        var location = await query.FirstOrDefaultAsync(predicate, cancellationToken);
         if (location == null)
         {
             _logger.LogWarning("Локация не найдена");
@@ -59,6 +65,10 @@ public class LocationRepository : ILocationRepository
 
         return location;
     }
+
+    // query filter оставляет только активные — именно среди них имя должно быть уникальным
+    public async Task<bool> IsNameTakenAsync(LocationName name, CancellationToken cancellationToken) =>
+        await _context.Locations.AnyAsync(l => l.Name == name, cancellationToken);
 
     public async Task<Result<Location, Error>> GetByIdAsync(Guid locationId, CancellationToken cancellationToken)
     {

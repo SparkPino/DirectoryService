@@ -17,4 +17,8 @@ public sealed class LocationRow
     public DateTimeOffset CreatedAt { get; init; }
 
     public int AttachDepartmentCount { get; init; }
+
+    public bool IsActive { get; init; }
+
+    public DateTimeOffset? DeletedAt { get; init; }
 }

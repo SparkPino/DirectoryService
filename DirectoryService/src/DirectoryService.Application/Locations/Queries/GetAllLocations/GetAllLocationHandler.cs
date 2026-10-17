@@ -34,7 +34,7 @@ public class GetAllLocationHandler(
             return validatorResult.ToError();
         }
 
-        IQueryable<LocationRow> locations = _locationReadRepository.SearchLocations(query.DepartmentIds, query.Search);
+        IQueryable<LocationRow> locations = _locationReadRepository.SearchLocations(query.DepartmentIds, query.Search, query.IsActive);
 
         if (query.MinDepartmentCount.HasValue && query.MinDepartmentCount.Value > 0)
         {
@@ -89,6 +89,7 @@ public class GetAllLocationHandler(
                 Address = JsonSerializer.Deserialize<AddressDto>(r.Addresses, _addressJsonOptions)!,
                 AttachDepartmentCount = r.AttachDepartmentCount,
                 TimeZone = r.TimeZone,
+                DeletedAt = r.DeletedAt,
             })
             .ToList();
 

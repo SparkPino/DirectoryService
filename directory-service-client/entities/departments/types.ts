@@ -9,7 +9,19 @@ export type Department = {
   createdAt: string;
   updatedAt?: string;
   deletedAt?: string;
+  rowVersion: number;
   totalCount: number;
+};
+
+export type UpdateDepartmentRequest = {
+  name?: string;
+  identifier?: string;
+  rowVersion: number;
+};
+
+export type DepartmentUpdate = {
+  id: string;
+  body: UpdateDepartmentRequest;
 };
 
 export type GetDepartmentsQuery = {

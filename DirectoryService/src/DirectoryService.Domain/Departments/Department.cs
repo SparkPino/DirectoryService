@@ -57,7 +57,7 @@ public sealed class Department
 
     public bool IsActive { get; private set; }
 
-    public DateTimeOffset DeletedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
 
@@ -98,12 +98,6 @@ public sealed class Department
             name, identifier,
             pathResult.Value,
             depth);
-    }
-
-    public void SoftDelete()
-    {
-        IsActive = false;
-        DeletedAt = DateTimeOffset.UtcNow;
     }
 
     private static Department Create(
@@ -272,7 +266,6 @@ public sealed class Department
                     "department.move.cycle",
                     "Департамент не может быть перемещён в собственное поддерево ").ToErrors();
             }
-
         }
 
         var pathResult = newParent is null
@@ -304,5 +297,53 @@ public sealed class Department
         UpdatedAt = DateTime.UtcNow;
 
         return UnitResult.Success<Errors>();
+    }
+
+
+    public UnitResult<Error> SoftDelete(IReadOnlyList<Department> descendants, DateTimeOffset now)
+    {
+        if (!IsActive) return UnitResult.Success<Error>();
+
+        MarkDeleted(now);
+
+        foreach (var department in descendants.Where(d => d.IsActive && d.IsDescendantOf(this)))
+        {
+            department.MarkDeleted(now);
+        }
+
+        return UnitResult.Success<Error>();
+    }
+
+    private void MarkDeleted(DateTimeOffset now)
+    {
+        IsActive = false;
+        UpdatedAt = now;
+        DeletedAt = now;
+    }
+
+    private void MarkRestored(DateTimeOffset now)
+    {
+        IsActive = true;
+        UpdatedAt = now;
+        DeletedAt = null;
+    }
+
+    public bool IsDescendantOf(Department root) =>
+        Path.Path.StartsWith($"{root.Path.Path}.", StringComparison.Ordinal);
+
+
+    public UnitResult<Error> RestoreDepartment(IReadOnlyList<Department> descendants, DateTimeOffset now)
+    {
+        if (IsActive) return UnitResult.Success<Error>();
+
+
+        foreach (var descendant in descendants.Where(descendant =>
+                     descendant.DeletedAt == DeletedAt && !descendant.IsActive && descendant.IsDescendantOf(this)))
+        {
+            descendant.MarkRestored(now);
+        }
+
+        MarkRestored(now);
+        return UnitResult.Success<Error>();
     }
 }

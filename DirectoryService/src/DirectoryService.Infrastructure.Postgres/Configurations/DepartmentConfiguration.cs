@@ -41,7 +41,7 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
             .WithOne()
             .IsRequired(false)
             .HasForeignKey(d => d.ParentId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(d => d.DeletedAt)
             .HasColumnName("deleted_at");
@@ -54,13 +54,13 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
                 name => name.Value,
                 value => DepartmentName.FromDb(value));
 
-        builder.ComplexProperty(d => d.Identifier, nb =>
-        {
-            nb.Property(d => d.Identifier)
-                .IsRequired()
-                .HasMaxLength(DepartmentIdentifier.IDENTIFIER_MAX_LENGTH)
-                .HasColumnName("identifier");
-        });
+        builder.Property(d => d.Identifier)
+            .HasColumnName("identifier")
+            .HasMaxLength(DepartmentIdentifier.IDENTIFIER_MAX_LENGTH)
+            .IsRequired()
+            .HasConversion(
+                identifier => identifier.Identifier,
+                value => DepartmentIdentifier.FromDb(value));
 
         builder.OwnsOne(d => d.Path, pb =>
         {

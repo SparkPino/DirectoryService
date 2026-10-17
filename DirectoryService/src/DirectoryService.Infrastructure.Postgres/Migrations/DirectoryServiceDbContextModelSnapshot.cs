@@ -89,13 +89,19 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateTimeOffset>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
                     b.Property<short>("Depth")
                         .HasColumnType("smallint")
                         .HasColumnName("depth");
+
+                    b.Property<string>("Identifier")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("identifier");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
@@ -122,17 +128,6 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
-
-                    b.ComplexProperty<Dictionary<string, object>>("Identifier", "DirectoryService.Domain.Departments.Department.Identifier#DepartmentIdentifier", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<string>("Identifier")
-                                .IsRequired()
-                                .HasMaxLength(150)
-                                .HasColumnType("character varying(150)")
-                                .HasColumnName("identifier");
-                        });
 
                     b.HasKey("Id")
                         .HasName("pk_department");
@@ -164,7 +159,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateTimeOffset>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
@@ -224,7 +219,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateTimeOffset>("DeletedAt")
+                    b.Property<DateTimeOffset?>("DeletedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
@@ -298,7 +293,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                     b.HasOne("DirectoryService.Domain.Departments.Department", null)
                         .WithMany("ChildDepartments")
                         .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("DirectoryService.Domain.Departments.ValueObjects.DepartmentPath", "Path", b1 =>
                         {

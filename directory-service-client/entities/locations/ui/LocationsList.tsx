@@ -11,14 +11,24 @@ import { Badge } from "@/shared/ui/badge";
 import { EntityGrid } from "@/shared/ui/entity-grid";
 import { PagedResult } from "@/shared/api/type";
 import { Button } from "@/shared/ui/button";
-import { Trash2 } from "lucide-react";
+import { ArchiveRestore, Trash2 } from "lucide-react";
+
+export type LocationView = "active" | "archived";
 
 type LocationsListProps = PagedResult<Location> & {
-  onEdit: (location: Location) => void;
-  onDelete: (location: Location) => void;
+  view: LocationView;
+  onEdit?: (location: Location) => void;
+  onDelete?: (location: Location) => void;
+  onRestore?: (location: Location) => void;
 };
 
-export function LocationsList({ items, onEdit, onDelete }: LocationsListProps) {
+export function LocationsList({
+  items,
+  view,
+  onEdit,
+  onDelete,
+  onRestore,
+}: LocationsListProps) {
   return (
     <EntityGrid
       items={items}
@@ -32,23 +42,37 @@ export function LocationsList({ items, onEdit, onDelete }: LocationsListProps) {
               {location.address.street}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-wrap gap-2">
             <Badge variant="outline">
               {location.attachDepartmentCount} подразделений
             </Badge>
+            {view === "archived" && (
+              <Badge variant="destructive">
+                Удалено: {location.deletedAt?.substring(0, 10) ?? "—"}
+              </Badge>
+            )}
           </CardContent>
           <CardFooter className="justify-end gap-2 ">
-            <Button onClick={() => onEdit(location)} variant={"default"}>
-              Обновить
-            </Button>
-            <Button
-              onClick={() => onDelete(location)}
-              variant={"destructive"}
-              size="icon"
-              aria-label="Удалить"
-            >
-              <Trash2 />
-            </Button>
+            {view === "active" ? (
+              <>
+                <Button onClick={() => onEdit?.(location)} variant={"default"}>
+                  Обновить
+                </Button>
+                <Button
+                  onClick={() => onDelete?.(location)}
+                  variant={"destructive"}
+                  size="icon"
+                  aria-label="Удалить"
+                >
+                  <Trash2 />
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => onRestore?.(location)} variant="outline">
+                <ArchiveRestore />
+                Восстановить
+              </Button>
+            )}
           </CardFooter>
         </Card>
       )}

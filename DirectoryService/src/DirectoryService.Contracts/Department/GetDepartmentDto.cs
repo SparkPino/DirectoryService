@@ -18,5 +18,7 @@ public sealed record GetDepartmentDto
 
     public DateTime? DeletedAt { get; init; }
 
+    public long RowVersion { get; init; }
+
     public long TotalCount { get; init; }
 }

@@ -21,9 +21,9 @@ public sealed class Location
 
     public bool IsActive { get; private set; }
 
-    public DateTimeOffset DeletedAt { get; private set; }
-
     public uint RowVersion { get; private set; }
+
+    public DateTimeOffset? DeletedAt { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
 
@@ -63,6 +63,15 @@ public sealed class Location
     {
         IsActive = false;
         DeletedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void Restore()
+    {
+        if (IsActive) return;
+
+        IsActive = true;
+        DeletedAt = null;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 
     public UnitResult<Error> AddDepartment(DepartmentId departmentId)
