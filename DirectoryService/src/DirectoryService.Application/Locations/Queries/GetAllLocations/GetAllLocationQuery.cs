@@ -10,5 +10,6 @@ public record GetAllLocationQuery(
     string? OrderBy,
     SortDirection? SortDirection,
     int? Page,
-    int? PageSize)
+    int? PageSize,
+    bool? IsActive)
     : IQuery;

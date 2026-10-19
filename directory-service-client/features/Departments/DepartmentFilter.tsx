@@ -9,20 +9,14 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Input } from "@/shared/ui/input";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 
 export type FilterProps = {
   query: GetDepartmentsQuery;
   onChange: Dispatch<SetStateAction<GetDepartmentsQuery>>;
-  retryTrigger?: number;
 };
 
-
-export function DepartmentFilter({
-  query,
-  onChange,
-  retryTrigger = 0,
-}: FilterProps) {
+export function DepartmentFilter({ query, onChange }: FilterProps) {
   const [prevQuery, setPrevQuery] = useState(query);
   const [search, setSearch] = useState(query.Search ?? "");
   const [orderBy, setOrderBy] = useState(query.SortBy ?? "name");
@@ -36,27 +30,6 @@ export function DepartmentFilter({
     setOrderBy(query.SortBy ?? "name");
     setSortDirection(query.SortDir ?? "ASC");
   }
-
-const submitRef = useRef<()=> void>(()=>{});
-  
-submitRef.current = () =>{
-    onChange((prev) => ({
-      ...prev,
-      Search: search || undefined,
-      SortBy: orderBy,
-      SortDir: sortDirection,
-      Pagination: {
-        ...prev.Pagination,
-        Page: 1,
-        PageSize: prev.Pagination?.PageSize ?? 10,
-      },
-    }));
-  };
-
-  useEffect(() =>{
-    if(retryTrigger === 0) return
-    submitRef.current();
-  }, [retryTrigger])
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -88,7 +61,7 @@ submitRef.current = () =>{
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Название локации..."
+          placeholder="Название подразделения..."
           className="w-48"
         />
       </div>

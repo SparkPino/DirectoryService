@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using CSharpFunctionalExtensions;
 using DirectoryService.Domain.Locations;
+using DirectoryService.Domain.Locations.ValueObjects;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Abstraction.Repositories;
@@ -20,5 +21,7 @@ public interface ILocationRepository
         CancellationToken cancellationToken);
 
     Task<Result<Location, Error>> GetByAsync(Expression<Func<Location, bool>> predicate,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken, bool ignoreQueryFilter = false);
+
+    Task<bool> IsNameTakenAsync(LocationName name, CancellationToken cancellationToken);
 }

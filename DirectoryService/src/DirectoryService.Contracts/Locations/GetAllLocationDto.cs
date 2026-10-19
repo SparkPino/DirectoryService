@@ -13,4 +13,6 @@ public sealed class GetAllLocationDto
     public string TimeZone { get; init; } = null!;
 
     public int AttachDepartmentCount { get; init; }
+
+    public DateTimeOffset? DeletedAt { get; init; }
 }

@@ -73,6 +73,14 @@ export const locationApi = {
 
     return response.data.result ?? "";
   },
+
+  restoreLocation: async (id: string): Promise<string> => {
+    const response = await apiClient.patch<Envelope<string>>(
+      `api/locations/${id}/restore`,
+    );
+
+    return response.data.result ?? "";
+  },
 };
 
 export const locationQueryOptions = {

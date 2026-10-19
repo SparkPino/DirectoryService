@@ -2,6 +2,7 @@ import { apiClient } from "@/shared/api/axios-instance";
 import {
   Department,
   DepartmentTreeNodesDto,
+  DepartmentUpdate,
   GetDepartmentsQuery,
   GetDepartmentTreeParams,
 } from "./types";
@@ -64,6 +65,30 @@ export const departmentApi = {
     );
 
     return response.data.result || [];
+  },
+
+  updateDepartment: async ({ id, body }: DepartmentUpdate): Promise<string> => {
+    const response = await apiClient.patch<Envelope<string>>(
+      `api/departments/${id}`,
+      body,
+    );
+
+    return response.data.result ?? "";
+  },
+
+  deleteDepartment: async (id: string): Promise<string> => {
+    const response = await apiClient.delete<Envelope<string>>(
+      `api/department/${id}`,
+    );
+
+    return response.data.result ?? "";
+  },
+
+  restoreDepartment: async (id: string): Promise<string> => {
+    const response = await apiClient.patch<Envelope<string>>(
+      `api/departments/${id}/restore`,
+    );
+    return response.data.result ?? "";
   },
 };
 

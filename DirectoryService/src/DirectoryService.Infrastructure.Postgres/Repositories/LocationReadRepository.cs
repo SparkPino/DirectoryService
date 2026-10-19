@@ -14,7 +14,7 @@ public class LocationReadRepository : ILocationReadRepository
         _context = context;
     }
 
-    public IQueryable<LocationRow> SearchLocations(List<Guid>? departmentIds, string? search)
+    public IQueryable<LocationRow> SearchLocations(List<Guid>? departmentIds, string? search, bool? isActive)
     {
         var query = _context.Database.SqlQuery<LocationRow>(
             $"""
@@ -24,12 +24,17 @@ public class LocationReadRepository : ILocationReadRepository
                  l.addresses AS "Addresses",
                  l.created_at AS "CreatedAt",
                  l.timezone AS "TimeZone",
-                 COUNT(dl.department_id) AS "AttachDepartmentCount"
+                 COUNT(dl.department_id) AS "AttachDepartmentCount",
+                 l.is_active AS "IsActive",
+                 NULLIF(l.deleted_at, '-infinity') AS "DeletedAt"
              FROM locations l
              LEFT JOIN departments_location dl ON l.id = dl.location_id
-             WHERE is_active = TRUE
              GROUP BY  l.id,l.name ,l.addresses, l.created_at
              """);
+
+        // по умолчанию — только активные, как было до появления архива
+        bool onlyActive = isActive ?? true;
+        query = query.Where(l => l.IsActive == onlyActive);
 
 
         if (departmentIds != null && departmentIds.Count > 0)

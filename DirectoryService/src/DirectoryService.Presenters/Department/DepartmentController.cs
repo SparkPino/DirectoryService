@@ -8,6 +8,7 @@ using DirectoryService.Application.Departments.Commands.GetAllChildren;
 using DirectoryService.Application.Departments.Commands.MoveDepartment;
 using DirectoryService.Application.Departments.Queries.GetDirectChildrenDepartment;
 using DirectoryService.Application.Departments.Commands.RemoveDepartment;
+using DirectoryService.Application.Departments.Commands.RestoreDepartment;
 using DirectoryService.Application.Departments.Commands.SoftDeleteDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartment;
 using DirectoryService.Application.Departments.Commands.UpdateDepartmentParent;
@@ -142,9 +143,9 @@ public class DepartmentController : BaseApiController
 
     [HttpDelete]
     [Route("/api/department/{departmentId}")]
-    public async Task<EndpointResult<Guid>> SoftDelete(
+    public async Task<EndpointResult<Unit>> SoftDelete(
         [FromRoute] Guid departmentId,
-        [FromServices] ICommandHandler<SoftDeleteDepartmentCommand, Guid> handler,
+        [FromServices] ICommandHandler<SoftDeleteDepartmentCommand, Unit> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new SoftDeleteDepartmentCommand(new DepartmentId(departmentId)), cancellationToken);
 
@@ -157,6 +158,14 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new MoveDepartmentCommand(departmentId, moveDepartmentDto.NewParentId), cancellationToken);
 
+    [HttpPatch]
+    [Route("/api/departments/{departmentId}/restore")]
+    public async Task<EndpointResult<Guid>> Restore(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<RestoreDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new RestoreDepartmentCommand(departmentId), cancellationToken);
+
     [HttpPut]
     [Route("/api/departments/{departmentId}/parent")]
     public async Task<EndpointResult<DepartmentParentDto>> UpdateDepartmentParent(
@@ -165,7 +174,7 @@ public class DepartmentController : BaseApiController
         [FromServices] ICommandHandler<UpdateDepartmentParentCommand, DepartmentParentDto> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(
-            new UpdateDepartmentParentCommand(departmentId,newParentId),
+            new UpdateDepartmentParentCommand(departmentId, newParentId),
             cancellationToken);
 
 

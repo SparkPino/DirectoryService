@@ -2,6 +2,7 @@ import { SortDirection } from "@/shared/api/type";
 
 export type LocationQuery = {
   DepartmentIds?: string[];
+  IsActive?: boolean;
   Search?: string;
   MinDepartmentCount?: number;
   OrderBy?: string;
@@ -26,6 +27,7 @@ export type Location = {
   createdAt: string;
   attachDepartmentCount: number;
   timeZone: string;
+  deletedAt?: string | null;
 };
 
 export type LocationDto = {

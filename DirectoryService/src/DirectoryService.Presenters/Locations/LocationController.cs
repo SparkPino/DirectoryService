@@ -1,6 +1,7 @@
 using Core;
 using DirectoryService.Application.Locations.Commands.AddLocation;
 using DirectoryService.Application.Locations.Commands.RemoveLocation;
+using DirectoryService.Application.Locations.Commands.RestoreLocation;
 using DirectoryService.Application.Locations.Commands.SoftDeleteLocation;
 using DirectoryService.Application.Locations.Commands.UpdateLocation;
 using DirectoryService.Application.Locations.Queries.GetAllLocations;
@@ -77,4 +78,11 @@ public class LocationController : BaseApiController
         [FromServices] ICommandHandler<SoftDeleteLocationCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new SoftDeleteLocationCommand(new LocationId(id)), cancellationToken);
+
+    [HttpPatch("{id:guid}/restore")]
+    public async Task<EndpointResult<Guid>> Restore(
+        [FromRoute] Guid id,
+        [FromServices] ICommandHandler<RestoreLocationCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new RestoreLocationCommand(id), cancellationToken);
 }

@@ -30,6 +30,11 @@ public class DepartmentRepository : IDepartmentRepository
         return department.Id.Id;
     }
 
+    public async Task<bool> IsPathTakenAsync(DepartmentPath path, CancellationToken cancellationToken)
+    {
+        return await _context.Departments.AnyAsync(d => d.Path.Path == path.Path, cancellationToken);
+    }
+
     public async Task<Result<Department, Error>> GetByAsync(
         Expression<Func<Department, bool>> predicate,
         CancellationToken cancellationToken,
@@ -87,15 +92,19 @@ public class DepartmentRepository : IDepartmentRepository
     public async Task<Result<Department, Error>> GetByIdWithLockAsync(Guid departmentId,
         CancellationToken cancellationToken, bool ignoreQueryFilter = false)
     {
-        
+        // ВАЖНО: вызывать только внутри открытой транзакции (_transactionManager.ExecuteInTransactionAsync).
+        // FOR UPDATE держит блокировку до COMMIT. Без явной транзакции Postgres работает в autocommit:
+        // SELECT ... FOR UPDATE коммитится сразу и блокировка снимается ещё до чтения и изменения сущности,
+        // т.е. метод ничего не защищает. Для простых обновлений достаточно оптимистичной блокировки (RowVersion).
+
         // Alternative way await _context.Database.SqlQuery<int>().ToListAsync(cancellationToken); 
         await _context.Database.ExecuteSqlInterpolatedAsync(
             $"""
-                                                             SELECT 1
-                                                             FROM departments
-                                                             WHERE id = {departmentId} FOR UPDATE
-                                                             """, cancellationToken: cancellationToken);
-        
+             SELECT 1
+             FROM departments
+             WHERE id = {departmentId} FOR UPDATE
+             """, cancellationToken: cancellationToken);
+
         IQueryable<Department> query = _context.Departments;
 
         if (ignoreQueryFilter)
@@ -195,5 +204,46 @@ public class DepartmentRepository : IDepartmentRepository
                                              WHERE path <@ {oldPathValue}::ltree AND path != {oldPathValue}::ltree  -- AND is_active = true;
                                         """;
         return await _context.Database.ExecuteSqlInterpolatedAsync(sqlCommand, cancellationToken);
+    }
+
+
+    public async Task<IReadOnlyDictionary<Department, IReadOnlyList<Department>>> GetSubtreesAsync(
+        IReadOnlyList<Guid> departmentIds,
+        CancellationToken cancellationToken)
+    {
+        if (!departmentIds.Any()) return new Dictionary<Department, IReadOnlyList<Department>>();
+
+        var ids = departmentIds.ToArray();
+
+        FormattableString descendantsQuery = $"""
+                                              SELECT 
+                                                  d.id,
+                                                  d.name,
+                                                  d.identifier,
+                                                  d.path,
+                                                  d.depth,
+                                                  d.parent_id,
+                                                  d.updated_at,
+                                                  d.deleted_at,
+                                                  d.created_at,
+                                                  d.is_active,
+                                                  d.xmin
+                                              FROM departments d
+                                              WHERE EXISTS (
+                                                  SELECT 1 FROM departments r 
+                                                           WHERE r.id = ANY({ids}) AND d.path <@ r.path
+                                              )
+                                              """;
+
+        var departmentSubtreesList = await _context.Departments.FromSqlInterpolated(descendantsQuery)
+            .IgnoreQueryFilters()
+            .ToListAsync(cancellationToken);
+
+        var roots = departmentSubtreesList.Where(d => departmentIds.Contains(d.Id.Id));
+
+        return roots.ToDictionary(
+            root => root,
+            root => (IReadOnlyList<Department>)departmentSubtreesList
+                .Where(d => d.IsDescendantOf(root)).ToList());
     }
 }
