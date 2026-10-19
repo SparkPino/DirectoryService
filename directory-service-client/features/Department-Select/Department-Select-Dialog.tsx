@@ -4,6 +4,7 @@ import { Department } from "@/entities/departments/types";
 import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
 import { Badge } from "@/shared/ui/badge";
+import { cn } from "@/shared/lib/utils";
 import {
   Combobox,
   ComboboxChip,
@@ -23,12 +24,16 @@ type DepartmentSelectProps =
       value: Department | null;
       onChange: (value: Department | null) => void;
       excludeIds?: string[];
+      excludeSubtreeOf?: string;
+      className?: string;
     }
   | {
       mode: "multiply";
       value: Department[];
       onChange: (value: Department[]) => void;
       excludeIds?: string[];
+      excludeSubtreeOf?: string;
+      className?: string;
     };
 
 const isSameDepartment = (a: Department, b: Department) =>
@@ -53,6 +58,7 @@ export function DepartmentSelectDialog(props: DepartmentSelectProps) {
   } = useDepartmentOptions({
     search: search,
     excludeIds: props.excludeIds,
+    excludeSubtreeOf: props.excludeSubtreeOf,
     isActive: isActive,
   });
 
@@ -71,7 +77,10 @@ export function DepartmentSelectDialog(props: DepartmentSelectProps) {
       filter={null} // фільтрує бекенд
     >
       {isMulti ? (
-        <ComboboxChips ref={anchorRef} className="w-96 py-1.5">
+        <ComboboxChips
+          ref={anchorRef}
+          className={cn("w-96 py-1.5", props.className)}
+        >
           <ComboboxValue>
             {(value) =>
               (value as Department[]).map((d) => (
@@ -86,7 +95,7 @@ export function DepartmentSelectDialog(props: DepartmentSelectProps) {
         </ComboboxChips>
       ) : (
         <ComboboxInput
-          className="w-96"
+          className={cn("w-96", props.className)}
           placeholder="Название подразделения"
           showClear
         />
@@ -130,7 +139,15 @@ export function DepartmentSelectDialog(props: DepartmentSelectProps) {
             <ComboboxList>
               {(department: Department) => (
                 <ComboboxItem key={department.departmentId} value={department}>
-                  <span className="flex-1 truncate">{department.name}</span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate">{department.name}</span>
+                    <span
+                      className="truncate text-xs text-muted-foreground"
+                      title={department.path}
+                    >
+                      {department.path}
+                    </span>
+                  </span>
                   {department.isActive === false && (
                     <Badge variant="destructive">Неактивен</Badge>
                   )}

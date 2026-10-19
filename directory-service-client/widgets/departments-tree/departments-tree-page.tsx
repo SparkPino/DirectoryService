@@ -1,11 +1,18 @@
 "use client";
+import { DepartmentMoveDialog } from "@/features/Department-Move/DepartmentMoveDialog";
 import { DepartmentTree } from "@/features/DepartmentTree/DepartmentTree";
 import { useDepartmentTreeState } from "@/features/DepartmentTree/model/use-department-tree-state";
 import { PositionByDepartmentId } from "@/features/Positions/PositionByDepartmentId";
 
 export function DepartmentsTreePage() {
-  const { selectedId, setSelectedId, expandedIds, handleToggle } =
-    useDepartmentTreeState();
+  const {
+    movingDepartment,
+    setMovingDepartment,
+    selectedId,
+    setSelectedId,
+    expandedIds,
+    handleToggle,
+  } = useDepartmentTreeState();
 
   return (
     <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
@@ -15,6 +22,7 @@ export function DepartmentsTreePage() {
           expandedIds={expandedIds}
           handleToggle={handleToggle}
           setSelectedId={setSelectedId}
+          onMove={setMovingDepartment}
         />
       </aside>
       <section className="min-w-0 rounded-md border p-4">
@@ -25,6 +33,12 @@ export function DepartmentsTreePage() {
         )}
         {selectedId && <PositionByDepartmentId departmentId={selectedId} />}
       </section>
+      {movingDepartment && (
+        <DepartmentMoveDialog
+          movingDepartment={movingDepartment}
+          onClose={() => setMovingDepartment(null)}
+        />
+      )}
     </div>
   );
 }

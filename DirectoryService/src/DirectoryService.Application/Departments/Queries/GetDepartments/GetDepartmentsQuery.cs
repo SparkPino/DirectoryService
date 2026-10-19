@@ -21,4 +21,6 @@ public record GetDepartmentsQuery : IQuery
     public List<Guid>? LocationIds { get; set; }
 
     public List<Guid>? ExcludeIds { get; set; }
+
+    public Guid? ExcludeSubtreeOf { get; set; }
 }

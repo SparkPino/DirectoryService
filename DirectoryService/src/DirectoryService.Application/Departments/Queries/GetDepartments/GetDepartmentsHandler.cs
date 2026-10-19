@@ -83,6 +83,14 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
             parameters.Add("ExcludeIds", query.ExcludeIds.ToArray());
         }
 
+        if (query.ExcludeSubtreeOf.HasValue)
+        {
+            // <@ - "является потомком или равен", поэтому отсекается и сам департамент
+            sb.Append(
+                " AND NOT EXISTS (SELECT 1 FROM departments r WHERE r.id = @ExcludeSubtreeOf AND d.path <@ r.path)");
+            parameters.Add("ExcludeSubtreeOf", query.ExcludeSubtreeOf.Value);
+        }
+
         if (query.LocationIds != null && query.LocationIds.Any())
         {
             sb.Append(
@@ -90,11 +98,14 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
             parameters.Add("LocationIds", query.LocationIds.ToArray());
         }
 
+        string relevance = string.Empty;
         if (!string.IsNullOrWhiteSpace(query.Search))
         {
             string normalize = query.Search.Trim();
             sb.Append($" AND d.name ILIKE @Name");
             parameters.Add("Name", $"%{normalize}%");
+            parameters.Add("Prefix", $"{normalize}%");
+            relevance = "CASE WHEN d.name ILIKE @Prefix THEN 0 ELSE 1 END, ";
         }
 
         string? sortBy = query.SortBy switch
@@ -106,7 +117,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
 
 
         string descending = query.SortDir == SortDirection.DESC ? " DESC" : " ASC";
-        sb.Append($" ORDER BY {sortBy} {descending}, d.id");
+        sb.Append($" ORDER BY {relevance}{sortBy} {descending}, d.id");
 
         const int pageSizeDefault = 20;
         const int pageDefault = 1;
@@ -117,7 +128,7 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
 
         sb.Append(" LIMIT @Limit OFFSET @Offset");
         parameters.Add("Limit", pageSize,
-            DbType.Int32); // Просто щоб показати що таке є для таких ситуацій string? name = null;
+            DbType.Int32);
         parameters.Add("Offset", page);
 
         using var connectionAsync = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);

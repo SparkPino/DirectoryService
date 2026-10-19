@@ -1,10 +1,12 @@
 import { apiClient } from "@/shared/api/axios-instance";
 import {
   Department,
+  DepartmentParentDto,
   DepartmentTreeNodesDto,
   DepartmentUpdate,
   GetDepartmentsQuery,
   GetDepartmentTreeParams,
+  MoveDepartmentToNewParent,
 } from "./types";
 import { Envelope, PagedResult } from "@/shared/api/type";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
@@ -65,6 +67,17 @@ export const departmentApi = {
     );
 
     return response.data.result || [];
+  },
+
+  moveDepartment: async (
+    query: MoveDepartmentToNewParent,
+  ): Promise<DepartmentParentDto | null> => {
+    const response = await apiClient.put<Envelope<DepartmentParentDto>>(
+      `api/departments/${query.departmentId}/parent`,
+      { id: query.parentId },
+    );
+
+    return response.data.result;
   },
 
   updateDepartment: async ({ id, body }: DepartmentUpdate): Promise<string> => {
@@ -130,6 +143,7 @@ export const departmentQueryOptions = {
         query.SortDir,
         query.IsActive,
         query.ExcludeIds,
+        query.ExcludeSubtreeOf,
         query.LocationIds,
         query.ParentId,
         pageSize,

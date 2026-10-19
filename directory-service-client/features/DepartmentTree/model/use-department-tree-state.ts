@@ -1,9 +1,11 @@
+import { MovingDepartment } from "@/entities/departments/types";
 import { useState } from "react";
 
 export function useDepartmentTreeState() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
+  const [movingDepartment, setMovingDepartment] =
+    useState<MovingDepartment | null>(null);
   const handleToggle = (id: string) => {
     setExpandedIds((prev) => {
       const newExpand = new Set(prev);
@@ -16,5 +18,12 @@ export function useDepartmentTreeState() {
     });
   };
 
-  return { selectedId, setSelectedId, expandedIds, handleToggle };
+  return {
+    movingDepartment,
+    setMovingDepartment,
+    selectedId,
+    setSelectedId,
+    expandedIds,
+    handleToggle,
+  };
 }

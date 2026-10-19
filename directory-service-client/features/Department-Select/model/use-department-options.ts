@@ -7,6 +7,7 @@ export function useDepartmentOptions(params: {
   search: string;
   isActive?: boolean;
   excludeIds?: string[];
+  excludeSubtreeOf?: string;
 }) {
   const [debouncedSearch] = useDebounce<string>(params.search, 400);
 
@@ -14,6 +15,7 @@ export function useDepartmentOptions(params: {
     Search: debouncedSearch || undefined,
     IsActive: params.isActive,
     ExcludeIds: params.excludeIds,
+    ExcludeSubtreeOf: params.excludeSubtreeOf,
     Pagination: { PageSize: 10 },
   };
 
