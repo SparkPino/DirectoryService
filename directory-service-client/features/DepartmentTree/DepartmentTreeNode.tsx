@@ -1,12 +1,13 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FolderInput } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/shared/ui/collapsible";
+import { Button } from "@/shared/ui/button";
 
 type DepartmentTreeNodeProps = {
   label: string;
@@ -18,6 +19,7 @@ type DepartmentTreeNodeProps = {
   depth?: number;
   isLoading?: boolean;
   children?: React.ReactNode;
+  onMove?: () => void;
 };
 
 export function DepartmentTreeNode({
@@ -30,6 +32,7 @@ export function DepartmentTreeNode({
   depth = 0,
   isLoading = false,
   children,
+  onMove,
 }: DepartmentTreeNodeProps) {
   return (
     <Collapsible open={expanded} onOpenChange={onToggle}>
@@ -40,7 +43,7 @@ export function DepartmentTreeNode({
         onClick={onSelect}
         style={{ paddingLeft: `${depth * 16 + 8}px` }}
         className={cn(
-          "flex items-center gap-1 rounded-md py-1.5 pr-2 text-sm cursor-pointer select-none",
+          "group flex items-center gap-1 rounded-md py-1.5 pr-2 text-sm cursor-pointer select-none",
           "hover:bg-muted",
           selected && "bg-accent text-accent-foreground font-medium",
         )}
@@ -65,6 +68,22 @@ export function DepartmentTreeNode({
 
         {isLoading && (
           <span className="ml-1 size-3 shrink-0 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+        )}
+
+        {onMove && (
+          <Button
+            variant="ghost"
+            size="icon"
+            title="Перенести"
+            aria-label="Перенести"
+            className="ml-auto size-6 shrink-0 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+            onClick={(e) => {
+              e.stopPropagation();
+              onMove();
+            }}
+          >
+            <FolderInput className="size-4" />
+          </Button>
         )}
       </div>
 

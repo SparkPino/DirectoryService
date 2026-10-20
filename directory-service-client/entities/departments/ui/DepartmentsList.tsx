@@ -10,7 +10,7 @@ import {
 } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
-import { ArchiveRestore, Trash2 } from "lucide-react";
+import { ArchiveRestore, FolderTree, Trash2 } from "lucide-react";
 
 export type DepartmentView = "active" | "archived";
 
@@ -38,6 +38,13 @@ export function DepartmentList({
             <CardTitle className="line-clamp-2">{department.name}</CardTitle>
           </CardHeader>
           <CardContent className="mt-auto flex flex-wrap gap-2">
+            {/* корень - путь из одного сегмента, без точек */}
+            {!department.path.includes(".") && (
+              <Badge variant="secondary">
+                <FolderTree />
+                Корень
+              </Badge>
+            )}
             <Badge variant="outline">
               Создано: {department.createdAt.substring(0, 10)}
             </Badge>

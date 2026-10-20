@@ -1,5 +1,8 @@
 "use client";
-import { DepartmentTreeNodesDto } from "@/entities/departments/types";
+import {
+  DepartmentTreeNodesDto,
+  MovingDepartment,
+} from "@/entities/departments/types";
 import { useDepartmentChildrenTree } from "./model/use-department-children-tree";
 import { DepartmentTreeNode } from "./DepartmentTreeNode";
 
@@ -7,8 +10,10 @@ type TreeItem = {
   department: DepartmentTreeNodesDto;
   expandedIds: Set<string>;
   selectedId: string | null;
+  onMove: (moving: MovingDepartment) => void;
   onToggle: (id: string) => void;
   onSelect: (id: string) => void;
+  parent?: DepartmentTreeNodesDto;
 };
 
 export function DepartmentsTreeItem(item: TreeItem) {
@@ -28,6 +33,9 @@ export function DepartmentsTreeItem(item: TreeItem) {
       selected={item.department.id === item.selectedId}
       depth={item.department.depth}
       isLoading={isLoading}
+      onMove={() =>
+        item.onMove({ department: item.department, parent: item.parent })
+      }
     >
       {error && (
         <div className="text-xs text-destructive">
@@ -42,6 +50,8 @@ export function DepartmentsTreeItem(item: TreeItem) {
           selectedId={item.selectedId}
           onToggle={item.onToggle}
           onSelect={item.onSelect}
+          onMove={item.onMove}
+          parent={item.department}
         />
       ))}
     </DepartmentTreeNode>

@@ -2,12 +2,14 @@ import { Spinner } from "@/shared/ui/spinner";
 import { DepartmentsTreeItem } from "./DepartmentTreeItem";
 import { useDepartmentTree } from "./model/use-department-tree";
 import { Button } from "@/shared/ui/button";
+import { MovingDepartment } from "@/entities/departments/types";
 
 type DepartmentTreeState = {
   selectedId: string | null;
   expandedIds: Set<string>;
   setSelectedId: (id: string) => void;
   handleToggle: (id: string) => void;
+  onMove: (moving: MovingDepartment) => void;
 };
 
 export function DepartmentTree(state: DepartmentTreeState) {
@@ -45,6 +47,7 @@ export function DepartmentTree(state: DepartmentTreeState) {
             onToggle={state.handleToggle}
             onSelect={state.setSelectedId}
             selectedId={state.selectedId}
+            onMove={state.onMove}
           ></DepartmentsTreeItem>
         ))}
     </div>
