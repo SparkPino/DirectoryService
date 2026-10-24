@@ -16,6 +16,8 @@ public class DepartmentTreeNodeDto
 
     public int Depth { get; init; }
 
+    public bool IsActive { get; init; }
+
     public bool HasChildren { get; init; }
 
     public int? ChildrenCount { get; init; }

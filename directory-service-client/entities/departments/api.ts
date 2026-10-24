@@ -103,6 +103,13 @@ export const departmentApi = {
     );
     return response.data.result ?? "";
   },
+
+  activateDepartment: async (id: string): Promise<void> => {
+    await apiClient.patch(`api/departments/${id}/activate`);
+  },
+  deactivateDepartment: async (id: string): Promise<void> => {
+    await apiClient.patch(`api/departments/${id}/deactivate`);
+  },
 };
 
 export const departmentQueryOptions = {
@@ -142,6 +149,7 @@ export const departmentQueryOptions = {
         query.SortBy,
         query.SortDir,
         query.IsActive,
+        query.IsDeleted,
         query.ExcludeIds,
         query.ExcludeSubtreeOf,
         query.LocationIds,

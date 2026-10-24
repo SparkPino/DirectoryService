@@ -41,6 +41,7 @@ export type GetDepartmentsQuery = {
   SortDir?: SortDirection;
   Pagination?: Pagination;
   IsActive?: boolean;
+  IsDeleted?: boolean;
   ParentId?: string;
   LocationIds?: string[];
   ExcludeIds?: string[];

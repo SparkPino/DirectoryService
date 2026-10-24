@@ -72,7 +72,7 @@ public sealed class Position
     public UnitResult<Error> AddDepartment(DepartmentId departmentId)
     {
         if (_departmentsPositions.Any(d => d.DepartmentId == departmentId))
-            return Error.Conflict("department.already.exist", "Департамент уже добавлен");
+            return Error.Conflict("department.already.exist", null, "Департамент уже добавлен");
 
         var departmentLocation = new DepartmentPosition(departmentId, Id);
 

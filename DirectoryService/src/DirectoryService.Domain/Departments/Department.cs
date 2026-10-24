@@ -175,7 +175,7 @@ public sealed class Department
     private UnitResult<Error> AttachChildToParent(Department child)
     {
         if (_childDepartments.Any(item => item.Identifier == child.Identifier))
-            return Error.Conflict("child.already.exist", "Дочерний департамент уже привязан.");
+            return Error.Conflict("child.already.exist", null, "Дочерний департамент уже привязан.");
 
         _childDepartments.Add(child);
         UpdatedAt = DateTimeOffset.UtcNow;
@@ -215,6 +215,7 @@ public sealed class Department
         {
             return Error.Conflict(
                 "location.already.exist",
+                null,
                 $"Locations с id:{string.Join(", ", duplicates.Select(d => d.Id))} уже существуют");
         }
 
@@ -264,6 +265,7 @@ public sealed class Department
             {
                 return Error.Conflict(
                     "department.move.cycle",
+                    null,
                     "Департамент не может быть перемещён в собственное поддерево ").ToErrors();
             }
         }
@@ -302,11 +304,13 @@ public sealed class Department
 
     public UnitResult<Error> SoftDelete(IReadOnlyList<Department> descendants, DateTimeOffset now)
     {
-        if (!IsActive) return UnitResult.Success<Error>();
+        if (this.DeletedAt != null)
+            return UnitResult.Success<Error>();
 
         MarkDeleted(now);
 
-        foreach (var department in descendants.Where(d => d.IsActive && d.IsDescendantOf(this)))
+        foreach (var department in descendants
+                     .Where(d => d.DeletedAt == null && d.IsDescendantOf(this)))
         {
             department.MarkDeleted(now);
         }
@@ -334,16 +338,58 @@ public sealed class Department
 
     public UnitResult<Error> RestoreDepartment(IReadOnlyList<Department> descendants, DateTimeOffset now)
     {
-        if (IsActive) return UnitResult.Success<Error>();
+        if (this.DeletedAt == null) return UnitResult.Success<Error>();
 
 
         foreach (var descendant in descendants.Where(descendant =>
-                     descendant.DeletedAt == DeletedAt && !descendant.IsActive && descendant.IsDescendantOf(this)))
+                     descendant.DeletedAt == DeletedAt && descendant.DeletedAt != null && descendant.IsDescendantOf(this)))
         {
             descendant.MarkRestored(now);
         }
 
         MarkRestored(now);
+        return UnitResult.Success<Error>();
+    }
+
+    public UnitResult<Error> Deactivate(IReadOnlyList<Department> descendants, DateTimeOffset now)
+    {
+        if (!this.IsActive) return UnitResult.Success<Error>();
+
+        if (descendants.Any(d => d.IsActive))
+        {
+            return Error.Conflict(
+                "department.deactivate.has_active_children",
+                null,
+                "Нельзя деактивировать подразделение , если есть активные дочерние подразделения");
+        }
+
+        IsActive = false;
+        UpdatedAt = now;
+        return UnitResult.Success<Error>();
+    }
+
+    public UnitResult<Error> Activate(Department? parent, DateTimeOffset now)
+    {
+        if (this.IsActive) return UnitResult.Success<Error>();
+
+        if (this.DeletedAt != null)
+        {
+            return Error.Conflict(
+                "department.activate.deleted",
+                null,
+                "Подразделение удалено, сначала восстановите подразделение");
+        }
+
+        if (parent is { IsActive: false })
+        {
+            return Error.Conflict(
+                "department.activate.parent_inactive",
+                null,
+                "Нельзя активировать подразделение если родительское подразделение не активно.");
+        }
+
+        IsActive = true;
+        UpdatedAt = now;
         return UnitResult.Success<Error>();
     }
 }
