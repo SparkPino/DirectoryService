@@ -63,7 +63,7 @@ public class AttachLocationToDepartmentHandler : ICommandHandler<AttachLocationT
 
         if (isLocationAttached)
         {
-            return Error.Conflict("attach.location.to.department", "Locations уже привязан к департаменту").ToErrors();
+            return Error.Conflict("attach.location.to.department", null, "Locations уже привязан к департаменту").ToErrors();
         }*/
 
         var addLocationResult = department.Value.AddLocation(locations.Value.Id);

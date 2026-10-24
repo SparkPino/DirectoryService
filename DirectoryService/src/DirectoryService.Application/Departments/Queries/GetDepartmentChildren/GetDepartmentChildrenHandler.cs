@@ -31,21 +31,22 @@ public class GetDepartmentChildrenHandler(
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         const string sqlQuery = """
-                                SELECT EXISTS(SELECT 1 FROM departments WHERE id = @DepartmentId AND is_active = true);
+                                SELECT EXISTS(SELECT 1 FROM departments WHERE id = @DepartmentId AND deleted_at IS NULL);
 
                                 SELECT d.id,
                                        d.name,
                                        d.identifier,
                                        d.path,
                                        d.depth,
+                                       d.is_active,
                                        x.ChildrenCount > 0 AS HasChildren,
                                        x.ChildrenCount
                                 FROM departments d
                                          CROSS JOIN LATERAL (SELECT  COUNT(*) AS ChildrenCount
                                                              FROM departments c 
-                                                             WHERE c.parent_id = d.id AND c.is_active = true) x
+                                                             WHERE c.parent_id = d.id AND c.deleted_at IS NULL) x
                                 WHERE d.parent_id = @DepartmentId
-                                  AND d.is_active = true
+                                  AND d.deleted_at IS NULL
                                 ORDER BY d.created_at;
                                 """;
         var command = new CommandDefinition(sqlQuery, new { query.DepartmentId }, cancellationToken: cancellationToken);

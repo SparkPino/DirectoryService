@@ -42,7 +42,7 @@ public class GetDirectChildrenDepartmentHandler(
                                                        d.deleted_at
                                                 FROM departments d
                                                WHERE (d.parent_id = @parentId 
-                                 OR (@parentId IS NULL AND d.parent_id IS NULL)) AND d.is_active = true
+                                 OR (@parentId IS NULL AND d.parent_id IS NULL)) AND d.deleted_at IS NULL
                                                 ORDER BY d.created_at
                                                 OFFSET @level_offset LIMIT @level_limit)
 
@@ -71,7 +71,7 @@ public class GetDirectChildrenDepartmentHandler(
                                                                      d.deleted_at
                                                               FROM departments d
                                                               WHERE d.parent_id = cl.id
-                                                                AND d.is_active = true
+                                                                AND d.deleted_at IS NULL
                                                               ORDER BY d.created_at
                                                               LIMIT @child_limit) c;
                                  """;

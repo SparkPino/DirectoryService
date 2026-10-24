@@ -3,6 +3,7 @@ using DirectoryService.Application.Departments.Commands.UpdateDepartmentParent;
 using DirectoryService.Contracts.Department.UpdateDepartmentParent;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Shared;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.DepartmentsTest;
@@ -152,7 +153,7 @@ public class UpdateDepartmentParentTest : DirectoryBaseTests
         var betaId = await CreateDepartmentAsync("Beta", "beta");
         var cancellationToken = CancellationToken.None;
 
-        var softDeleteResult = await ExecuteHandler<SoftDeleteDepartmentCommand, Guid>(async sut =>
+        var softDeleteResult = await ExecuteHandler<SoftDeleteDepartmentCommand, Unit>(async sut =>
             await sut.Handle(new SoftDeleteDepartmentCommand(new DepartmentId(alphaId)), cancellationToken));
         Assert.True(softDeleteResult.IsSuccess);
 

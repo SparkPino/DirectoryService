@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useDepartmentList } from "@/features/Departments/model/use-department-list";
 import { useDepartmentView } from "@/features/Departments/model/use-department-view";
 import { RestoreDepartmentDialog } from "@/features/Departments/RestoreDepartmentDialog";
+import { useToggleDepartmentActivity } from "@/features/Toggle-Department-Activity/model/use-toggle-department-activity";
 
 export default function DepartmentPage() {
   const [query, setQuery] = useState<GetDepartmentsQuery>({
@@ -30,7 +31,7 @@ export default function DepartmentPage() {
 
   const { view, setDepartmentView } = useDepartmentView();
 
-  const activeState = view === "active";
+  const isArchived = view === "archived";
 
   const {
     data,
@@ -40,7 +41,13 @@ export default function DepartmentPage() {
     isFetchingNextPage,
     canLoadMore,
     refetch,
-  } = useDepartmentList({ ...query, IsActive: activeState });
+  } = useDepartmentList({ ...query, IsDeleted: isArchived });
+
+  const { mutate, togglingDepartmentId } = useToggleDepartmentActivity();
+
+  const toggle = (department: Department, isActive: boolean) => {
+    mutate({ departmentId: department.departmentId, isActive: isActive });
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto py-10 px-4 flex flex-1 flex-col space-y-3">
@@ -86,6 +93,10 @@ export default function DepartmentPage() {
             onEdit={setSelectedUpdateDepartment}
             onDelete={setSelectedDeleteDepartment}
             onRestore={setSelectedRestoreDepartment}
+            onToggleActive={(department, isActive) =>
+              toggle(department, isActive)
+            }
+            togglingDepartmentId={togglingDepartmentId}
           />
         )}
       </div>

@@ -52,7 +52,7 @@ public class GetByIdDapper(
             JOIN departments_location dl ON d.id=dl.department_id     
             LEFT JOIN locations l ON l.id = dl.location_id
             WHERE d.id = @queryId
-            AND d.is_active = TRUE
+            AND d.deleted_at IS NULL
             AND l.is_active = TRUE;
             """,
             param: new

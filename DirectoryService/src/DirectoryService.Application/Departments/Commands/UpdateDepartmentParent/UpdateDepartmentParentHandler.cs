@@ -62,7 +62,7 @@ public class UpdateDepartmentParentHandler : ICommandHandler<UpdateDepartmentPar
 
                 if (newParent is { IsActive: false })
                 {
-                    return Error.Conflict("department.move.parent_deleted", "Родительский департамент удалён")
+                    return Error.Conflict("department.move.parent_deleted", null, "Родительский департамент удалён")
                         .ToErrors();
                 }
 
@@ -108,7 +108,7 @@ public class UpdateDepartmentParentHandler : ICommandHandler<UpdateDepartmentPar
         {
             if (transactionResult.Error.Any(e => e.Code == "database.deadlock_detected"))
             {
-                return Error.Conflict("department.move.conflict",
+                return Error.Conflict("department.move.conflict", null,
                     "Перенос конфликтует с параллельной операцией, повторите запрос").ToErrors();
             }
 

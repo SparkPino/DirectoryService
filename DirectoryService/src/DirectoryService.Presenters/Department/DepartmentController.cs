@@ -1,7 +1,9 @@
 ﻿using Core;
+using DirectoryService.Application.Departments.Commands.ActivateDepartment;
 using DirectoryService.Application.Departments.Commands.AddDepartment;
 using DirectoryService.Application.Departments.Commands.AttachLocationToDepartment;
 using DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
+using DirectoryService.Application.Departments.Commands.DeactivateDepartment;
 using DirectoryService.Application.Departments.Commands.DetachLocationFromDepartment;
 using DirectoryService.Application.Departments.Commands.DetachPositionFromDepartment;
 using DirectoryService.Application.Departments.Commands.GetAllChildren;
@@ -165,6 +167,22 @@ public class DepartmentController : BaseApiController
         [FromServices] ICommandHandler<RestoreDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
         await handler.Handle(new RestoreDepartmentCommand(departmentId), cancellationToken);
+
+    [HttpPatch]
+    [Route("/api/departments/{departmentId}/activate")]
+    public async Task<EndpointResult<Unit>> Activate(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<ActivateDepartmentCommand, Unit> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new ActivateDepartmentCommand(departmentId), cancellationToken);
+
+    [HttpPatch]
+    [Route("/api/departments/{departmentId}/deactivate")]
+    public async Task<EndpointResult<Unit>> Deactivate(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<DeactivateDepartmentCommand, Unit> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new DeactivateDepartmentCommand(departmentId), cancellationToken);
 
     [HttpPut]
     [Route("/api/departments/{departmentId}/parent")]

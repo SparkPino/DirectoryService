@@ -1,6 +1,7 @@
 using DirectoryService.Application.Departments.Commands.MoveDepartment;
 using DirectoryService.Domain.Departments.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.IntegrationTests.DepartmentsTest;
 
@@ -92,7 +93,8 @@ public class MoveDepartmentTest : DirectoryBaseTests
             await sut.Handle(command, cancellationToken));
 
         Assert.True(handlerResult.IsFailure);
-        Assert.Contains(handlerResult.Error, e => e.Code == "department.move.invalid_target");
+        Assert.Contains(handlerResult.Error,
+            e => e.Code == "department.move.parent_is_self" && e.Type == ErrorType.VALIDATION);
 
         await ExecuteInDb(async db =>
         {
@@ -115,7 +117,11 @@ public class MoveDepartmentTest : DirectoryBaseTests
             await sut.Handle(command, cancellationToken));
 
         Assert.True(handlerResult.IsFailure);
-        Assert.Contains(handlerResult.Error, e => e.Code == "department.move.invalid_target");
+        Assert.Contains(handlerResult.Error,
+            e => e.Code == "department.move.cycle"
+                 && e.Type == ErrorType.CONFLICT
+                 && e.InvalidField == null
+                 && e.Message.Contains("поддерево"));
     }
 
     [Fact]

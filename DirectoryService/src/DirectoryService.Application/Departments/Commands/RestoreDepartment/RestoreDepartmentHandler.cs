@@ -58,6 +58,14 @@ public class RestoreDepartmentHandler : ICommandHandler<RestoreDepartmentCommand
                             "root.department.deleted", null,
                             "Нельзя восстановить подразделение если его отцовское подразделение удалено").ToErrors();
                     }
+
+                    // восстановление включает поддерево, а под выключенным родителем активных быть не может
+                    if (!parentDepartment.Value.IsActive)
+                    {
+                        return Error.Conflict(
+                            "department.restore.parent_inactive", null,
+                            "Нельзя восстановить подразделение если его родительское подразделение не активно").ToErrors();
+                    }
                 }
 
                 if (await _repository.IsPathTakenAsync(department.Path, cancellationToken))
