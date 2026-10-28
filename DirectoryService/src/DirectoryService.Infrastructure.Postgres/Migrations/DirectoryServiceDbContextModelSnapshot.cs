@@ -204,6 +204,12 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
                     b.HasIndex("IsActive", "Name")
                         .HasDatabaseName("ix_location_name_is_active");
 
+                    b.HasIndex(new[] { "Name" }, "IX_location_name_trgm")
+                        .HasDatabaseName("ix_location_name_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Name" }, "IX_location_name_trgm"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Name" }, "IX_location_name_trgm"), new[] { "gin_trgm_ops" });
+
                     b.ToTable("locations", (string)null);
                 });
 
@@ -254,6 +260,12 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
 
                     b.HasIndex("IsActive", "Name")
                         .HasDatabaseName("ix_position_name");
+
+                    b.HasIndex(new[] { "Name" }, "IX_position_name_trgm")
+                        .HasDatabaseName("ix_position_name_trgm");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex(new[] { "Name" }, "IX_position_name_trgm"), "gin");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex(new[] { "Name" }, "IX_position_name_trgm"), new[] { "gin_trgm_ops" });
 
                     b.ToTable("positions", (string)null);
                 });

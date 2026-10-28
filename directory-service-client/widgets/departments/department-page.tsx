@@ -15,11 +15,22 @@ import { useDepartmentList } from "@/features/Departments/model/use-department-l
 import { useDepartmentView } from "@/features/Departments/model/use-department-view";
 import { RestoreDepartmentDialog } from "@/features/Departments/RestoreDepartmentDialog";
 import { useToggleDepartmentActivity } from "@/features/Toggle-Department-Activity/model/use-toggle-department-activity";
+import { useSearchFocus } from "@/shared/hooks/use-search-focus";
 
 export default function DepartmentPage() {
+  const { search, focusId } = useSearchFocus();
   const [query, setQuery] = useState<GetDepartmentsQuery>({
     Pagination: { Page: 1, PageSize: 10 },
+    Search: search ?? undefined,
   });
+
+  // Переход с того же маршрута не перемонтирует страницу,
+  // поэтому подхватываем новый search из URL при его изменении
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
+    setQuery((q) => ({ ...q, Search: search ?? undefined }));
+  }
 
   const [selectedUpdateDepartment, setSelectedUpdateDepartment] =
     useState<Department | null>(null);
@@ -90,6 +101,7 @@ export default function DepartmentPage() {
           <DepartmentList
             {...data}
             view={view}
+            focusId={focusId}
             onEdit={setSelectedUpdateDepartment}
             onDelete={setSelectedDeleteDepartment}
             onRestore={setSelectedRestoreDepartment}

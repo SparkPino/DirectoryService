@@ -20,8 +20,22 @@ import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { DepartmentSelectDialog } from "@/features/Department-Select/Department-Select-Dialog";
 import { Department } from "@/entities/departments/types";
 import { useLocationDepartmentFilter } from "@/features/Locations/Model/use-location-department-filter";
+import { useSearchFocus } from "@/shared/hooks/use-search-focus";
 export default function LocationsPage() {
-  const [query, setQuery] = useState<LocationQuery>({ Page: 1, PageSize: 10 });
+  const { search, focusId } = useSearchFocus();
+  const [query, setQuery] = useState<LocationQuery>({
+    Page: 1,
+    PageSize: 10,
+    Search: search ?? undefined,
+  });
+
+  // Переход с того же маршрута не перемонтирует страницу,
+  // поэтому подхватываем новый search из URL при его изменении
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
+    setQuery((q) => ({ ...q, Search: search ?? undefined, Page: 1 }));
+  }
   const [open, setOpen] = useState(false);
   const [retryTrigger, setRetryTrigger] = useState(0);
 
@@ -155,6 +169,7 @@ export default function LocationsPage() {
         <LocationsList
           {...data}
           view={view}
+          focusId={focusId}
           onEdit={(location) => onEdit(location)}
           onDelete={(location) => onDelete(location)}
           onRestore={setSelectedRestoreLocation}

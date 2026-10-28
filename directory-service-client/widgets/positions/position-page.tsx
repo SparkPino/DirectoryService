@@ -6,12 +6,23 @@ import { Button } from "@/shared/ui/button";
 import { Spinner } from "@/shared/ui/spinner";
 import { useState } from "react";
 import { usePositionList } from "@/features/Positions/model/use-position-list";
+import { useSearchFocus } from "@/shared/hooks/use-search-focus";
 
 export default function PositionPage() {
+  const { search, focusId } = useSearchFocus();
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [query, setQuery] = useState<GetPositionsQuery>({
     Pagination: { Page: 1, PageSize: 10 },
+    Search: search ?? undefined,
   });
+
+  // Переход с того же маршрута не перемонтирует страницу,
+  // поэтому подхватываем новый search из URL при его изменении
+  const [prevSearch, setPrevSearch] = useState(search);
+  if (search !== prevSearch) {
+    setPrevSearch(search);
+    setQuery((q) => ({ ...q, Search: search ?? undefined }));
+  }
 
   const { data, error, isPending, cursorRef, isFetchingNextPage, canLoadMore } =
     usePositionList(query);
@@ -52,7 +63,7 @@ export default function PositionPage() {
         )}
 
         {!isPending && !error && data && data.items.length > 0 && (
-          <PositionList {...data} />
+          <PositionList {...data} focusId={focusId} />
         )}
       </div>
       {canLoadMore && (

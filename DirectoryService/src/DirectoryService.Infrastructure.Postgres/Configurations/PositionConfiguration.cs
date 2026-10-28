@@ -17,6 +17,11 @@ public class PositionConfiguration : IEntityTypeConfiguration<Position>
         builder.HasIndex(p => new { p.IsActive, p.Name })
             .HasDatabaseName("ix_position_name");
 
+        builder.HasIndex(p => p.Name,"IX_position_name_trgm")
+            .HasDatabaseName("ix_position_name_trgm")
+            .HasMethod("gin")
+            .HasOperators("gin_trgm_ops");
+        
         builder.Property(p => p.Id)
             .HasColumnName("id")
             .IsRequired()

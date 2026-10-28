@@ -17,9 +17,15 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.HasIndex(l => new { l.IsActive, l.Name })
             .HasDatabaseName("ix_location_name_is_active");
 
+        // класический патерн для SOFT-DELETE позволяет иметь уникальное активное имя но деактивированные имена уникальными быть не должны
         builder.HasIndex(l => l.Name)
             .IsUnique()
             .HasFilter("is_active = true");
+
+        builder.HasIndex(l => l.Name, "IX_location_name_trgm")
+            .HasDatabaseName("ix_location_name_trgm")
+            .HasMethod("gin")
+            .HasOperators("gin_trgm_ops");
 
         builder.Property(l => l.Id)
             .HasColumnName("id")
