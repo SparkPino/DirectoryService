@@ -39,7 +39,7 @@ public class RemoveDepartmentTest : DirectoryBaseTests
     }
 
     [Fact]
-    public async Task Remove_Department_With_Child_Departments_Should_Succeed_And_SetNull_ChildParentId()
+    public async Task Remove_Department_With_Child_Departments_Should_Succeed_And_Cascade_Delete_Children()
     {
         var parentId = await CreateDepartmentAsync("Parent", "Parent");
         var childId = await CreateDepartmentAsync("Child", "Child", parentId);
@@ -58,12 +58,11 @@ public class RemoveDepartmentTest : DirectoryBaseTests
                 .FirstOrDefaultAsync(d => d.Id == new DepartmentId(parentId), cancellationToken);
             Assert.Null(parent);
 
-            var child = await db.Departments.FirstOrDefaultAsync(
-                d => d.Id == new DepartmentId(childId),
-                cancellationToken);
-
-            Assert.NotNull(child);
-            Assert.Null(child!.ParentId);
+            // FK parent_id настроен с ON DELETE CASCADE - ребёнок удаляется вместе с родителем
+            var child = await db.Departments
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(d => d.Id == new DepartmentId(childId), cancellationToken);
+            Assert.Null(child);
         });
     }
 

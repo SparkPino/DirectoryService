@@ -16,6 +16,9 @@ public record GetDepartmentsQuery : IQuery
 
     public bool? IsActive { get; set; }
 
+    // true - только удалённые (архив), false/null - только не удалённые
+    public bool? IsDeleted { get; set; }
+
     public Guid? ParentId { get; set; }
 
     public List<Guid>? LocationIds { get; set; }

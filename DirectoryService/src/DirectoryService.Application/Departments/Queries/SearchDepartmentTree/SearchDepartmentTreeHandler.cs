@@ -35,10 +35,11 @@ public class SearchDepartmentTreeHandler(
                                            d.identifier,
                                            d.path,
                                            d.depth,
+                                           d.is_active,
                                            d.parent_id,
                                            d.id AS match_id
                                     FROM departments d
-                                    WHERE d.is_active = true
+                                    WHERE d.deleted_at IS NULL
                                       AND d.name ILIKE @Q)
 
                                 SELECT *
@@ -54,11 +55,12 @@ public class SearchDepartmentTreeHandler(
                                     d.identifier,
                                     d.path,
                                     d.depth,
+                                    d.is_active,
                                     d.parent_id
                                 FROM departments d
                                     WHERE d.path @> nd.path
                                       AND d.path != nd.path
-                                    AND d.is_active = true) c
+                                    AND d.deleted_at IS NULL) c
                                 """;
 
         var command = new CommandDefinition(sqlQuery, new { Q = $"%{query.Q}%" }, cancellationToken: cancellationToken);

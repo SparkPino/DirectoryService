@@ -34,12 +34,13 @@ public class GetDepartmentTreeHandler(
                                        d.identifier,
                                        d.path,
                                        d.depth,
+                                       d.is_active,
                                        x.ChildrenCount > 0 AS HasChildren,
                                        x.ChildrenCount
                                 FROM departments d
-                                         CROSS JOIN LATERAL (SELECT  COUNT(*) AS ChildrenCount FROM departments c WHERE c.parent_id = d.id AND c.is_active = true) x
+                                         CROSS JOIN LATERAL (SELECT  COUNT(*) AS ChildrenCount FROM departments c WHERE c.parent_id = d.id AND c.deleted_at IS NULL) x
                                 WHERE d.parent_id IS NULL 
-                                  AND d.is_active = true
+                                  AND d.deleted_at IS NULL
                                 ORDER BY d.created_at
                                 LIMIT @Limit OFFSET @Offset;
                                 """;

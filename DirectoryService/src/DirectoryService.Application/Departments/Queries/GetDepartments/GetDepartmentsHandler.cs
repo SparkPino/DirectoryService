@@ -58,6 +58,10 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
 
         var parameters = new DynamicParameters();
 
+        sb.Append(query.IsDeleted == true
+            ? " AND d.deleted_at IS NOT NULL"
+            : " AND d.deleted_at IS NULL");
+
         if (query.IsActive.HasValue)
         {
             sb.Append(" AND d.is_active = @IsActive");

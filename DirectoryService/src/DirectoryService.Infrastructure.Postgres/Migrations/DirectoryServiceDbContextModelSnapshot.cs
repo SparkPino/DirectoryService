@@ -136,7 +136,7 @@ namespace DirectoryService.Infrastructure.Postgres.Migrations
 
                     b.HasIndex(new[] { "Name" }, "IX_department_name_sort")
                         .HasDatabaseName("ix_department_name")
-                        .HasFilter("is_active = true");
+                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex(new[] { "Name" }, "IX_department_name_trgm")
                         .HasDatabaseName("ix_department_name_trgm");

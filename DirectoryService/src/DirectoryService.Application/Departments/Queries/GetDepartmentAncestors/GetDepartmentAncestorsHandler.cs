@@ -29,7 +29,7 @@ public class GetDepartmentAncestorsHandler(
         }
 
         const string sqlQuery = """
-                                SELECT EXISTS(SELECT 1 FROM departments WHERE id = @DepartmentId AND is_active = true);
+                                SELECT EXISTS(SELECT 1 FROM departments WHERE id = @DepartmentId AND deleted_at IS NULL);
 
                                 WITH child AS (SELECT d.id, d.path
                                                FROM departments d
@@ -41,14 +41,15 @@ public class GetDepartmentAncestorsHandler(
                                        d.identifier,
                                        d.path,
                                        d.depth,
+                                       d.is_active,
                                        x.ChildrenCount > 0 AS HasChildren,
                                        x.ChildrenCount
                                 FROM departments d
                                          CROSS JOIN child
-                                         CROSS JOIN LATERAL (SELECT  COUNT(*) AS ChildrenCount FROM departments c WHERE c.parent_id = d.id AND c.is_active = true) x
+                                         CROSS JOIN LATERAL (SELECT  COUNT(*) AS ChildrenCount FROM departments c WHERE c.parent_id = d.id AND c.deleted_at IS NULL) x
                                 WHERE d.path @> child.path
                                   AND d.id != child.id
-                                AND d.is_active = true
+                                AND d.deleted_at IS NULL
                                 ORDER BY d.depth;
                                 """;
         var command = new CommandDefinition(sqlQuery, new { query.DepartmentId }, cancellationToken: cancellationToken);
