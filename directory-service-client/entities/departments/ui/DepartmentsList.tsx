@@ -18,6 +18,7 @@ export type DepartmentView = "active" | "archived";
 
 type DepartmentListProps = PagedResult<Department> & {
   view: DepartmentView;
+  focusId?: string | null;
   onEdit?: (department: Department) => void;
   onDelete?: (department: Department) => void;
   onRestore?: (department: Department) => void;
@@ -28,6 +29,7 @@ type DepartmentListProps = PagedResult<Department> & {
 export function DepartmentList({
   items,
   view,
+  focusId,
   onEdit,
   onDelete,
   onRestore,
@@ -46,6 +48,7 @@ export function DepartmentList({
             className={cn(
               "min-h-36 rounded-none ring-1 ring-foreground/15 transition-colors",
               isInactive && "bg-muted/50 ring-foreground/10",
+              department.departmentId === focusId && "ring-2 ring-primary",
             )}
           >
             <CardHeader>

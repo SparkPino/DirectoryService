@@ -12,11 +12,13 @@ import { EntityGrid } from "@/shared/ui/entity-grid";
 import { PagedResult } from "@/shared/api/type";
 import { Button } from "@/shared/ui/button";
 import { ArchiveRestore, Trash2 } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
 
 export type LocationView = "active" | "archived";
 
 type LocationsListProps = PagedResult<Location> & {
   view: LocationView;
+  focusId?: string | null;
   onEdit?: (location: Location) => void;
   onDelete?: (location: Location) => void;
   onRestore?: (location: Location) => void;
@@ -25,6 +27,7 @@ type LocationsListProps = PagedResult<Location> & {
 export function LocationsList({
   items,
   view,
+  focusId,
   onEdit,
   onDelete,
   onRestore,
@@ -34,7 +37,12 @@ export function LocationsList({
       items={items}
       getKey={(location) => location.id}
       renderItem={(location) => (
-        <Card className="rounded ring-1 ring-foreground/15">
+        <Card
+          className={cn(
+            "rounded ring-1 ring-foreground/15",
+            location.id === focusId && "ring-2 ring-primary",
+          )}
+        >
           <CardHeader>
             <CardTitle>{location.name}</CardTitle>
             <CardDescription>
