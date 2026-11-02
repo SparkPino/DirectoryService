@@ -32,6 +32,14 @@ public sealed record DepartmentPath
         return CreatePath(value.Identifier);
     }
 
+    public Result<DepartmentPath, Errors> ReplaceLastSegment(DepartmentIdentifier identifier)
+    {
+        string[] path = Path.Split(SEPARATOR);
+        path[^1] = identifier.Identifier;
+
+        return CreatePath(string.Join(SEPARATOR, path));
+    }
+
     public Result<DepartmentPath, Errors> CreateChildPath(DepartmentIdentifier child)
     {
         if (!StringValidator<DepartmentPath>.For(child.Identifier)
@@ -44,32 +52,5 @@ public sealed record DepartmentPath
         string childPath = $"{Path}{SEPARATOR}{child.Identifier}";
 
         return CreatePath(childPath);
-    }
-
-    public Result<DepartmentPath, Errors> RemoveChildFromPath(DepartmentIdentifier child)
-    {
-        if (!StringValidator<DepartmentPath>.For(child.Identifier)
-                .IsNullOrWhiteSpace()
-                .IsValid(out List<Error>? errorMessage))
-            return errorMessage!.First().ToErrors();
-
-        if (child.Identifier.Length <= 1)
-            return Error.Validation("department.path.is.root", "Путь уже корневой").ToErrors();
-
-        string[] path = Path.Split(SEPARATOR).ToArray();
-
-        if (!path.Contains(child.Identifier))
-        {
-            return Error.NotFound(
-                    "department.path.child.not.found",
-                    $"Сегмент '{child.Identifier}'не найдено в пути")
-                .ToErrors();
-        }
-
-        var newPath = path.Where(a => a != child.Identifier);
-
-        string result = string.Join(SEPARATOR, newPath);
-
-        return CreatePath(result);
     }
 }

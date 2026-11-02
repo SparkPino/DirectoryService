@@ -15,6 +15,13 @@ public interface IDepartmentRepository
 
     Task<Result<Unit, Error>> DeleteByIdAsync(Guid departmentId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyList<Department>> GetByIdsAsync(List<Guid> departmentIds, CancellationToken cancellationToken,
+        bool includingDeleted = false);
+
+    Task<HashSet<string>> GetTakenPathsAsync(
+        IReadOnlyList<string> paths,
+        CancellationToken cancellationToken);
+
     Task<IReadOnlyDictionary<Department, IReadOnlyList<Department>>> GetSubtreesAsync(
         IReadOnlyList<Guid> departmentIds,
         CancellationToken cancellationToken);
