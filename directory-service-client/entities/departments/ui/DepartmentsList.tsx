@@ -10,6 +10,7 @@ import {
 } from "@/shared/ui/card";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { Switch } from "@/shared/ui/switch";
 import { ArchiveRestore, CircleOff, FolderTree, Trash2 } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
@@ -24,6 +25,9 @@ type DepartmentListProps = PagedResult<Department> & {
   onRestore?: (department: Department) => void;
   onToggleActive?: (department: Department, isActive: boolean) => void;
   togglingDepartmentId?: string | null;
+  selectedIds?: ReadonlySet<string>;
+  onToggleSelect?: (departmentId: string) => void;
+  isSelectionLimitReached?: boolean;
 };
 
 export function DepartmentList({
@@ -35,6 +39,9 @@ export function DepartmentList({
   onRestore,
   onToggleActive,
   togglingDepartmentId,
+  selectedIds,
+  onToggleSelect,
+  isSelectionLimitReached,
 }: DepartmentListProps) {
   return (
     <EntityGrid
@@ -42,16 +49,28 @@ export function DepartmentList({
       getKey={(department) => department.departmentId.toString()}
       renderItem={(department) => {
         const isInactive = view === "active" && !department.isActive;
+        const isSelected = selectedIds?.has(department.departmentId) ?? false;
 
         return (
           <Card
             className={cn(
               "min-h-36 rounded-none ring-1 ring-foreground/15 transition-colors",
               isInactive && "bg-muted/50 ring-foreground/10",
+              isSelected && "bg-primary/5 ring-2 ring-primary/60",
               department.departmentId === focusId && "ring-2 ring-primary",
             )}
           >
-            <CardHeader>
+            <CardHeader className="flex items-start gap-2">
+              {selectedIds && (
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() =>
+                    onToggleSelect?.(department.departmentId)
+                  }
+                  disabled={!isSelected && isSelectionLimitReached}
+                  aria-label={`Выбрать подразделение ${department.name}`}
+                />
+              )}
               <CardTitle
                 className={cn(
                   "line-clamp-2",

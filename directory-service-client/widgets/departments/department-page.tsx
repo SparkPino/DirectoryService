@@ -1,5 +1,9 @@
 "use client";
-import { Department, GetDepartmentsQuery } from "@/entities/departments/types";
+import {
+  Department,
+  DepartmentBulkAction,
+  GetDepartmentsQuery,
+} from "@/entities/departments/types";
 import {
   DepartmentList,
   DepartmentView,
@@ -16,6 +20,16 @@ import { useDepartmentView } from "@/features/Departments/model/use-department-v
 import { RestoreDepartmentDialog } from "@/features/Departments/RestoreDepartmentDialog";
 import { useToggleDepartmentActivity } from "@/features/Toggle-Department-Activity/model/use-toggle-department-activity";
 import { useSearchFocus } from "@/shared/hooks/use-search-focus";
+import { BulkActionBar } from "@/features/Department-Bulk-Actions/BulkActionBar";
+import { BulkConfirmDialog } from "@/features/Department-Bulk-Actions/BulkConfirmDialog";
+import { SelectAllDepartments } from "@/features/Department-Bulk-Actions/SelectAllDepartments";
+import { useDepartmentBulkAction } from "@/features/Department-Bulk-Actions/model/use-department-bulk-action";
+import { useDepartmentSelection } from "@/features/Department-Bulk-Actions/model/use-department-selection";
+
+type BulkDialogState = {
+  action: DepartmentBulkAction;
+  departments: Department[];
+};
 
 export default function DepartmentPage() {
   const { search, focusId } = useSearchFocus();
@@ -40,6 +54,8 @@ export default function DepartmentPage() {
   const [selectedRestoreDepartment, setSelectedRestoreDepartment] =
     useState<Department | null>(null);
 
+  const [bulkDialog, setBulkDialog] = useState<BulkDialogState | null>(null);
+
   const { view, setDepartmentView } = useDepartmentView();
 
   const isArchived = view === "archived";
@@ -58,6 +74,45 @@ export default function DepartmentPage() {
 
   const toggle = (department: Department, isActive: boolean) => {
     mutate({ departmentId: department.departmentId, isActive: isActive });
+  };
+
+  const loadedDepartments = data?.items ?? [];
+  const selection = useDepartmentSelection(
+    loadedDepartments.map((department) => department.departmentId),
+    JSON.stringify([query, view]),
+  );
+
+  const {
+    mutate: runBulkAction,
+    isPending: isBulkPending,
+    error: bulkError,
+    reset: resetBulkAction,
+  } = useDepartmentBulkAction();
+
+  // Запоминаем записи при открытии: рефетч не должен менять счётчик и имена в открытом диалоге
+  const openBulkDialog = (action: DepartmentBulkAction) => {
+    resetBulkAction();
+    setBulkDialog({
+      action,
+      departments: loadedDepartments.filter((department) =>
+        selection.selectedIds.has(department.departmentId),
+      ),
+    });
+  };
+
+  const confirmBulkAction = ({ action, departments }: BulkDialogState) => {
+    runBulkAction(
+      {
+        action,
+        departmentIds: departments.map((department) => department.departmentId),
+      },
+      {
+        onSuccess: () => {
+          selection.clear();
+          setBulkDialog(null);
+        },
+      },
+    );
   };
 
   return (
@@ -98,24 +153,57 @@ export default function DepartmentPage() {
         )}
 
         {!isPending && !error && data && data.items.length > 0 && (
-          <DepartmentList
-            {...data}
-            view={view}
-            focusId={focusId}
-            onEdit={setSelectedUpdateDepartment}
-            onDelete={setSelectedDeleteDepartment}
-            onRestore={setSelectedRestoreDepartment}
-            onToggleActive={(department, isActive) =>
-              toggle(department, isActive)
-            }
-            togglingDepartmentId={togglingDepartmentId}
-          />
+          <>
+            <SelectAllDepartments
+              loadedCount={data.items.length}
+              isAllSelected={selection.isAllSelected}
+              isSomeSelected={selection.isSomeSelected}
+              onToggle={selection.toggleAll}
+            />
+            <DepartmentList
+              {...data}
+              view={view}
+              focusId={focusId}
+              onEdit={setSelectedUpdateDepartment}
+              onDelete={setSelectedDeleteDepartment}
+              onRestore={setSelectedRestoreDepartment}
+              onToggleActive={(department, isActive) =>
+                toggle(department, isActive)
+              }
+              togglingDepartmentId={togglingDepartmentId}
+              selectedIds={selection.selectedIds}
+              onToggleSelect={selection.toggle}
+              isSelectionLimitReached={selection.isLimitReached}
+            />
+          </>
         )}
       </div>
       {canLoadMore && (
         <div ref={cursorRef} className="flex justify-center py-4">
           {isFetchingNextPage && <Spinner className="size-6" />}
         </div>
+      )}
+
+      {selection.selectedIds.size > 0 && (
+        <BulkActionBar
+          view={view}
+          selectedCount={selection.selectedIds.size}
+          isLimitReached={selection.isLimitReached}
+          disabled={isBulkPending}
+          onAction={openBulkDialog}
+          onClear={selection.clear}
+        />
+      )}
+
+      {bulkDialog && (
+        <BulkConfirmDialog
+          action={bulkDialog.action}
+          departments={bulkDialog.departments}
+          isPending={isBulkPending}
+          error={bulkError}
+          onConfirm={() => confirmBulkAction(bulkDialog)}
+          onClose={() => setBulkDialog(null)}
+        />
       )}
 
       {selectedUpdateDepartment && (

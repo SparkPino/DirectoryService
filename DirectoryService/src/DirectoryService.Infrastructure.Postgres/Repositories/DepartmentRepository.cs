@@ -206,6 +206,40 @@ public class DepartmentRepository : IDepartmentRepository
         return await _context.Database.ExecuteSqlInterpolatedAsync(sqlCommand, cancellationToken);
     }
 
+    public async Task<HashSet<string>> GetTakenPathsAsync(
+        IReadOnlyList<string> paths,
+        CancellationToken cancellationToken)
+    {
+        if (paths.Count == 0) return [];
+
+        var pathsArray = paths.ToArray();
+
+        FormattableString sql = $"""
+                                 SELECT path::text AS "Value"
+                                 FROM departments
+                                 WHERE path = ANY({pathsArray}::ltree[])
+                                 AND deleted_at IS NULL
+                                 """;
+        return await _context.Database.SqlQuery<string>(sql).ToHashSetAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Department>> GetByIdsAsync(
+        List<Guid> departmentIds,
+        CancellationToken cancellationToken,
+        bool includingDeleted = false)
+    {
+        if (departmentIds.Count == 0) return [];
+        var normalizedIds = departmentIds.Select(a => new DepartmentId(a)).ToList();
+        IQueryable<Department> query = _context.Departments;
+        if (includingDeleted)
+        {
+            query = query.IgnoreQueryFilters();
+        }
+
+        return await query
+            .Where(a => normalizedIds.Contains(a.Id))
+            .ToListAsync(cancellationToken);
+    }
 
     public async Task<IReadOnlyDictionary<Department, IReadOnlyList<Department>>> GetSubtreesAsync(
         IReadOnlyList<Guid> departmentIds,

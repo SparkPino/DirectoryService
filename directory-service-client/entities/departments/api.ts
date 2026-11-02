@@ -1,6 +1,7 @@
 import { apiClient } from "@/shared/api/axios-instance";
 import {
   Department,
+  DepartmentBulkRequest,
   DepartmentParentDto,
   DepartmentTreeNodesDto,
   DepartmentUpdate,
@@ -109,6 +110,13 @@ export const departmentApi = {
   },
   deactivateDepartment: async (id: string): Promise<void> => {
     await apiClient.patch(`api/departments/${id}/deactivate`);
+  },
+
+  bulkAction: async ({
+    action,
+    departmentIds,
+  }: DepartmentBulkRequest): Promise<void> => {
+    await apiClient.post(`api/departments/bulk/${action}`, { departmentIds });
   },
 };
 

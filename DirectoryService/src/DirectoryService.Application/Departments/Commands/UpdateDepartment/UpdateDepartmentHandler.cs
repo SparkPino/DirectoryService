@@ -57,18 +57,32 @@ public class UpdateDepartmentHandler : ICommandHandler<UpdateDepartmentCommand, 
         }
 
 
-        _departmentRepository.SetRowVersion(departmentResult.Value, command.DepartmentDto.RowVersion);
+        var department = departmentResult.Value;
+        var oldPath = department.Path;
 
-        var updateDepartmentResult =
-            departmentResult.Value.UpdateDepartment(name, identifier);
+        _departmentRepository.SetRowVersion(department, command.DepartmentDto.RowVersion);
+
+        var updateDepartmentResult = department.UpdateDepartment(name, identifier);
         if (updateDepartmentResult.IsFailure) return updateDepartmentResult.Error;
 
-        var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
-        if (saveResult.IsFailure)
-        {
-            return saveResult.Error.ToErrors();
-        }
+        // Подразделение и пути потомков должны измениться атомарно: потомки обновляются прямым UPDATE,
+        // который не входит в SaveChangesAsync, поэтому без транзакции сбой на втором шаге
+        // оставил бы родителя с новым путём, а потомков со старым.
+        var updateResult = await _transactionManager.ExecuteInTransactionAsync<Guid>(
+            async ct =>
+            {
+                var saveResult = await _transactionManager.SaveChangesAsync(ct);
+                if (saveResult.IsFailure) return saveResult.Error.ToErrors();
 
-        return command.Id;
+                if (oldPath != department.Path)
+                {
+                    await _departmentRepository.UpdateDescendantsPathAsync(oldPath, department.Path, 0, ct);
+                }
+
+                return department.Id.Id;
+            },
+            cancellationToken);
+
+        return updateResult;
     }
 }
