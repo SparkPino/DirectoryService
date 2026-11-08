@@ -3,6 +3,10 @@ using DirectoryService.Application.Departments.Commands.ActivateDepartment;
 using DirectoryService.Application.Departments.Commands.AddDepartment;
 using DirectoryService.Application.Departments.Commands.AttachLocationToDepartment;
 using DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
+using DirectoryService.Application.Departments.Commands.BulkActivateDepartment;
+using DirectoryService.Application.Departments.Commands.BulkDeactivateDepartment;
+using DirectoryService.Application.Departments.Commands.BulkRestoreDepartment;
+using DirectoryService.Application.Departments.Commands.BulkSoftDeleteDepartment;
 using DirectoryService.Application.Departments.Commands.DeactivateDepartment;
 using DirectoryService.Application.Departments.Commands.DetachLocationFromDepartment;
 using DirectoryService.Application.Departments.Commands.DetachPositionFromDepartment;
@@ -43,21 +47,6 @@ public class DepartmentController : BaseApiController
         [FromServices] IQueryHandler<GetDepartmentsQuery, PagedResult<GetDepartmentDto>> handler,
         CancellationToken cancellationToken) => await handler.Handle(query, cancellationToken);
 
-    [HttpPost("tree/identifier")]
-    public async Task<EndpointResult<GetAllDepartmentChildrenDto>> GetDepartmentTreeFromIdentifier(
-        [FromBody] GetAllChildrenQuery rootIdentifier,
-        [FromServices] IQueryHandler<GetAllChildrenQuery, GetAllDepartmentChildrenDto> handler,
-        CancellationToken cancellationToken) =>
-        await handler.Handle(rootIdentifier, cancellationToken);
-
-
-    [HttpPost("direct-children")]
-    public async Task<EndpointResult<GetDirectChildrenDepartmentDto>> GetDirectChildren(
-        [FromBody] GetDirectChildrenDepartmentQuery query,
-        [FromServices] IQueryHandler<GetDirectChildrenDepartmentQuery, GetDirectChildrenDepartmentDto> handler,
-        CancellationToken cancellationToken) =>
-        await handler.Handle(query, cancellationToken);
-
     [HttpGet("tree")]
     public async Task<EndpointResult<List<DepartmentTreeNodeDto>>> GetTree(
         [FromQuery] GetDepartmentTreeQuery query,
@@ -86,6 +75,13 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new GetDepartmentAncestorsQuery(departmentId), cancellationToken);
 
+    [HttpGet("{departmentId:guid}")]
+    public async Task<EndpointResult<DepartmentDto>> GetById(
+        [FromRoute] Guid departmentId,
+        [FromServices] IQueryHandler<GetByIdDepartmentQuery, DepartmentDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new GetByIdDepartmentQuery(departmentId), cancellationToken);
+
     [HttpGet("{departmentId:guid}/Dapper")]
     public async Task<EndpointResult<DepartmentRow>> GetByIdDapper(
         [FromRoute] Guid departmentId,
@@ -101,28 +97,58 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new AddDepartmentCommand(departmentDto), cancellationToken);
 
-    [HttpGet("{departmentId:guid}")]
-    public async Task<EndpointResult<DepartmentDto>> GetById(
-        [FromRoute] Guid departmentId,
-        [FromServices] IQueryHandler<GetByIdDepartmentQuery, DepartmentDto> handler,
+    [HttpPost("bulk/activate")]
+    public async Task<EndpointResult<Unit>> BulkActivate(
+        [FromBody] BulkDepartmentsDto bulkDto,
+        [FromServices] ICommandHandler<BulkActivateCommand, Unit> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new GetByIdDepartmentQuery(departmentId), cancellationToken);
+        await handler.Handle(new BulkActivateCommand(bulkDto.DepartmentIds), cancellationToken);
 
-    [HttpDelete]
-    public async Task<EndpointResult<Unit>> Delete(
-        [FromBody] Guid departmentId,
-        [FromServices] ICommandHandler<RemoveDepartmentCommand, Unit> handler,
+    [HttpPost("bulk/deactivate")]
+    public async Task<EndpointResult<Unit>> BulkDeactivate(
+        [FromBody] BulkDepartmentsDto bulkDto,
+        [FromServices] ICommandHandler<BulkDeactivateCommand, Unit> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new RemoveDepartmentCommand(departmentId), cancellationToken);
+        await handler.Handle(new BulkDeactivateCommand(bulkDto.DepartmentIds), cancellationToken);
 
-    [HttpPatch]
-    [Route("/api/departments/{departmentId}")]
-    public async Task<EndpointResult<Guid>> Update(
-        [FromBody] UpdateDepartmentDto departmentDto,
-        [FromRoute] Guid departmentId,
-        [FromServices] ICommandHandler<UpdateDepartmentCommand, Guid> handler,
+    [HttpPost("bulk/restore")]
+    public async Task<EndpointResult<Unit>> BulkRestore(
+        [FromBody] BulkDepartmentsDto bulkDto,
+        [FromServices] ICommandHandler<BulkRestoreCommand, Unit> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
+        await handler.Handle(new BulkRestoreCommand(bulkDto.DepartmentIds), cancellationToken);
+
+    [HttpPost]
+    [Route("bulk/soft-delete")]
+    public async Task<EndpointResult<Unit>> BulkSoftDelete(
+        [FromBody] BulkDepartmentsDto bulkDto,
+        [FromServices] ICommandHandler<BulkSoftDeleteCommand, Unit> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new BulkSoftDeleteCommand(bulkDto.DepartmentIds), cancellationToken);
+
+    [HttpPost("tree/identifier")]
+    public async Task<EndpointResult<GetAllDepartmentChildrenDto>> GetDepartmentTreeFromIdentifier(
+        [FromBody] GetAllChildrenQuery rootIdentifier,
+        [FromServices] IQueryHandler<GetAllChildrenQuery, GetAllDepartmentChildrenDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(rootIdentifier, cancellationToken);
+
+    [HttpPost]
+    [Route("/api/departments/{departmentId}/positions/{positionId}")]
+    public async Task<EndpointResult<Guid>> AttachPosition(
+        [FromRoute] Guid departmentId,
+        [FromRoute] Guid positionId,
+        [FromServices] ICommandHandler<AttachPositionToDepartmentCommand, Guid> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new AttachPositionToDepartmentCommand(departmentId, positionId), cancellationToken);
+
+
+    [HttpPost("direct-children")]
+    public async Task<EndpointResult<GetDirectChildrenDepartmentDto>> GetDirectChildren(
+        [FromBody] GetDirectChildrenDepartmentQuery query,
+        [FromServices] IQueryHandler<GetDirectChildrenDepartmentQuery, GetDirectChildrenDepartmentDto> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(query, cancellationToken);
 
     [HttpPost]
     [Route("/api/departments/{departmentId}/locations/{locationId}")]
@@ -133,23 +159,25 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new AttachLocationToDepartmentCommand(departmentId, locationId), cancellationToken);
 
-
-    [HttpDelete]
-    [Route("/api/departments/{departmentId}/locations/{locationId}")]
-    public async Task<EndpointResult<Guid>> DetachLocation(
+    [HttpPut]
+    [Route("/api/departments/{departmentId}/parent")]
+    public async Task<EndpointResult<DepartmentParentDto>> UpdateDepartmentParent(
         [FromRoute] Guid departmentId,
-        [FromRoute] Guid locationId,
-        [FromServices] ICommandHandler<DetachLocationFromDepartmentCommand, Guid> handler,
+        [FromBody] UpdateDepartmentParentParentDto newParentId,
+        [FromServices] ICommandHandler<UpdateDepartmentParentCommand, DepartmentParentDto> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
+        await handler.Handle(
+            new UpdateDepartmentParentCommand(departmentId, newParentId),
+            cancellationToken);
 
-    [HttpDelete]
-    [Route("/api/department/{departmentId}")]
-    public async Task<EndpointResult<Unit>> SoftDelete(
+    [HttpPatch]
+    [Route("/api/departments/{departmentId}")]
+    public async Task<EndpointResult<Guid>> Update(
+        [FromBody] UpdateDepartmentDto departmentDto,
         [FromRoute] Guid departmentId,
-        [FromServices] ICommandHandler<SoftDeleteDepartmentCommand, Unit> handler,
+        [FromServices] ICommandHandler<UpdateDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new SoftDeleteDepartmentCommand(new DepartmentId(departmentId)), cancellationToken);
+        await handler.Handle(new UpdateDepartmentCommand(departmentDto, departmentId), cancellationToken);
 
     [HttpPatch]
     [Route("/api/departments/{departmentId}/move")]
@@ -184,26 +212,29 @@ public class DepartmentController : BaseApiController
         CancellationToken cancellationToken) =>
         await handler.Handle(new DeactivateDepartmentCommand(departmentId), cancellationToken);
 
-    [HttpPut]
-    [Route("/api/departments/{departmentId}/parent")]
-    public async Task<EndpointResult<DepartmentParentDto>> UpdateDepartmentParent(
-        [FromRoute] Guid departmentId,
-        [FromBody] UpdateDepartmentParentParentDto newParentId,
-        [FromServices] ICommandHandler<UpdateDepartmentParentCommand, DepartmentParentDto> handler,
+    [HttpDelete]
+    public async Task<EndpointResult<Unit>> Delete(
+        [FromBody] Guid departmentId,
+        [FromServices] ICommandHandler<RemoveDepartmentCommand, Unit> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(
-            new UpdateDepartmentParentCommand(departmentId, newParentId),
-            cancellationToken);
+        await handler.Handle(new RemoveDepartmentCommand(departmentId), cancellationToken);
 
-
-    [HttpPost]
-    [Route("/api/departments/{departmentId}/positions/{positionId}")]
-    public async Task<EndpointResult<Guid>> AttachPosition(
+    [HttpDelete]
+    [Route("/api/departments/{departmentId}/locations/{locationId}")]
+    public async Task<EndpointResult<Guid>> DetachLocation(
         [FromRoute] Guid departmentId,
-        [FromRoute] Guid positionId,
-        [FromServices] ICommandHandler<AttachPositionToDepartmentCommand, Guid> handler,
+        [FromRoute] Guid locationId,
+        [FromServices] ICommandHandler<DetachLocationFromDepartmentCommand, Guid> handler,
         CancellationToken cancellationToken) =>
-        await handler.Handle(new AttachPositionToDepartmentCommand(departmentId, positionId), cancellationToken);
+        await handler.Handle(new DetachLocationFromDepartmentCommand(departmentId, locationId), cancellationToken);
+
+    [HttpDelete]
+    [Route("/api/department/{departmentId}")]
+    public async Task<EndpointResult<Unit>> SoftDelete(
+        [FromRoute] Guid departmentId,
+        [FromServices] ICommandHandler<SoftDeleteDepartmentCommand, Unit> handler,
+        CancellationToken cancellationToken) =>
+        await handler.Handle(new SoftDeleteDepartmentCommand(new DepartmentId(departmentId)), cancellationToken);
 
     [HttpDelete]
     [Route("/api/departments/{departmentId}/positions/{positionId}")]

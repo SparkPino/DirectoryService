@@ -294,13 +294,19 @@ public sealed class Department
         if (name is null && identifier is null)
             return Error.Validation("update.department", "нужно указать хотябы одно поле").ToErrors();
 
+        if (identifier is not null)
+        {
+            var pathResult = Path.ReplaceLastSegment(identifier);
+            if (pathResult.IsFailure) return pathResult.Error;
+            Path = pathResult.Value;
+        }
+
         Name = name ?? Name;
         Identifier = identifier ?? Identifier;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTimeOffset.UtcNow;
 
         return UnitResult.Success<Errors>();
     }
-
 
     public UnitResult<Error> SoftDelete(IReadOnlyList<Department> descendants, DateTimeOffset now)
     {
@@ -342,7 +348,8 @@ public sealed class Department
 
 
         foreach (var descendant in descendants.Where(descendant =>
-                     descendant.DeletedAt == DeletedAt && descendant.DeletedAt != null && descendant.IsDescendantOf(this)))
+                     descendant.DeletedAt == DeletedAt && descendant.DeletedAt != null &&
+                     descendant.IsDescendantOf(this)))
         {
             descendant.MarkRestored(now);
         }

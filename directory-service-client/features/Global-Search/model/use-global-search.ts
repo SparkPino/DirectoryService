@@ -25,7 +25,7 @@ export function useGlobalSearch() {
   const isTooShort = search.trim().length < 2;
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === "k" && (event.metaKey || event.ctrlKey)) {
+      if (event.code === "KeyK" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setOpen((prev) => !prev);
       }

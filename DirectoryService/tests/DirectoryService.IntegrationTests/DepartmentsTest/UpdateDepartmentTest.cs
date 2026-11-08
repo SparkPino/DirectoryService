@@ -107,11 +107,8 @@ public class UpdateDepartmentTest : DirectoryBaseTests
     }
 
     [Fact]
-    public async Task Update_Department_Identifier_Does_Not_Recompute_Path()
+    public async Task Update_Department_Identifier_Should_Recompute_Path()
     {
-        // Документирует текущее поведение: переименование Identifier у департамента
-        // не пересчитывает его Path (он остаётся построенным по старому идентификатору).
-        // Если это когда-нибудь исправят, тест нужно осознанно обновить.
         var parentId = await CreateDepartmentAsync("Parent", "Parent");
         var childId = await CreateDepartmentAsync("Child", "Child", parentId);
         var cancellationToken = CancellationToken.None;
@@ -128,7 +125,7 @@ public class UpdateDepartmentTest : DirectoryBaseTests
             var child = await db.Departments.FirstAsync(d => d.Id == new DepartmentId(childId), cancellationToken);
 
             Assert.Equal("Renamed", child.Identifier.Identifier);
-            Assert.Equal("Parent.Child", child.Path.Path);
+            Assert.Equal("Parent.Renamed", child.Path.Path);
         });
     }
 

@@ -35,6 +35,17 @@ export type DepartmentParentDto = {
   updatedAt: string;
 };
 
+export type DepartmentBulkAction =
+  | "soft-delete"
+  | "restore"
+  | "activate"
+  | "deactivate";
+
+export type DepartmentBulkRequest = {
+  action: DepartmentBulkAction;
+  departmentIds: string[];
+};
+
 export type GetDepartmentsQuery = {
   Search?: string;
   SortBy?: string;
