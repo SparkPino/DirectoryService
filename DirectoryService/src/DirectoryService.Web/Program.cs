@@ -27,12 +27,15 @@ try
 
     app.Configure();
     app.MapControllers();
+    app.MapHealthChecks("/health");
 
     app.Run();
+    return 0;
 }
 catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
+    return 1;
 }
 finally
 {

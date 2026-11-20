@@ -79,7 +79,7 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
             return saveResult.Error.ToErrors();
         }
 
-        _logger.LogInformation("Локация создана успешно с id: {LocationId}", location.Id);
+        _logger.LogInformation("Локация создана успешно с id: {LocationId}", location.Id.Id);
 
         return location.Id.Id;
     }
