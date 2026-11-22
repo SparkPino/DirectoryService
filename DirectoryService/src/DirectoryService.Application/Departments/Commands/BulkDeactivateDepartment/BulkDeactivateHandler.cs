@@ -1,10 +1,7 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Shared;
 using SharedLibrary.SharedKernel;
 
@@ -14,30 +11,17 @@ public class BulkDeactivateHandler : ICommandHandler<BulkDeactivateCommand, Unit
 {
     private readonly IDepartmentRepository _repository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<BulkDeactivateHandler> _logger;
-    private readonly IValidator<BulkDeactivateCommand> _validator;
 
     public BulkDeactivateHandler(
         IDepartmentRepository repository,
-        ITransactionManager transactionManager,
-        ILogger<BulkDeactivateHandler> logger,
-        IValidator<BulkDeactivateCommand> validator)
+        ITransactionManager transactionManager)
     {
         _repository = repository;
         _transactionManager = transactionManager;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Unit, Errors>> Handle(BulkDeactivateCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid) return validationResult.ToError();
-
-        _logger.LogInformation(
-            "Начата массовая деактивация подразделений, количество: {Count}",
-            command.DepartmentIds.Count);
-
         var timeNow = DateTimeOffset.UtcNow;
 
         var transactionResult = await _transactionManager.ExecuteInTransactionAsync<Unit>(
@@ -78,15 +62,8 @@ public class BulkDeactivateHandler : ICommandHandler<BulkDeactivateCommand, Unit
 
         if (transactionResult.IsFailure)
         {
-            _logger.LogWarning(
-                "Массовая деактивация подразделений завершилась ошибкой, количество ошибок: {ErrorCount}",
-                transactionResult.Error.Count());
             return transactionResult.Error;
         }
-
-        _logger.LogInformation(
-            "Массовая деактивация подразделений успешно завершена, количество: {Count}",
-            command.DepartmentIds.Count);
 
         return transactionResult;
     }

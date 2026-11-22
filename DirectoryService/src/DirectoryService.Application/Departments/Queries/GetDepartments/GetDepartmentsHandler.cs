@@ -2,12 +2,9 @@
 using System.Text;
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Department;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetDepartments;
@@ -15,30 +12,16 @@ namespace DirectoryService.Application.Departments.Queries.GetDepartments;
 public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedResult<GetDepartmentDto>>
 {
     private readonly IDbConnectionFactory _dbConnectionFactory;
-    private readonly ILogger<GetDepartmentsHandler> _logger;
-    private readonly IValidator<GetDepartmentsQuery> _validator;
 
-    public GetDepartmentsHandler(IDbConnectionFactory dbConnectionFactory, ILogger<GetDepartmentsHandler> logger,
-        IValidator<GetDepartmentsQuery> validator)
+    public GetDepartmentsHandler(IDbConnectionFactory dbConnectionFactory)
     {
         _dbConnectionFactory = dbConnectionFactory;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<PagedResult<GetDepartmentDto>, Errors>> Handle(
         GetDepartmentsQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("GetDepartmentsHandler начал обработку запроса");
-
-
         StringBuilder sb = new StringBuilder();
         sb.Append(@"
         SELECT 
@@ -119,7 +102,6 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
             _ => "d.name",
         };
 
-
         string descending = query.SortDir == SortDirection.DESC ? " DESC" : " ASC";
         sb.Append($" ORDER BY {relevance}{sortBy} {descending}, d.id");
 
@@ -139,7 +121,6 @@ public class GetDepartmentsHandler : IQueryHandler<GetDepartmentsQuery, PagedRes
 
         var departmentsResult = (await connectionAsync.QueryAsync<GetDepartmentDto>(
             new CommandDefinition(sb.ToString(), parameters, cancellationToken: cancellationToken))).ToList();
-
 
         var count = departmentsResult.FirstOrDefault()?.TotalCount ?? 0;
         var totalPage = (int)Math.Ceiling(count / (float)pageSize);

@@ -1,10 +1,7 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Shared;
 using SharedLibrary.SharedKernel;
 
@@ -14,32 +11,18 @@ public class BulkRestoreHandler : ICommandHandler<BulkRestoreCommand, Unit>
 {
     private readonly IDepartmentRepository _repository;
     private readonly ITransactionManager _transactionManager;
-    private readonly IValidator<BulkRestoreCommand> _validator;
-    private readonly ILogger<BulkRestoreHandler> _logger;
-
 
     public BulkRestoreHandler(
         IDepartmentRepository repository,
-        ITransactionManager transactionManager,
-        IValidator<BulkRestoreCommand> validator,
-        ILogger<BulkRestoreHandler> logger
+        ITransactionManager transactionManager
     )
     {
         _repository = repository;
         _transactionManager = transactionManager;
-        _validator = validator;
-        _logger = logger;
     }
 
     public async Task<Result<Unit, Errors>> Handle(BulkRestoreCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid) return validationResult.ToError();
-
-        _logger.LogInformation(
-            "Начато массовое восстановление подразделений, количество: {Count}",
-            command.DepartmentIds.Count);
-
         var transactionResult = await _transactionManager.ExecuteInTransactionAsync<Unit>(
             async (ct) =>
             {
@@ -127,16 +110,8 @@ public class BulkRestoreHandler : ICommandHandler<BulkRestoreCommand, Unit>
 
         if (transactionResult.IsFailure)
         {
-            _logger.LogWarning(
-                "Массовое восстановление подразделений завершилось ошибкой, количество ошибок: {ErrorCount}",
-                transactionResult.Error.Count());
-
             return transactionResult.Error;
         }
-
-        _logger.LogInformation(
-            "Массовое восстановление подразделений успешно завершено, количество: {Count}",
-            command.DepartmentIds.Count);
 
         return transactionResult;
     }

@@ -32,6 +32,9 @@ public static class DependencyInjection
                     new JsonStringEnumConverter()); //Microsoft.AspNetCore.Mvc.JsonOptions  
             });
 
+        services.AddHealthChecks()
+            .AddDbContextCheck<DirectoryServiceDbContext>();
+
         services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(
@@ -65,7 +68,8 @@ public static class DependencyInjection
                 var errors = context.ModelState
                     .Where(x => x.Value?.Errors.Count > 0)
                     .SelectMany(x => x.Value!.Errors.Select(e =>
-                        Error.Validation($"{JsonNamingPolicy.CamelCase.ConvertName(x.Key)}.invalid", e.ErrorMessage, x.Key)))
+                        Error.Validation($"{JsonNamingPolicy.CamelCase.ConvertName(x.Key)}.invalid", e.ErrorMessage,
+                            x.Key)))
                     .ToList();
 
                 return new BadRequestObjectResult(Envelope.Error(errors));

@@ -1,11 +1,8 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Departments;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.MoveDepartment;
@@ -14,35 +11,17 @@ public class MoveDepartmentHandler : ICommandHandler<MoveDepartmentCommand, Guid
 {
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<MoveDepartmentHandler> _logger;
-    private readonly IValidator<MoveDepartmentCommand> _validator;
 
     public MoveDepartmentHandler(
         IDepartmentRepository departmentRepository,
-        ITransactionManager transactionManager,
-        ILogger<MoveDepartmentHandler> logger,
-        IValidator<MoveDepartmentCommand> validator)
+        ITransactionManager transactionManager)
     {
         _departmentRepository = departmentRepository;
         _transactionManager = transactionManager;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(MoveDepartmentCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation(
-            "Обработка MoveDepartmentCommand departmentId:{departmentId} newParentId:{newParentId}",
-            command.DepartmentId,
-            command.NewParentId);
-
-        
         var departmentResult = await _departmentRepository.GetByIdAsync(command.DepartmentId, cancellationToken);
         if (departmentResult.IsFailure) return departmentResult.Error.ToErrors();
 
@@ -83,8 +62,6 @@ public class MoveDepartmentHandler : ICommandHandler<MoveDepartmentCommand, Guid
             cancellationToken);
 
         if (moveResult.IsFailure) return moveResult.Error;
-
-        _logger.LogInformation("Департамент {departmentId} успешно перемещён", command.DepartmentId);
 
         return moveResult.Value;
     }

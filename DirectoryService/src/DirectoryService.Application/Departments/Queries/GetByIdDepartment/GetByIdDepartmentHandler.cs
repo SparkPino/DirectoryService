@@ -5,7 +5,6 @@ using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Contracts.Department;
 using DirectoryService.Domain.Departments.ValueObjects;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
@@ -15,25 +14,17 @@ namespace DirectoryService.Application.Departments.Queries.GetByIdDepartment;
 public class GetByIdDepartmentHandler(
     IReadDbContext context,
     IDbConnectionFactory dbConnectionFactory,
-    IValidator<GetByIdDepartmentQuery> validator,
     ILogger<GetByIdDepartmentHandler> logger)
     : IQueryHandler<GetByIdDepartmentQuery, DepartmentDto>
 {
     private readonly IReadDbContext _context = context;
     private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
-    private readonly IValidator<GetByIdDepartmentQuery> _validator = validator;
     private readonly ILogger<GetByIdDepartmentHandler> _logger = logger;
 
     public async Task<Result<DepartmentDto, Errors>> Handle(
         GetByIdDepartmentQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return DepartmentError.InvalidId.ToErrors();
-        }
-
         DepartmentId departmentId = new DepartmentId(query.id);
 
         // var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
@@ -52,7 +43,6 @@ public class GetByIdDepartmentHandler(
             GROUP BY d.id;
             """,
             param: new { queryId = query.id });*/ // @queryId = queryId
-
 
         var department = await _context.ReadDepartments
             .Where(a => a.Id == departmentId)

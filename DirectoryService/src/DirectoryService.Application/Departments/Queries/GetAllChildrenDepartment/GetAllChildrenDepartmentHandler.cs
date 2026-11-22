@@ -1,23 +1,18 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Department;
-using FluentValidation;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.GetAllChildren;
 
 public class GetAllChildrenDepartmentHandler : IQueryHandler<GetAllChildrenQuery, GetAllDepartmentChildrenDto>
 {
-    private readonly IValidator<GetAllChildrenQuery> _validator;
     private readonly IDbConnectionFactory _dbConnectionFactory;
 
-    public GetAllChildrenDepartmentHandler(IValidator<GetAllChildrenQuery> validator,
-        IDbConnectionFactory dbConnectionFactory)
+    public GetAllChildrenDepartmentHandler(IDbConnectionFactory dbConnectionFactory)
     {
-        _validator = validator;
         _dbConnectionFactory = dbConnectionFactory;
     }
 
@@ -25,12 +20,6 @@ public class GetAllChildrenDepartmentHandler : IQueryHandler<GetAllChildrenQuery
         GetAllChildrenQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         const string recursiveSQL = """
                                     WITH RECURSIVE all_departments_family AS ( 
                                     SELECT  d.id, d.name,  d.path, d.identifier , 0 AS level, d.parent_id
@@ -42,7 +31,6 @@ public class GetAllChildrenDepartmentHandler : IQueryHandler<GetAllChildrenQuery
                                                                                SELECT  c.id, c.name,  c.path, c.identifier , d.level + 1 ,c.parent_id
                                                                                FROM departments c
                                                                                JOIN all_departments_family d ON c.parent_id = d.id)
-
 
                                     SELECT * FROM all_departments_family
                                     ORDER BY level, id;

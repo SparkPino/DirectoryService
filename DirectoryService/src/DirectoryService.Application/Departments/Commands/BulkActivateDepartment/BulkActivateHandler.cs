@@ -1,10 +1,7 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Shared;
 using SharedLibrary.SharedKernel;
 
@@ -13,31 +10,18 @@ namespace DirectoryService.Application.Departments.Commands.BulkActivateDepartme
 public class BulkActivateHandler : ICommandHandler<BulkActivateCommand, Unit>
 {
     private readonly IDepartmentRepository _repository;
-    private readonly ILogger<BulkActivateHandler> _logger;
     private readonly ITransactionManager _transactionManager;
-    private readonly IValidator<BulkActivateCommand> _validator;
 
     public BulkActivateHandler(
         IDepartmentRepository repository,
-        ITransactionManager transactionManager,
-        ILogger<BulkActivateHandler> logger,
-        IValidator<BulkActivateCommand> validator)
+        ITransactionManager transactionManager)
     {
         _repository = repository;
-        _logger = logger;
         _transactionManager = transactionManager;
-        _validator = validator;
     }
 
     public async Task<Result<Unit, Errors>> Handle(BulkActivateCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid) return validationResult.ToError();
-
-        _logger.LogInformation(
-            "Начата массовая активация подразделений, количество: {Count}",
-            command.DepartmentIds.Count);
-
         var timeNow = DateTimeOffset.UtcNow;
 
         var transactionResult = await _transactionManager.ExecuteInTransactionAsync<Unit>(
@@ -55,7 +39,6 @@ public class BulkActivateHandler : ICommandHandler<BulkActivateCommand, Unit>
                         missingDepartment.ToString(),
                         $"Департамент с id {missingDepartment} не найден"));
                 }
-
 
                 var parentIds = departments
                     .Where(d => d.ParentId is not null)
@@ -92,16 +75,8 @@ public class BulkActivateHandler : ICommandHandler<BulkActivateCommand, Unit>
 
         if (transactionResult.IsFailure)
         {
-            _logger.LogWarning(
-                "Массовая активация подразделений завершилась ошибкой, количество ошибок: {ErrorCount}",
-                transactionResult.Error.Count());
-
             return transactionResult.Error;
         }
-
-        _logger.LogInformation(
-            "Массовая активация подразделений успешно завершена, количество: {Count}",
-            command.DepartmentIds.Count);
 
         return transactionResult;
     }

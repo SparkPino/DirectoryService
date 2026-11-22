@@ -1,13 +1,11 @@
 ﻿using System.Data;
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Contracts.Department.UpdateDepartmentParent;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
@@ -18,34 +16,21 @@ public class UpdateDepartmentParentHandler : ICommandHandler<UpdateDepartmentPar
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILogger<UpdateDepartmentParentHandler> _logger;
     private readonly ITransactionManager _transactionManager;
-    private readonly IValidator<UpdateDepartmentParentCommand> _validator;
 
     public UpdateDepartmentParentHandler(
         IDepartmentRepository departmentRepository,
         ILogger<UpdateDepartmentParentHandler> logger,
-        ITransactionManager transactionManager,
-        IValidator<UpdateDepartmentParentCommand> validator)
+        ITransactionManager transactionManager)
     {
         _departmentRepository = departmentRepository;
         _logger = logger;
         _transactionManager = transactionManager;
-        _validator = validator;
     }
 
     public async Task<Result<DepartmentParentDto, Errors>> Handle(
         UpdateDepartmentParentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation(
-            "Обработка UpdateDepartmentParentCommand departmentId:{DepartmentId} newParentId:{ParentId}", command.Id,
-            command.ParentId?.Id);
-
         DepartmentPath? oldPath = null;
         DepartmentPath? newPath = null;
         int updateCounter = 0;

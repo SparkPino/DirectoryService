@@ -1,39 +1,26 @@
 using System.Linq.Expressions;
 using System.Text.Json;
 using Core;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Contracts.Locations;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Queries.GetAllLocations;
 
 public class GetAllLocationHandler(
-    ILocationReadRepository locationReadRepository,
-    ILogger<GetAllLocationHandler> logger,
-    IValidator<GetAllLocationQuery> validator)
+    ILocationReadRepository locationReadRepository)
     : IQueryHandler<GetAllLocationQuery, PagedResult<GetAllLocationDto>>
 {
     private static readonly JsonSerializerOptions _addressJsonOptions = new() { PropertyNameCaseInsensitive = true, };
 
     private readonly ILocationReadRepository _locationReadRepository = locationReadRepository;
-    private readonly ILogger<GetAllLocationHandler> _logger = logger;
-    private readonly IValidator<GetAllLocationQuery> _validator = validator;
 
     public async Task<Result<PagedResult<GetAllLocationDto>, Errors>> Handle(
         GetAllLocationQuery query,
         CancellationToken cancellationToken)
     {
-        var validatorResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validatorResult.IsValid)
-        {
-            return validatorResult.ToError();
-        }
-
         IQueryable<LocationRow> locations = _locationReadRepository.SearchLocations(query.DepartmentIds, query.Search, query.IsActive);
 
         if (query.MinDepartmentCount.HasValue && query.MinDepartmentCount.Value > 0)
@@ -63,7 +50,6 @@ public class GetAllLocationHandler(
                 ? locations.OrderByDescending(selectorKey).ThenByDescending(a => a.Id)
                 : locations.OrderBy(selectorKey).ThenBy(a => a.Id);
         }
-
 
         int totalCount = await locations.CountAsync(cancellationToken);
 

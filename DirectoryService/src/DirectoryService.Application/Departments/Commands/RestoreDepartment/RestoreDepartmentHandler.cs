@@ -4,7 +4,6 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.RestoreDepartment;
@@ -13,24 +12,18 @@ public class RestoreDepartmentHandler : ICommandHandler<RestoreDepartmentCommand
 {
     private readonly IDepartmentRepository _repository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<RestoreDepartmentHandler> _logger;
 
     public RestoreDepartmentHandler(
         IDepartmentRepository repository,
-        ITransactionManager transactionManager,
-        ILogger<RestoreDepartmentHandler> logger)
+        ITransactionManager transactionManager)
     {
         _repository = repository;
         _transactionManager = transactionManager;
-        _logger = logger;
     }
 
     public async Task<Result<Guid, Errors>> Handle(RestoreDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Обработка RestoreDepartmentCommand id:{departmentId}", command.Departmentid);
-
-
         var result = await _transactionManager.ExecuteInTransactionAsync<Guid>(
             async (cancellationToken) =>
             {
@@ -84,7 +77,6 @@ public class RestoreDepartmentHandler : ICommandHandler<RestoreDepartmentCommand
                 if (saveResult.IsFailure) return saveResult.Error.ToErrors();
                 return command.Departmentid;
             }, cancellationToken);
-
 
         return result;
     }

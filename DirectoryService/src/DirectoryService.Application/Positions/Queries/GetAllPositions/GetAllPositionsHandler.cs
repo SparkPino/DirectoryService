@@ -1,38 +1,23 @@
 using System.Linq.Expressions;
 using Core;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Contracts.Positions;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Positions.Queries.GetAllPositions;
 
 public class GetAllPositionsHandler(
-    IPositionReadRepository positionReadRepository,
-    ILogger<GetAllPositionsHandler> logger,
-    IValidator<GetAllPositionsQuery> validator)
+    IPositionReadRepository positionReadRepository)
     : IQueryHandler<GetAllPositionsQuery, PagedResult<GetAllPositionDto>>
 {
     private readonly IPositionReadRepository _positionReadRepository = positionReadRepository;
-    private readonly ILogger<GetAllPositionsHandler> _logger = logger;
-    private readonly IValidator<GetAllPositionsQuery> _validator = validator;
 
     public async Task<Result<PagedResult<GetAllPositionDto>, Errors>> Handle(
         GetAllPositionsQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("GetAllPositionsHandler начал обработку запроса");
-
         IQueryable<PositionRow> positions = _positionReadRepository.SearchPositions(query.DepartmentId, query.Search);
 
         bool descending = query.SortDir == SortDirection.DESC;

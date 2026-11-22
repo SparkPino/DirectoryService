@@ -3,7 +3,6 @@ using Core.Database;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Locations.ValueObjects;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Commands.RestoreLocation;
@@ -12,22 +11,17 @@ public class RestoreLocationHandler : ICommandHandler<RestoreLocationCommand, Gu
 {
     private readonly ILocationRepository _repository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<RestoreLocationHandler> _logger;
 
     public RestoreLocationHandler(
         ILocationRepository repository,
-        ITransactionManager transactionManager,
-        ILogger<RestoreLocationHandler> logger)
+        ITransactionManager transactionManager)
     {
         _repository = repository;
         _transactionManager = transactionManager;
-        _logger = logger;
     }
 
     public async Task<Result<Guid, Errors>> Handle(RestoreLocationCommand command, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Обработка RestoreLocationCommand id:{locationId}", command.LocationId);
-
         var locationId = new LocationId(command.LocationId);
 
         // удалённая локация скрыта query filter-ом, поэтому ищем в обход него

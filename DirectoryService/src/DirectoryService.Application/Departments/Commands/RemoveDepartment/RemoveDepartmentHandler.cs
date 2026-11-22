@@ -1,9 +1,7 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using Shared;
 using SharedLibrary.SharedKernel;
@@ -15,32 +13,21 @@ public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, 
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly ILogger<RemoveDepartmentHandler> _logger;
-    private readonly IValidator<RemoveDepartmentCommand> _validator;
 
     public RemoveDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ITransactionManager transactionManager,
-        ILogger<RemoveDepartmentHandler> logger,
-        IValidator<RemoveDepartmentCommand> validator)
+        ILogger<RemoveDepartmentHandler> logger)
     {
         _departmentRepository = departmentRepository;
         _transactionManager = transactionManager;
         _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Unit, Errors>> Handle(
         RemoveDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("Обработка RemoveDepartmentCommand id:{departmentId}", command.departmentId);
-
         var removeResult = await _departmentRepository.DeleteByIdAsync(command.departmentId, cancellationToken);
         if (removeResult.IsFailure)
         {
@@ -58,8 +45,6 @@ public class RemoveDepartmentHandler : ICommandHandler<RemoveDepartmentCommand, 
 
             return saveResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Департамент {departmentId} успешно удалён", command.departmentId);
 
         return Result.Success<Unit, Errors>(Unit.Value);
     }

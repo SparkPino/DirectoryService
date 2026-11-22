@@ -1,10 +1,7 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.AttachPositionToDepartment;
@@ -14,33 +11,21 @@ public class AttachPositionToDepartmentHandler : ICommandHandler<AttachPositionT
     private readonly IDepartmentRepository _departmentRepository;
     private readonly IPositionRepository _positionRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<AttachPositionToDepartmentHandler> _logger;
-    private readonly IValidator<AttachPositionToDepartmentCommand> _validator;
 
     public AttachPositionToDepartmentHandler(
         IDepartmentRepository departmentRepository,
         IPositionRepository positionRepository,
-        ITransactionManager transactionManager,
-        ILogger<AttachPositionToDepartmentHandler> logger,
-        IValidator<AttachPositionToDepartmentCommand> validator)
+        ITransactionManager transactionManager)
     {
         _departmentRepository = departmentRepository;
         _positionRepository = positionRepository;
         _transactionManager = transactionManager;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
         AttachPositionToDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         var department = await _departmentRepository.GetByIdWithPositionsAsync(command.DepartmentId, cancellationToken);
         if (department.IsFailure)
         {
