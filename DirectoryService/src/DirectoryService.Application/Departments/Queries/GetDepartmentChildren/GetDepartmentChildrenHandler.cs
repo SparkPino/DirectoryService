@@ -1,33 +1,23 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Contracts.Department;
-using FluentValidation;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetDepartmentChildren;
 
 public class GetDepartmentChildrenHandler(
-    IValidator<GetDepartmentChildrenQuery> validator,
     IDbConnectionFactory dbConnectionFactory)
     : IQueryHandler<GetDepartmentChildrenQuery, List<DepartmentTreeNodeDto>>
 {
-    private readonly IValidator<GetDepartmentChildrenQuery> _validator = validator;
     private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
 
     public async Task<Result<List<DepartmentTreeNodeDto>, Errors>> Handle(
         GetDepartmentChildrenQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         const string sqlQuery = """

@@ -1,40 +1,29 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Contracts.Department;
-using FluentValidation;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetDepartmentAncestors;
 
 public class GetDepartmentAncestorsHandler(
-    IValidator<GetDepartmentAncestorsQuery> validator,
     IDbConnectionFactory dbConnectionFactory)
     : IQueryHandler<GetDepartmentAncestorsQuery, List<DepartmentTreeNodeDto>>
 {
-    private readonly IValidator<GetDepartmentAncestorsQuery> _validator = validator;
     private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
 
     public async Task<Result<List<DepartmentTreeNodeDto>, Errors>> Handle(
         GetDepartmentAncestorsQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         const string sqlQuery = """
                                 SELECT EXISTS(SELECT 1 FROM departments WHERE id = @DepartmentId AND deleted_at IS NULL);
 
                                 WITH child AS (SELECT d.id, d.path
                                                FROM departments d
                                                WHERE d.id = @DepartmentId)
-
 
                                 SELECT d.id,
                                        d.name,

@@ -1,32 +1,22 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Department;
-using FluentValidation;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.GetDirectChildrenDepartment;
 
 public class GetDirectChildrenDepartmentHandler(
-    IValidator<GetDirectChildrenDepartmentQuery> validator,
     IDbConnectionFactory dbConnectionFactory)
     : IQueryHandler<GetDirectChildrenDepartmentQuery, GetDirectChildrenDepartmentDto>
 {
-    private readonly IValidator<GetDirectChildrenDepartmentQuery> _validator = validator;
     private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
 
     public async Task<Result<GetDirectChildrenDepartmentDto, Errors>> Handle(
         GetDirectChildrenDepartmentQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
 
         const string sqlQuery = """

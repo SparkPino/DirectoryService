@@ -1,12 +1,10 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Domain.Shared.ValueObjects;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
@@ -17,32 +15,19 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
     private readonly ILocationRepository _locationRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly ILogger<AddLocationHandler> _logger;
-    private readonly IValidator<AddLocationCommand> _validator;
-
 
     public AddLocationHandler(
         ILocationRepository locationRepository,
         ITransactionManager transactionManager,
-        ILogger<AddLocationHandler> logger,
-        IValidator<AddLocationCommand> validator)
+        ILogger<AddLocationHandler> logger)
     {
         _locationRepository = locationRepository;
         _transactionManager = transactionManager;
         _logger = logger;
-        _validator = validator;
     }
-
 
     public async Task<Result<Guid, Errors>> Handle(AddLocationCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("Обработка AddLocationCommand name:{Name}", command.AddLocationDto.Name);
-
         var errors = new List<Error>();
 
         var nameResult = LocationName.Create(command.AddLocationDto.Name);
@@ -78,8 +63,6 @@ public class AddLocationHandler : ICommandHandler<AddLocationCommand, Guid>
             _logger.LogError("Не удалось добавить локацию: {Error}", saveResult.Error);
             return saveResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Локация создана успешно с id: {LocationId}", location.Id.Id);
 
         return location.Id.Id;
     }

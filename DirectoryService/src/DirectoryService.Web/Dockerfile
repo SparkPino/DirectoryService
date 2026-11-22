@@ -17,12 +17,13 @@ COPY ["src/DirectoryService.Infrastructure.Postgres/DirectoryService.Infrastruct
 COPY ["src/DirectoryService.Infrastructure/DirectoryService.Infrastructure.csproj", "src/DirectoryService.Infrastructure/"]
 COPY ["src/DirectoryService.Presenters/DirectoryService.Presenters.csproj", "src/DirectoryService.Presenters/"]
 COPY ["nuget.config", "Directory.Build.props", "./"]
-ARG GITHUB_TOKEN
-RUN dotnet nuget update source github --username SparkPino --password "$GITHUB_TOKEN" --store-password-in-clear-text --configfile nuget.config \
-    && dotnet  restore "src/DirectoryService.Web/DirectoryService.Web.csproj"
+ 
+RUN --mount=type=secret,id=github_token,required=true \
+    NuGetPackageSourceCredentials_github="Username=SparkPino;Password=$(cat /run/secrets/github_token)" \
+    dotnet  restore "src/DirectoryService.Web/DirectoryService.Web.csproj"
 COPY . .
 WORKDIR "/src/src/DirectoryService.Web"
-RUN dotnet build "./DirectoryService.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./DirectoryService.Web.csproj" -c $BUILD_CONFIGURATION -o /app/build  --no-restore
 
 FROM build AS bundle
 ARG BUILD_CONFIGURATION
@@ -42,7 +43,7 @@ ENTRYPOINT ["./efbundle"]
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION
-RUN dotnet publish "./DirectoryService.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./DirectoryService.Web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false  --no-restore
 
 FROM base AS final
 USER root

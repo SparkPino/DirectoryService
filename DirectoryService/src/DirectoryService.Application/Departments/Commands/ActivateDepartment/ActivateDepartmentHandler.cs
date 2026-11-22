@@ -4,7 +4,6 @@ using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Departments.Failures;
 using DirectoryService.Domain.Departments;
-using Microsoft.Extensions.Logging;
 using Shared;
 using SharedLibrary.SharedKernel;
 
@@ -13,25 +12,19 @@ namespace DirectoryService.Application.Departments.Commands.ActivateDepartment;
 public class ActivateDepartmentHandler : ICommandHandler<ActivateDepartmentCommand, Unit>
 {
     private readonly IDepartmentRepository _repository;
-    private readonly ILogger<ActivateDepartmentHandler> _logger;
     private readonly ITransactionManager _transactionManager;
 
     public ActivateDepartmentHandler(
         IDepartmentRepository repository,
-        ILogger<ActivateDepartmentHandler> logger,
         ITransactionManager transactionManager)
     {
         _repository = repository;
-        _logger = logger;
         _transactionManager = transactionManager;
     }
 
     public async Task<Result<Unit, Errors>> Handle(ActivateDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        _logger.LogInformation(
-            "Начато выполнение id:{DepartmentId}",
-            command.DepartmentId);
         var timeNow = DateTimeOffset.UtcNow;
 
         return await _transactionManager.ExecuteInTransactionAsync<Unit>(

@@ -1,10 +1,8 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Positions.ValueObjects;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
@@ -15,30 +13,19 @@ public class UpdatePositionHandler : ICommandHandler<UpdatePositionCommand, Guid
     private readonly IPositionRepository _positionRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly ILogger<UpdatePositionHandler> _logger;
-    private readonly IValidator<UpdatePositionCommand> _validator;
 
     public UpdatePositionHandler(
         IPositionRepository positionRepository,
         ITransactionManager transactionManager,
-        ILogger<UpdatePositionHandler> logger,
-        IValidator<UpdatePositionCommand> validator)
+        ILogger<UpdatePositionHandler> logger)
     {
         _positionRepository = positionRepository;
         _transactionManager = transactionManager;
         _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(UpdatePositionCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("Обработка UpdatePositionCommand id:{id}", command.Id);
-
         var positionResult = await _positionRepository.GetByIdAsync(command.Id, cancellationToken);
         if (positionResult.IsFailure) return positionResult.Error.ToErrors();
 
@@ -59,8 +46,6 @@ public class UpdatePositionHandler : ICommandHandler<UpdatePositionCommand, Guid
             _logger.LogError("Не удалось обновить должность id:{id}: {Error}", command.Id, saveResult.Error);
             return saveResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Должность с id:{id} успешно обновлена", command.Id);
 
         return command.Id;
     }

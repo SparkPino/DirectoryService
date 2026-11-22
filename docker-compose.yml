@@ -12,8 +12,8 @@ services:
     build:
       context: ./DirectoryService
       dockerfile: src/DirectoryService.Web/Dockerfile
-      args:
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+      secrets:
+        - github_token
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DirectoryServiceDb: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
@@ -84,8 +84,8 @@ services:
       context: ./DirectoryService
       target: migrator
       dockerfile: src/DirectoryService.Web/Dockerfile
-      args:
-        GITHUB_TOKEN: ${GITHUB_TOKEN}
+      secrets:
+        - github_token
     command:
       [
         "--connection",
@@ -98,3 +98,6 @@ services:
 volumes:
   postgres-data:
   seq-data:
+secrets:
+  github_token:
+    environment: GITHUB_TOKEN

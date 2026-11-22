@@ -1,13 +1,10 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Locations;
 using DirectoryService.Domain.Locations.ValueObjects;
 using DirectoryService.Domain.Shared.ValueObjects;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Locations.Commands.UpdateLocation;
@@ -16,29 +13,17 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
 {
     private readonly ILocationRepository _locationRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<UpdateLocationHandler> _logger;
-    private readonly IValidator<UpdateLocationCommand> _validator;
 
     public UpdateLocationHandler(
         ILocationRepository locationRepository,
-        ITransactionManager transactionManager,
-        ILogger<UpdateLocationHandler> logger,
-        IValidator<UpdateLocationCommand> validator)
+        ITransactionManager transactionManager)
     {
         _locationRepository = locationRepository;
         _transactionManager = transactionManager;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(UpdateLocationCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-            return validationResult.ToError();
-
-        _logger.LogInformation("Обработка UpdateLocationCommand id:{id}", command.Id);
-
         (_, bool isFailure, Location? location, Error? error) = await _locationRepository.GetByIdAsync(command.Id, cancellationToken);
         if (isFailure) return error.ToErrors();
 
@@ -64,7 +49,6 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
             newTimeZone = tzResult.Value;
         }
 
-
         LocationName? newName = null;
         if (command.UpdateLocationDto.LocationName != null)
         {
@@ -78,7 +62,6 @@ public class UpdateLocationHandler : ICommandHandler<UpdateLocationCommand, Guid
         var saveResult = await _transactionManager.SaveChangesAsync(cancellationToken);
         if (saveResult.IsFailure) return saveResult.Error.ToErrors();
 
-        _logger.LogInformation("Location с id:{id} успешно обновлена", command.Id);
         return command.Id;
     }
 }

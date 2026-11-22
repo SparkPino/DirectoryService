@@ -1,11 +1,8 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Application.Departments.Failures;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Commands.DetachLocationFromDepartment;
@@ -15,33 +12,21 @@ public class DetachLocationFromDepartmentHandler : ICommandHandler<DetachLocatio
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ILocationRepository _locationRepository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<DetachLocationFromDepartmentHandler> _logger;
-    private readonly IValidator<DetachLocationFromDepartmentCommand> _validator;
 
     public DetachLocationFromDepartmentHandler(
         IDepartmentRepository departmentRepository,
         ILocationRepository locationRepository,
-        ITransactionManager transactionManager,
-        ILogger<DetachLocationFromDepartmentHandler> logger,
-        IValidator<DetachLocationFromDepartmentCommand> validator)
+        ITransactionManager transactionManager)
     {
         _departmentRepository = departmentRepository;
         _locationRepository = locationRepository;
         _transactionManager = transactionManager;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(
         DetachLocationFromDepartmentCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         var department = await _departmentRepository.GetByIdWithLocationsAsync(command.DepartmentId, cancellationToken);
 
         if (department.IsFailure)

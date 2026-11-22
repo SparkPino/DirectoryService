@@ -1,10 +1,7 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
-using FluentValidation;
-using Microsoft.Extensions.Logging;
 using Shared;
 using SharedLibrary.SharedKernel;
 
@@ -14,32 +11,19 @@ public class BulkSoftDeleteHandler : ICommandHandler<BulkSoftDeleteCommand, Unit
 {
     private readonly IDepartmentRepository _repository;
     private readonly ITransactionManager _transactionManager;
-    private readonly ILogger<BulkSoftDeleteHandler> _logger;
-    private readonly IValidator<BulkSoftDeleteCommand> _validator;
 
     public BulkSoftDeleteHandler(
         IDepartmentRepository repository,
-        ITransactionManager transactionManager,
-        ILogger<BulkSoftDeleteHandler> logger,
-        IValidator<BulkSoftDeleteCommand> validator)
+        ITransactionManager transactionManager)
     {
         _repository = repository;
         _transactionManager = transactionManager;
-        _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Unit, Errors>> Handle(
         BulkSoftDeleteCommand command,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid) return validationResult.ToError();
-
-        _logger.LogInformation(
-            "Начато массовое архивирование подразделений, количество: {Count}",
-            command.DepartmentIds.Count);
-
         var timeNow = DateTimeOffset.UtcNow;
         var transactionResult = await _transactionManager.ExecuteInTransactionAsync<Unit>(
             async (ct) =>
@@ -78,16 +62,8 @@ public class BulkSoftDeleteHandler : ICommandHandler<BulkSoftDeleteCommand, Unit
 
         if (transactionResult.IsFailure)
         {
-            _logger.LogWarning(
-                "Массовое архивирование подразделений завершилось ошибкой, количество ошибок: {ErrorCount}",
-                transactionResult.Error.Count());
-
             return transactionResult.Error;
         }
-
-        _logger.LogInformation(
-            "Массовое архивирование подразделений успешно завершено, количество: {Count}",
-            command.DepartmentIds.Count);
 
         return transactionResult;
     }

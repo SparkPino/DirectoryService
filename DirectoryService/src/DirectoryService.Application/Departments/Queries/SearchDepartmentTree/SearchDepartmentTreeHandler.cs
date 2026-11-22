@@ -1,32 +1,22 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using Dapper;
 using DirectoryService.Contracts.Department;
-using FluentValidation;
 using SharedLibrary.SharedKernel;
 
 namespace DirectoryService.Application.Departments.Queries.SearchDepartmentTree;
 
 public class SearchDepartmentTreeHandler(
-    IValidator<SearchDepartmentTreeQuery> validator,
     IDbConnectionFactory dbConnectionFactory)
     : IQueryHandler<SearchDepartmentTreeQuery, List<DepartmentSearchResultDto>>
 {
-    private readonly IValidator<SearchDepartmentTreeQuery> _validator = validator;
     private readonly IDbConnectionFactory _dbConnectionFactory = dbConnectionFactory;
 
     public async Task<Result<List<DepartmentSearchResultDto>, Errors>> Handle(
         SearchDepartmentTreeQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         using var connection = await _dbConnectionFactory.CreateConnectionAsync(cancellationToken);
         const string sqlQuery = """
                                 WITH node AS (

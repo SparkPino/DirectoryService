@@ -1,11 +1,9 @@
 using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Positions;
 using DirectoryService.Domain.Positions.ValueObjects;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
@@ -16,30 +14,19 @@ public class AddPositionHandler : ICommandHandler<AddPositionCommand, Guid>
     private readonly IPositionRepository _positionRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly ILogger<AddPositionHandler> _logger;
-    private readonly IValidator<AddPositionCommand> _validator;
 
     public AddPositionHandler(
         IPositionRepository positionRepository,
         ITransactionManager transactionManager,
-        ILogger<AddPositionHandler> logger,
-        IValidator<AddPositionCommand> validator)
+        ILogger<AddPositionHandler> logger)
     {
         _positionRepository = positionRepository;
         _transactionManager = transactionManager;
         _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(AddPositionCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("Обработка AddPositionCommand name:{Name}", command.AddPositionDto.Name);
-
         var nameResult = PositionName.Create(command.AddPositionDto.Name);
         if (nameResult.IsFailure) return nameResult.Error;
 
@@ -60,8 +47,6 @@ public class AddPositionHandler : ICommandHandler<AddPositionCommand, Guid>
             _logger.LogError("Не удалось сохранить должность: {Error}", saveResult.Error);
             return saveResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Должность создана успешно с id: {PositionId}", position.Id);
 
         return position.Id.Id;
     }

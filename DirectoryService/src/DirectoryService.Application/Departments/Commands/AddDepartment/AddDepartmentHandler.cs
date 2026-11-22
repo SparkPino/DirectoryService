@@ -1,12 +1,10 @@
 ﻿using Core;
 using Core.Database;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Repositories;
 using DirectoryService.Domain.Departments;
 using DirectoryService.Domain.Departments.ValueObjects;
 using DirectoryService.Domain.Locations.ValueObjects;
-using FluentValidation;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
 
@@ -17,33 +15,22 @@ public class AddDepartmentHandler : ICommandHandler<AddDepartmentCommand, Guid>
     private readonly IDepartmentRepository _departmentRepository;
     private readonly ITransactionManager _transactionManager;
     private readonly ILocationRepository _locationRepository;
-    private readonly IValidator<AddDepartmentCommand> _validator;
     private readonly ILogger<AddDepartmentHandler> _logger;
 
     public AddDepartmentHandler(
         ILogger<AddDepartmentHandler> logger,
         IDepartmentRepository departmentRepository,
         ITransactionManager transactionManager,
-        ILocationRepository locationRepository,
-        IValidator<AddDepartmentCommand> validator)
+        ILocationRepository locationRepository)
     {
         _logger = logger;
         _departmentRepository = departmentRepository;
         _transactionManager = transactionManager;
         _locationRepository = locationRepository;
-        _validator = validator;
     }
 
     public async Task<Result<Guid, Errors>> Handle(AddDepartmentCommand command, CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(command, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
-        _logger.LogInformation("Обработка AddDepartmentCommand: name:{name}", command.DepartmentDto.Name);
-
         var nameResult = DepartmentName.Create(command.DepartmentDto.Name);
         var identifierResult = DepartmentIdentifier.Create(command.DepartmentDto.Identifier);
 
@@ -67,7 +54,6 @@ public class AddDepartmentHandler : ICommandHandler<AddDepartmentCommand, Guid>
             nameResult.Value,
             identifierResult.Value,
             parentDepartment);
-
 
         if (departmentResult.IsFailure)
         {
@@ -101,8 +87,6 @@ public class AddDepartmentHandler : ICommandHandler<AddDepartmentCommand, Guid>
                 saveResult.Error);
             return saveResult.Error.ToErrors();
         }
-
-        _logger.LogInformation("Департамент с id:{departmentId} успешно создан", departmentResult.Value.Id);
 
         return departmentResult.Value.Id.Id;
     }

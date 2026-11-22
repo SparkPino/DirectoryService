@@ -1,10 +1,8 @@
 ﻿using Core;
-using Core.Validations;
 using CSharpFunctionalExtensions;
 using DirectoryService.Application.Abstraction.Database;
 using DirectoryService.Application.Locations.Failures;
 using DirectoryService.Contracts.Locations;
-using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SharedLibrary.SharedKernel;
@@ -15,28 +13,19 @@ public class GetByIdLocationHandler : IQueryHandler<GetByIdLocationQuery, Locati
 {
     private readonly IReadDbContext _dbContext;
     private readonly ILogger<GetByIdLocationHandler> _logger;
-    private readonly IValidator<GetByIdLocationQuery> _validator;
 
     public GetByIdLocationHandler(
         IReadDbContext dbContext,
-        ILogger<GetByIdLocationHandler> logger,
-        IValidator<GetByIdLocationQuery> validator)
+        ILogger<GetByIdLocationHandler> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
-        _validator = validator;
     }
 
     public async Task<Result<LocationResponseDto?, Errors>> Handle(
         GetByIdLocationQuery query,
         CancellationToken cancellationToken)
     {
-        var validationResult = await _validator.ValidateAsync(query, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return validationResult.ToError();
-        }
-
         var location = await _dbContext.ReadLocations
             .Where(a => a.Id == query.LocationId)
             .Select(a => new LocationResponseDto()
